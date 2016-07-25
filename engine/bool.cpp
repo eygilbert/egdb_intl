@@ -2,11 +2,14 @@
 // bool.c - performs some boolean operations
 //
 // must be initialized with a call to initbool()
-#include "project.h"
-#include "board.h"
+
 #include "bool.h"
+
+// engine
 #include "bicoef.h"
 #include "bitcount.h"
+#include "board.h"
+#include "project.h"
 
 #if !_WIN64
 #define USE_ASM // use assembler routines in LSB, MSB
@@ -19,7 +22,7 @@ static char LSBarray[256];
 static char MSBarray[256];
 #endif
 
-
+#define INLINE_LSB 1
 #if !INLINE_LSB
 /*
  * Return the bit number of the smallest bit set in x.
@@ -52,7 +55,7 @@ int LSB(unsigned int x)
 }
 #endif
 
-
+#define INLINE_MSB 1
 #if !INLINE_MSB
 /*
  * Return the position of the most significant bit set in 

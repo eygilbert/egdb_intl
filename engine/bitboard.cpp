@@ -1,11 +1,14 @@
-#include "windows.h"
-#include "project.h"
-#include "board.h"
-#include "bool.h"
+#include "bitboard.h"
+
+// engine
 #include "bicoef.h"
 #include "bitcount.h"
+#include "board.h"
+#include "bool.h"
 #include "move_api.h"
+#include "project.h"
 
+#include <Windows.h>
 
 #define S1_UG (uint64)1
 #define S2_UG (uint64)2

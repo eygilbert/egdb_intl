@@ -12,7 +12,7 @@
 #include "bitcount.h"
 #include "board.h"
 #include "bool.h"
-#include "Lock.h"
+#include "lock.h"
 #include "project.h"
 #include "reverse.h"
 
@@ -161,7 +161,7 @@ static DBCRC dbcrc[] = {
 unsigned char mispredict_table[4][4];
 
 unsigned short huffman_decompress_table[1 << MAX_HUFFCODE_BITS] = {
-#include "codetable.c"
+#include "huffman_decompress.txt"
 };
 
 /* Function prototypes. */

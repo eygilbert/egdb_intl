@@ -1,4 +1,3 @@
-// builddb
 #include "indexing.h"
 
 // egdb

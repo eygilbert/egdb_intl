@@ -1,8 +1,9 @@
+#include "egdb_common.h"
+
 // builddb
 #include "indexing.h"
 
 // egdb
-#include "egdb_common.h"
 #include "egdb_intl.h"
 
 // engine
@@ -10,7 +11,7 @@
 #include "bitcount.h"
 #include "board.h"
 #include "bool.h"
-#include "Lock.h"
+#include "lock.h"
 #include "project.h"
 
 #include <Windows.h>

@@ -1,8 +1,7 @@
+#include "egdb_search.h"
+
 // egdb
 #include "egdb_intl.h"
-
-// egdb_test
-#include "egdb_search.h"
 
 // engine
 #include "bicoef.h"

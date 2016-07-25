@@ -1,8 +1,10 @@
-#include <intrin.h>
+#pragma once
 
 #define USE_CRITICAL_SECTION 0
 
 #if USE_CRITICAL_SECTION
+
+#include <Windows.h>
 
 #define LOCKT CRITICAL_SECTION
 #define init_lock(a) InitializeCriticalSection(&a)

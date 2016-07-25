@@ -1,6 +1,8 @@
+#include "move.h"
+
+// engine
 #include "board.h"
 #include "bool.h"
-#include "move.h"
 #include "move_api.h"
 #include "project.h"
 

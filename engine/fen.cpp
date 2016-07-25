@@ -1,6 +1,8 @@
+#include "fen.h"
+
+// engine
 #include "board.h"
 #include "bool.h"
-#include "fen.h"
 #include "project.h"
 
 #include <cctype>

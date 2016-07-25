@@ -3,7 +3,7 @@
 #include "egdb_intl.h"
 
 // engine
-#include "Lock.h"
+#include "lock.h"
 #include "project.h"
 
 #include <Windows.h>

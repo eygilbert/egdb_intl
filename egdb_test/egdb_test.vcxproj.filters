@@ -72,6 +72,12 @@
     <ClCompile Include="..\builddb\compression_tables.cpp">
       <Filter>builddb</Filter>
     </ClCompile>
+    <ClCompile Include="..\engine\bitboard.cpp">
+      <Filter>engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\engine\bool.cpp">
+      <Filter>engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Egdb\crc.h">
@@ -125,6 +131,9 @@
     <ClInclude Include="..\engine\lock.h">
       <Filter>engine</Filter>
     </ClInclude>
+    <ClInclude Include="..\engine\bitboard.h">
+      <Filter>engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\egdb\tunstall_decompress_v1.txt">
@@ -134,5 +143,8 @@
       <Filter>egdb</Filter>
     </Text>
     <Text Include="..\Readme.md" />
+    <Text Include="..\egdb\huffman_decompress.txt">
+      <Filter>egdb</Filter>
+    </Text>
   </ItemGroup>
 </Project>

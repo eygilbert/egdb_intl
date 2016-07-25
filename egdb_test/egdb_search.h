@@ -1,5 +1,9 @@
 #pragma once
 
+// egdb
+#include "egdb_intl.h"
+
+// engine
 #include "board.h"
 #include "project.h"
 

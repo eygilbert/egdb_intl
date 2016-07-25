@@ -14,7 +14,7 @@
 #include "bitcount.h"
 #include "board.h"
 #include "bool.h"
-#include "Lock.h"
+#include "lock.h"
 #include "project.h"
 #include "reverse.h"
 

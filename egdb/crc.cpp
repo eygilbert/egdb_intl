@@ -1,4 +1,3 @@
-// egdb
 #include "crc.h"
 
 #include <cstdio>

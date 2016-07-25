@@ -1,4 +1,3 @@
-// builddb
 #include "compression_tables.h"
 
 // egdb
