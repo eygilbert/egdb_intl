@@ -18,9 +18,6 @@
     <ClCompile Include="main.cpp">
       <Filter>egdb_test</Filter>
     </ClCompile>
-    <ClCompile Include="..\Egdb\compression_tables.cpp">
-      <Filter>egdb</Filter>
-    </ClCompile>
     <ClCompile Include="..\Egdb\crc.cpp">
       <Filter>egdb</Filter>
     </ClCompile>
@@ -34,9 +31,6 @@
       <Filter>engine</Filter>
     </ClCompile>
     <ClCompile Include="..\Engine\bitcount.cpp">
-      <Filter>engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Move.cpp">
       <Filter>engine</Filter>
     </ClCompile>
     <ClCompile Include="..\Engine\reverse.cpp">
@@ -72,6 +66,12 @@
     <ClCompile Include="..\Egdb\egdb_wld_tunstall_v2.cpp">
       <Filter>egdb</Filter>
     </ClCompile>
+    <ClCompile Include="..\engine\move.cpp">
+      <Filter>engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\builddb\compression_tables.cpp">
+      <Filter>builddb</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Egdb\crc.h">
@@ -87,12 +87,6 @@
       <Filter>engine</Filter>
     </ClInclude>
     <ClInclude Include="..\Engine\bool.h">
-      <Filter>engine</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Engine\Move.h">
-      <Filter>engine</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Engine\Move_api.h">
       <Filter>engine</Filter>
     </ClInclude>
     <ClInclude Include="..\Engine\reverse.h">
@@ -122,7 +116,13 @@
     <ClInclude Include="..\builddb\tunstall_decompress.h">
       <Filter>builddb</Filter>
     </ClInclude>
-    <ClInclude Include="..\engine\Lock.h">
+    <ClInclude Include="..\engine\move.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\move_api.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\lock.h">
       <Filter>engine</Filter>
     </ClInclude>
   </ItemGroup>
@@ -133,5 +133,6 @@
     <Text Include="..\egdb\tunstall_decompress_v2.txt">
       <Filter>egdb</Filter>
     </Text>
+    <Text Include="..\Readme.md" />
   </ItemGroup>
 </Project>

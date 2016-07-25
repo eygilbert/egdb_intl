@@ -175,8 +175,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\builddb\compression_tables.cpp" />
     <ClCompile Include="..\BuildDb\indexing.cpp" />
-    <ClCompile Include="..\Egdb\compression_tables.cpp" />
     <ClCompile Include="..\Egdb\crc.cpp" />
     <ClCompile Include="..\Egdb\egdb_common.cpp" />
     <ClCompile Include="..\Egdb\egdb_identify.cpp" />
@@ -190,7 +190,7 @@
     <ClCompile Include="..\Engine\bitcount.cpp" />
     <ClCompile Include="..\Engine\board.cpp" />
     <ClCompile Include="..\Engine\fen.cpp" />
-    <ClCompile Include="..\Engine\Move.cpp" />
+    <ClCompile Include="..\engine\move.cpp" />
     <ClCompile Include="..\Engine\reverse.cpp" />
     <ClCompile Include="egdb_search.cpp" />
     <ClCompile Include="main.cpp" />
@@ -207,9 +207,9 @@
     <ClInclude Include="..\Engine\board.h" />
     <ClInclude Include="..\Engine\bool.h" />
     <ClInclude Include="..\Engine\fen.h" />
-    <ClInclude Include="..\engine\Lock.h" />
-    <ClInclude Include="..\Engine\Move.h" />
-    <ClInclude Include="..\Engine\Move_api.h" />
+    <ClInclude Include="..\engine\lock.h" />
+    <ClInclude Include="..\engine\move.h" />
+    <ClInclude Include="..\engine\move_api.h" />
     <ClInclude Include="..\Engine\project.h" />
     <ClInclude Include="..\Engine\reverse.h" />
     <ClInclude Include="egdb_search.h" />
@@ -217,6 +217,7 @@
   <ItemGroup>
     <Text Include="..\egdb\tunstall_decompress_v1.txt" />
     <Text Include="..\egdb\tunstall_decompress_v2.txt" />
+    <Text Include="..\Readme.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
