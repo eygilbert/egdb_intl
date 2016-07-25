@@ -301,7 +301,7 @@ int64 getdatabasesize_slice(int bm, int bk, int wm, int wk)
 	int black_men_backrank;
 
 	/* Compute the number of men configurations first.  Place the black men, summing separately
-	* the contributions of 0, 1, 2, 3, or 4 black men on the backrank.
+	* the contributions of 0, 1, 2, 3, 4, or 5 black men on the backrank.
 	*/
 	size = 0;
 	for (black_men_backrank = 0; black_men_backrank <= min(bm, 5); ++black_men_backrank) {

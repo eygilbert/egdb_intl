@@ -17,7 +17,7 @@
 #include "indexing.h"
 #include "fen.h"
 
-#define FAST_TEST_MULT 5
+#define FAST_TEST_MULT 5			/* using this speeds up the tests. */
 //#define FAST_TEST_MULT 1
 
 #define DB_RUNLEN "c:/db_intl/wld_runlen"		/* Need 6 pieces for test. */
