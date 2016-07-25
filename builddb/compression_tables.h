@@ -1,3 +1,4 @@
+#pragma once
 
 #define SKIPS 58        /* the number of skips, for fully resolved dbs. */
 #define MAXSKIP 10000   /* the largest skip value, for fully resolved dbs. */

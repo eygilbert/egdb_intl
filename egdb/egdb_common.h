@@ -1,5 +1,13 @@
 #pragma once
 
+// egdb
+#include "egdb_intl.h"
+
+// engine
+#include "project.h"
+
+#include <Windows.h>
+
 #define MAXMSG 256
 #define ONE_MB 1048576
 #define IDX_READBUFSIZE 20000

@@ -1,5 +1,7 @@
-#include "stdio.h"
+// egdb
 #include "crc.h"
+
+#include <cstdio>
 
 #pragma warning(disable : 4996)
 

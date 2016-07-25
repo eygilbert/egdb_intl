@@ -1,9 +1,10 @@
+#include "bicoef.h"
+#include "project.h"
+
+#include <Windows.h>
+
 #include <cstdio>
 #include <cstdlib>
-#include <windows.h>
-#include "project.h"
-#include "bicoef.h"
-
 
 unsigned int bicoef[MAXSQUARE_BICOEF + 1][MAXPIECES_BICOEF + 1];
 

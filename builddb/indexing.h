@@ -1,5 +1,14 @@
 #pragma once
 
+// egdb
+#include "egdb_intl.h"
+
+// engine
+#include "bicoef.h"
+#include "bitcount.h"
+#include "board.h"
+#include "bool.h"
+
 #define MAXSQUARE NUMSQUARES
 #define MAXPIECE 5
 #define RANK0MAX ROWSIZE

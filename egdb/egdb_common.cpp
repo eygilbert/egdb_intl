@@ -1,14 +1,19 @@
-#include <windows.h>
-#include "project.h"
-#include "board.h"
-#include "bool.h"
+// builddb
+#include "indexing.h"
+
+// egdb
+#include "egdb_common.h"
+#include "egdb_intl.h"
+
+// engine
 #include "bicoef.h"
 #include "bitcount.h"
-#include "egdb_intl.h"
-#include "indexing.h"
+#include "board.h"
+#include "bool.h"
 #include "Lock.h"
-#include "egdb_common.h"
+#include "project.h"
 
+#include <Windows.h>
 
 int get_num_subslices(int nbm, int nbk, int nwm, int nwk)
 {

@@ -1,7 +1,6 @@
-#include "project.h"
-#include "bool.h"
 #include "bitcount.h"
-
+#include "bool.h"
+#include "project.h"
 
 bool cpu_has_popcount; 
 char bitcount_table[0x10000];

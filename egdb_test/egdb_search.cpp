@@ -1,20 +1,26 @@
-#include <windows.h>
-#include <cstdlib>
-#include <ctime>
-#include <cstdio>
-#include <limits.h>
-#include <io.h>
-#include <setjmp.h>
-#include "project.h"
-#include "board.h"
-#include "bool.h"
-#include "bicoef.h"
-#include "bitcount.h"
-#include "move_api.h"
-#include "fen.h"
+// egdb
 #include "egdb_intl.h"
+
+// egdb_test
 #include "egdb_search.h"
 
+// engine
+#include "bicoef.h"
+#include "bitcount.h"
+#include "board.h"
+#include "bool.h"
+#include "fen.h"
+#include "move_api.h"
+#include "project.h"
+
+#include <io.h>
+#include <Windows.h>
+
+#include <climits>
+#include <csetjmp>
+#include <cstdio>
+#include <cstdlib>
+#include <ctime>
 
 bool EGDB_INFO::requires_nonside_capture_test(BOARD *p)
 {

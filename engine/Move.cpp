@@ -1,11 +1,12 @@
-#include <cstdio>
-#include <windows.h>
-#include "project.h"
 #include "board.h"
 #include "bool.h"
-#include "move_api.h"
 #include "move.h"
+#include "move_api.h"
+#include "project.h"
 
+#include <Windows.h>
+
+#include <cstdio>
 
 template <bool save_capture_info>
 static void black_man_jump(BOARD *board, BITBOARD all_jumped, MOVELIST *movelist, BITBOARD from, int num_jumps, int *largest_num_jumps, CAPTURE_INFO cap[]);

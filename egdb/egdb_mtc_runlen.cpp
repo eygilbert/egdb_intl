@@ -1,20 +1,26 @@
-#include <cstdio>
-#include <cstdlib>
-#include <windows.h>
-#include <utility>
-#include "project.h"
-#include "board.h"
-#include "bool.h"
-#include "bicoef.h"
-#include "bitcount.h"
-#include "egdb_intl.h"
-#include "reverse.h"
+// builddb
 #include "indexing.h"
+
+// egdb
 #include "compression_tables.h"
 #include "crc.h"
-#include "Lock.h"
 #include "egdb_common.h"
+#include "egdb_intl.h"
 
+// engine
+#include "bicoef.h"
+#include "bitcount.h"
+#include "board.h"
+#include "bool.h"
+#include "Lock.h"
+#include "project.h"
+#include "reverse.h"
+
+#include <Windows.h>
+
+#include <cstdio>
+#include <cstdlib>
+#include <utility>
 
 #define MAXPIECES 8
 #define MAXPIECE 5

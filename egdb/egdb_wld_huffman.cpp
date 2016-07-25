@@ -1,19 +1,26 @@
-#include <cstdio>
-#include <cstdlib>
-#include <windows.h>
-#include <utility>
-#include "project.h"
-#include "board.h"
-#include "bool.h"
+// builddb
+#include "compression_tables.h"
+#include "indexing.h"
+
+// egdb
+#include "crc.h"
+#include "egdb_common.h"
+#include "egdb_intl.h"
+
+// engine
 #include "bicoef.h"
 #include "bitcount.h"
-#include "egdb_intl.h"
-#include "reverse.h"
-#include "compression_tables.h"
-#include "crc.h"
+#include "board.h"
+#include "bool.h"
 #include "Lock.h"
-#include "indexing.h"
-#include "egdb_common.h"
+#include "project.h"
+#include "reverse.h"
+
+#include <Windows.h>
+
+#include <cstdio>
+#include <cstdlib>
+#include <utility>
 
 #define USE_AUTOLOAD 1
 

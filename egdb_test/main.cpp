@@ -1,21 +1,30 @@
-#include <windows.h>
+// builddb
+#include "indexing.h"
+
+// edgb
+#include "egdb_intl.h"
+
+// egdb_test
+#include "egdb_search.h"
+
+// engine
+#include "bicoef.h"
+#include "bitcount.h"
+#include "board.h"
+#include "bool.h"
+#include "fen.h"
+#include "move_api.h"
+#include "project.h"
+#include "reverse.h"
+
+#include <Windows.h>
+
+#include <cctype>
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <cctype>
-#include <cmath>
 #include <ctime>
-#include "project.h"
-#include "board.h"
-#include "bool.h"
-#include "bitcount.h"
-#include "egdb_intl.h"
-#include "egdb_search.h"
-#include "move_api.h"
-#include "reverse.h"
-#include "bicoef.h"
-#include "indexing.h"
-#include "fen.h"
 
 //#define FAST_TEST_MULT 5			/* using this speeds up the tests. */
 #define FAST_TEST_MULT 1

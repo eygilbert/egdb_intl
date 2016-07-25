@@ -1,6 +1,8 @@
-#include "egdb_intl.h"
+// builddb
 #include "compression_tables.h"
 
+// egdb
+#include "egdb_intl.h"
 
 /*
  * skip numbers range from 5...MAXSKIP defined above, there are SKIPS of them.

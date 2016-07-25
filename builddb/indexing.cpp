@@ -1,14 +1,20 @@
-#include <windows.h>
-#include <cstdlib>
-#include <cstdio>
-#include "project.h"
-#include "board.h"
-#include "bool.h"
-#include "bicoef.h"
-#include "bitcount.h"
-#include "egdb_intl.h"
+// builddb
 #include "indexing.h"
 
+// egdb
+#include "egdb_intl.h"
+
+// engine
+#include "bicoef.h"
+#include "bitcount.h"
+#include "board.h"
+#include "bool.h"
+#include "project.h"
+
+#include <Windows.h>
+
+#include <cstdio>
+#include <cstdlib>
 
 BITBOARD free_square_bitmask_fwd(int logical_square, BITBOARD occupied)
 {

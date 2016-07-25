@@ -1,11 +1,15 @@
+// egdb
+#include "crc.h"
+#include "egdb_intl.h"
+
+// engine
+#include "project.h"
+
+#include <Windows.h>
+
 #include <cstdio>
 #include <cstdlib>
-#include <windows.h>
 #include <cstring>
-#include "project.h"
-#include "egdb_intl.h"
-#include "crc.h"
-
 
 #define MAXFILENAME MAX_PATH
 

@@ -122,5 +122,16 @@
     <ClInclude Include="..\builddb\tunstall_decompress.h">
       <Filter>builddb</Filter>
     </ClInclude>
+    <ClInclude Include="..\engine\Lock.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\egdb\tunstall_decompress_v1.txt">
+      <Filter>egdb</Filter>
+    </Text>
+    <Text Include="..\egdb\tunstall_decompress_v2.txt">
+      <Filter>egdb</Filter>
+    </Text>
   </ItemGroup>
 </Project>

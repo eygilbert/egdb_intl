@@ -1,5 +1,10 @@
 #pragma once
 
+#include "board.h"
+#include "project.h"
+
+#include <csetjmp>
+
 #define MAXREPDEPTH 64
 
 typedef struct {

@@ -1,12 +1,17 @@
+// egdb
+#include "egdb_common.h"
+#include "egdb_intl.h"
+
+// engine
+#include "Lock.h"
+#include "project.h"
+
 #include <Windows.h>
+
+#include <cctype>
 #include <cstdio>
 #include <cstdlib>
-#include <cctype>
 #include <cstring>
-#include "project.h"
-#include "egdb_intl.h"
-#include "Lock.h"
-#include "egdb_common.h"
 
 EGDB_DRIVER *egdb_open_wld_runlen(int pieces, int kings_1side_8pcs, int cache_mb, char *directory, void (*msg_fn)(char *), EGDB_TYPE db_type);
 EGDB_DRIVER *egdb_open_mtc_runlen(int pieces, int kings_1side_8pcs, int cache_mb, char *directory, void (*msg_fn)(char *), EGDB_TYPE db_type);

@@ -1,8 +1,8 @@
 #pragma once
 
+#include "project.h"
+
 #include <intrin.h>
-
-
 
 extern bool cpu_has_popcount;
 extern char bitcount_table[0x10000];

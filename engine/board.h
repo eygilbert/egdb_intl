@@ -1,5 +1,7 @@
 #pragma once
 
+#include "project.h"
+
 #define BLACK 0
 #define WHITE 1
 #define OTHER_COLOR(color) ((color) ^ 1)

@@ -1,3 +1,5 @@
+#include <intrin.h>
+
 #define USE_CRITICAL_SECTION 0
 
 #if USE_CRITICAL_SECTION

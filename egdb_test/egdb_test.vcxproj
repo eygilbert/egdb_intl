@@ -207,11 +207,16 @@
     <ClInclude Include="..\Engine\board.h" />
     <ClInclude Include="..\Engine\bool.h" />
     <ClInclude Include="..\Engine\fen.h" />
+    <ClInclude Include="..\engine\Lock.h" />
     <ClInclude Include="..\Engine\Move.h" />
     <ClInclude Include="..\Engine\Move_api.h" />
     <ClInclude Include="..\Engine\project.h" />
     <ClInclude Include="..\Engine\reverse.h" />
     <ClInclude Include="egdb_search.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\egdb\tunstall_decompress_v1.txt" />
+    <Text Include="..\egdb\tunstall_decompress_v2.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,11 +1,11 @@
-#include <cstdio>
-#include <cstring>
-#include <cctype>
-#include "project.h"
 #include "board.h"
 #include "bool.h"
 #include "fen.h"
+#include "project.h"
 
+#include <cctype>
+#include <cstdio>
+#include <cstring>
 
 int print_fen(BOARD *board, int color, char *buf)
 {
