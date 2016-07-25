@@ -1,3 +1,5 @@
+#pragma once
+
 #define MAXSQUARE NUMSQUARES
 #define MAXPIECE 5
 #define RANK0MAX ROWSIZE

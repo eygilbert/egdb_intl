@@ -1,3 +1,4 @@
+#pragma once
 
 typedef enum {
 	DIR_LFRB, DIR_RFLB

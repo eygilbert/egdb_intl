@@ -1,3 +1,5 @@
+#pragma once
+
 #define MAXSQUARE_BICOEF 50
 #define MAXPIECES_BICOEF 8
 

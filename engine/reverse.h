@@ -1,3 +1,5 @@
+#pragma once
+
 void init_reverse();
 unsigned int reverse_image(unsigned int image);
 uint64 reverse_board50(uint64 image);

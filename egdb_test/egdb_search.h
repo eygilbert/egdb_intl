@@ -1,3 +1,5 @@
+#pragma once
+
 #define MAXREPDEPTH 64
 
 typedef struct {

@@ -1,3 +1,4 @@
+#pragma once
 
 /*
  * To use the library, include the header file egdb_intl.h in your application source

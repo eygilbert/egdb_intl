@@ -1,3 +1,4 @@
+#pragma once
 
 #define SINGLE_CORNER_DIAG (S5 | S10 | S14 | S19 | S23 | S28 | S32 | S37 | S41 | S46)
 
