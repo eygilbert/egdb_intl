@@ -91,7 +91,7 @@ unsigned int file_crc_calc(FILE *fp, int *abort)
 		if (abort && *abort)
 			return(0);
 
-		bytes_read = (int)fread(buf, 1, sizeof(buf), fp);
+		bytes_read = (int)std::fread(buf, 1, sizeof(buf), fp);
 		if (bytes_read <= 0)
 			break;
 
@@ -108,12 +108,12 @@ int fname_crc_calc(char *name, unsigned int *crc)
 {
 	FILE *fp;
 
-	fp = fopen(name, "rb");
+	fp = std::fopen(name, "rb");
 	if (!fp) {
 		return(1);
 	}
 	*crc = file_crc_calc(fp, 0);
-	fclose(fp);
+	std::fclose(fp);
 	return(0);
 }
 

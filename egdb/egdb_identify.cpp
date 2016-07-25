@@ -78,12 +78,12 @@ int egdb_identify(char *directory, EGDB_TYPE *egdb_type, int *max_pieces)
 			tablep = egdb_find_table + i;
 			if (tablep->pieces != pieces)
 				continue;
-			sprintf(name, "%s%s%s", directory, sep, tablep->name);
-			fp = fopen(name, "rb");
+			std::sprintf(name, "%s%s%s", directory, sep, tablep->name);
+			fp = std::fopen(name, "rb");
 			if (fp) {
 
 				crc = file_crc_calc(fp, 0);
-				fclose(fp);
+				std::fclose(fp);
 				if (egdb_find_table[i].crc == 0 || crc == egdb_find_table[i].crc) {
 					*egdb_type = tablep->egdb_type;
 					*max_pieces = tablep->pieces;

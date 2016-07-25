@@ -9,6 +9,7 @@
 #include <Windows.h>
 
 #include <cstdio>
+#include <cstring>
 
 template <bool save_capture_info>
 static void black_man_jump(BOARD *board, BITBOARD all_jumped, MOVELIST *movelist, BITBOARD from, int num_jumps, int *largest_num_jumps, CAPTURE_INFO cap[]);
@@ -68,7 +69,7 @@ static inline void assign_white_jump_path(BOARD *board, BITBOARD jumps, CAPTURE_
 static inline void copy_path(CAPTURE_INFO *cap, MOVELIST *movelist)
 {
 	/* Copy the path to the next potential jump move. */
-	memcpy(cap[movelist->count + 1].path, cap[movelist->count].path, sizeof(cap[0].path));
+	std::memcpy(cap[movelist->count + 1].path, cap[movelist->count].path, sizeof(cap[0].path));
 }
 
 
@@ -1623,7 +1624,7 @@ static void black_king_jump(BOARD *board, BITBOARD all_jumped, MOVELIST *movelis
 		if (num_jumps >= *largest_num_jumps) {
 			if (num_jumps > *largest_num_jumps) {
 				if (save_capture_info)
-					memcpy(cap, cap + movelist->count, sizeof(cap[0]));
+					std::memcpy(cap, cap + movelist->count, sizeof(cap[0]));
 				movelist->count = 0;
 				*largest_num_jumps = num_jumps;
 			}
@@ -1859,7 +1860,7 @@ void white_king_jump(BOARD *board, BITBOARD all_jumped, MOVELIST *movelist, BITB
 		if (num_jumps >= *largest_num_jumps) {
 			if (num_jumps > *largest_num_jumps) {
 				if (save_capture_info)
-					memcpy(cap, cap + movelist->count, sizeof(cap[0]));
+					std::memcpy(cap, cap + movelist->count, sizeof(cap[0]));
 				movelist->count = 0;
 				*largest_num_jumps = num_jumps;
 			}
@@ -1941,7 +1942,7 @@ void black_man_jump(BOARD *board, BITBOARD all_jumped, MOVELIST *movelist, BITBO
 		if (num_jumps >= *largest_num_jumps) {
 			if (num_jumps > *largest_num_jumps) {
 				if (save_capture_info)
-					memcpy(cap, cap + movelist->count, sizeof(cap[0]));
+					std::memcpy(cap, cap + movelist->count, sizeof(cap[0]));
 				movelist->count = 0;
 				*largest_num_jumps = num_jumps;
 			}
@@ -2029,7 +2030,7 @@ void white_man_jump(BOARD *board, BITBOARD all_jumped, MOVELIST *movelist, BITBO
 		if (num_jumps >= *largest_num_jumps) {
 			if (num_jumps > *largest_num_jumps) {
 				if (save_capture_info)
-					memcpy(cap, cap + movelist->count, sizeof(cap[0]));
+					std::memcpy(cap, cap + movelist->count, sizeof(cap[0]));
 				movelist->count = 0;
 				*largest_num_jumps = num_jumps;
 			}

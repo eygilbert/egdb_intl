@@ -14,10 +14,10 @@ int print_fen(BOARD *board, int color, char *buf)
 	int len, bitnum, square0;
 	BITBOARD mask, sq;
 
-	len = sprintf(buf, "%c", color == BLACK ? 'B' : 'W');
+	len = std::sprintf(buf, "%c", color == BLACK ? 'B' : 'W');
 
 	/* Print the white men and kings. */
-	len += sprintf(buf + len, ":W");
+	len += std::sprintf(buf + len, ":W");
 	for (mask = board->white; mask; ) {
 
 		/* Peel off the lowest set bit in mask. */
@@ -25,16 +25,16 @@ int print_fen(BOARD *board, int color, char *buf)
 		bitnum = LSB64(sq);
 		square0 = bitnum_to_square0(bitnum);
 		if (sq & board->king)
-			len += sprintf(buf + len, "K%d", square0 + 1);
+			len += std::sprintf(buf + len, "K%d", square0 + 1);
 		else
-			len += sprintf(buf + len, "%d", square0 + 1);
+			len += std::sprintf(buf + len, "%d", square0 + 1);
 		mask = mask & (mask - 1);
 		if (mask)
-			len += sprintf(buf + len, ",");
+			len += std::sprintf(buf + len, ",");
 	}
 
 	/* Print the black men and kings. */
-	len += sprintf(buf + len, ":B");
+	len += std::sprintf(buf + len, ":B");
 	for (mask = board->black; mask; ) {
 
 		/* Peel off the lowest set bit in mask. */
@@ -42,12 +42,12 @@ int print_fen(BOARD *board, int color, char *buf)
 		bitnum = LSB64(sq);
 		square0 = bitnum_to_square0(bitnum);
 		if (sq & board->king)
-			len += sprintf(buf + len, "K%d", square0 + 1);
+			len += std::sprintf(buf + len, "K%d", square0 + 1);
 		else
-			len += sprintf(buf + len, "%d", square0 + 1);
+			len += std::sprintf(buf + len, "%d", square0 + 1);
 		mask = mask & (mask - 1);
 		if (mask)
-			len += sprintf(buf + len, ",");
+			len += std::sprintf(buf + len, ",");
 	}
 	return(len);
 }
@@ -58,7 +58,7 @@ int print_fen_with_newline(BOARD *board, int color, char *buf)
 	int len;
 
 	len = print_fen(board, color, buf);
-	len += sprintf(buf + len, "\n");
+	len += std::sprintf(buf + len, "\n");
 	return(len);
 }
 
@@ -67,9 +67,9 @@ int print_fen_header(BOARD *board, int color, char *buf, char *line_terminator)
 {
 	int len;
 
-	len = sprintf(buf, "[FEN \"");
+	len = std::sprintf(buf, "[FEN \"");
 	len += print_fen(board, color, buf + len);
-	len += sprintf(buf + len, "\"]%s", line_terminator);
+	len += std::sprintf(buf + len, "\"]%s", line_terminator);
 	return(len);
 }
 
@@ -84,24 +84,24 @@ int parse_fen(char *buf, BOARD *board, int *ret_color)
 	int king;
 	char *lastp;
 
-	while (isspace(*buf))
+	while (std::isspace(*buf))
 		++buf;
 	if (*buf == '"')
 		++buf;
 
-	while (isspace(*buf))
+	while (std::isspace(*buf))
 		++buf;
 
 	/* Get the color. */
-	if (toupper(*buf) == 'B')
+	if (std::toupper(*buf) == 'B')
 		*ret_color = BLACK;
-	else if (toupper(*buf) == 'W')
+	else if (std::toupper(*buf) == 'W')
 		*ret_color = WHITE;
 	else {
 		return(1);
 	}
 
-	memset(board, 0, sizeof(BOARD));
+	std::memset(board, 0, sizeof(BOARD));
 
 	/* Skip the colon. */
 	buf += 2;
@@ -113,32 +113,32 @@ int parse_fen(char *buf, BOARD *board, int *ret_color)
 			++buf;
 			continue;
 		}
-		if (toupper(*buf) == 'W') {
+		if (std::toupper(*buf) == 'W') {
 			color = WHITE;
 			++buf;
 			continue;
 		}
-		if (toupper(*buf) == 'B') {
+		if (std::toupper(*buf) == 'B') {
 			color = BLACK;
 			++buf;
 			continue;
 		}
-		if (toupper(*buf) == 'K') {
+		if (std::toupper(*buf) == 'K') {
 			king = 1;
 			++buf;
 		}
-		for (square = 0; isdigit(*buf); ++buf)
+		for (square = 0; std::isdigit(*buf); ++buf)
 			square = 10 * square + (*buf - '0');
 
 		square2 = square;
-		if (*buf == ',' || *buf == ':' || *buf == '.' || isspace(*buf))
+		if (*buf == ',' || *buf == ':' || *buf == '.' || std::isspace(*buf))
 			++buf;
 
-		else if (*buf == '-' && isdigit(buf[1])) {
+		else if (*buf == '-' && std::isdigit(buf[1])) {
 			++buf;
-			for (square2 = 0; isdigit(*buf); ++buf)
+			for (square2 = 0; std::isdigit(*buf); ++buf)
 				square2 = 10 * square2 + (*buf - '0');
-			if (*buf == ',' || *buf == ':' || *buf == '.' || isspace(*buf))
+			if (*buf == ',' || *buf == ':' || *buf == '.' || std::isspace(*buf))
 				++buf;
 		}
 

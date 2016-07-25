@@ -26,23 +26,23 @@ static void parse_options(char *options, int *pieces, int *kings_1side_8pcs)
 
 	*pieces = 0;
 	*kings_1side_8pcs = -1;
-	p = strstr(options, MAXPIECES_OPTSTR);
+	p = std::strstr(options, MAXPIECES_OPTSTR);
 	if (p) {
 		p += strlen(MAXPIECES_OPTSTR);
 		while (*p != '=')
 			++p;
 		++p;
-		while (isspace(*p))
+		while (std::isspace(*p))
 			++p;
 		*pieces = atoi(p);
 	}
-	p = strstr(options, MAXKINGS_1SIDE_8PCS_OPTSTR);
+	p = std::strstr(options, MAXKINGS_1SIDE_8PCS_OPTSTR);
 	if (p) {
 		p += strlen(MAXKINGS_1SIDE_8PCS_OPTSTR);
 		while (*p != '=')
 			++p;
 		++p;
-		while (isspace(*p))
+		while (std::isspace(*p))
 			++p;
 		*kings_1side_8pcs = atoi(p);
 	}
@@ -62,7 +62,7 @@ EGDB_DRIVER *egdb_open(char *options,
 
 	stat = egdb_identify(directory, &db_type, &max_pieces);
 	if (stat) {
-		sprintf(msg, "No egdb found\n");
+		std::sprintf(msg, "No egdb found\n");
 		(*msg_fn)(msg);
 		return(0);
 	}

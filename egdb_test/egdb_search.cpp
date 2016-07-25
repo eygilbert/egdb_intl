@@ -343,12 +343,12 @@ int EGDB_INFO::lookup_with_search(BOARD *p, int color, int maxdepth, bool force_
 	int status, i, value;
 
 	nodes = 0;
-	status = setjmp(env);
+	status = setjmp(env);	// NOTE: not in namespace std: http://stackoverflow.com/questions/7935913/why-isnt-setjmp-in-the-std-namespace-when-including-csetjmp
 	if (status) {
 		char buf[150];
 
 		print_fen_with_newline(p, color, buf);
-		printf("lookup max node count exceeded (not an error): %s", buf);
+		std::printf("lookup max node count exceeded (not an error): %s", buf);
 		return(EGDB_UNKNOWN);
 	}
 
@@ -399,10 +399,10 @@ void EGDB_INFO::log_tree(int value, int depth, int color)
 		}
 
 		print_move(rep_check_positions + i - 1, rep_check_positions + i, color, buf);
-		printf("%s, ", buf);
+		std::printf("%s, ", buf);
 	}
 
-	printf("value %d, depth %d\n", value, depth);
+	std::printf("value %d, depth %d\n", value, depth);
 #endif
 }
 

@@ -18,6 +18,7 @@
 
 #include <Windows.h>
 
+#include <cctype>
 #include <cstdio>
 #include <cstdlib>
 #include <utility>
@@ -164,7 +165,7 @@ static void reset_db_stats(EGDB_DRIVER *handle)
 	}
 
 #endif
-	memset(&hdat->lookup_stats, 0, sizeof(hdat->lookup_stats));
+	std::memset(&hdat->lookup_stats, 0, sizeof(hdat->lookup_stats));
 }
 
 
@@ -194,7 +195,7 @@ static EGDB_STATS *get_db_stats(EGDB_DRIVER *handle)
 		f = hdat->dbfiles + i;
 		if (f->hits) {
 			hitrate = 10000.0 * (double)f->hits / ((double)count * (double)f->num_idx_blocks);
-			sprintf(msg, "%s %d hits, %f hits/iblock\n",
+			std::sprintf(msg, "%s %d hits, %f hits/iblock\n",
 					f->name,
 					f->hits,
 					hitrate);
@@ -219,7 +220,7 @@ static EGDB_STATS *get_db_stats(EGDB_DRIVER *handle)
 							for (k = 0; k < p->num_subslices; ++k) {
 								hitrate = 10000.0 * (double)p->subdb[k].hits / ((double)count * (double)p->subdb[k].num_idx_blocks);
 								if (hitrate > .001) {
-									sprintf(msg, "%d-%d%d%d%d.%d%c  %d hits, %f hits/iblock, %.1fmb\n",
+									std::sprintf(msg, "%d-%d%d%d%d.%d%c  %d hits, %f hits/iblock, %.1fmb\n",
 											nb + nw,
 											bm, bk, wm, wk, k,
 											color == EGDB_BLACK ? 'b' : 'w',
@@ -318,8 +319,9 @@ static int dblookup(EGDB_DRIVER *handle, EGDB_POSITION *p, int color, int cl)
 		reverse((BOARD *)&revpos, (BOARD *)p);
 		p = &revpos;
 		color = OTHER_COLOR(color);
-		std::swap(bm, wm);
-		std::swap(bk, wk);
+		using std::swap;
+		swap(bm, wm);
+		swap(bk, wk);
 	}
 
 	index64 = position_to_index_slice(p, bm, bk, wm, wk);
@@ -460,7 +462,7 @@ static int dblookup(EGDB_DRIVER *handle, EGDB_POSITION *p, int color, int cl)
 		if (i < 0 || i >= SUBINDEX_BLOCKSIZE) {
 			char msg[MAXMSG];
 
-			sprintf(msg, "db block array index outside block bounds: %d\nFile %s\n",
+			std::sprintf(msg, "db block array index outside block bounds: %d\nFile %s\n",
 						 i, dbpointer->file->name);
 			(*hdat->log_msg_fn)(msg);
 			return EGDB_UNKNOWN;
@@ -517,7 +519,7 @@ static int dblookup(EGDB_DRIVER *handle, EGDB_POSITION *p, int color, int cl)
 		if (i < 0 || i >= SUBINDEX_BLOCKSIZE) {
 			char msg[MAXMSG];
 
-			sprintf(msg, "db block array index outside block bounds: %d\nFile %s\n",
+			std::sprintf(msg, "db block array index outside block bounds: %d\nFile %s\n",
 						 i, dbpointer->file->name);
 			(*hdat->log_msg_fn)(msg);
 			return EGDB_UNKNOWN;
@@ -606,7 +608,7 @@ static int init_autoload_subindices(DBHANDLE *hdat, DBFILE *file, int *allocated
 								(NUM_SUBINDICES - 1 - p->subdb[k].last_subidx_block);
 
 					size = num_subi * sizeof(INDEX);
-					p->subdb[k].autoload_subindices = (INDEX *)malloc(size);
+					p->subdb[k].autoload_subindices = (INDEX *)std::malloc(size);
 					if (p->subdb[k].autoload_subindices == NULL) {
 						(*hdat->log_msg_fn)("Cannot allocate memory for autoload subindices array\n");
 						return(1);
@@ -765,7 +767,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 	allocated_bytes = 0;
 	autoload_bytes = 0;
 
-	sprintf(msg, "Available RAM: %dmb\n", get_mem_available_mb());
+	std::sprintf(msg, "Available RAM: %dmb\n", get_mem_available_mb());
 	(*hdat->log_msg_fn)(msg);
 
 	init_lock(egdb_lock);
@@ -781,7 +783,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 	build_man_index_base();
 
 	/* Allocate the cprsubdatabase array. */
-	hdat->cprsubdatabase = (DBP *)calloc(DBSIZE, sizeof(DBP));
+	hdat->cprsubdatabase = (DBP *)std::calloc(DBSIZE, sizeof(DBP));
 	if (!hdat->cprsubdatabase) {
 		(*hdat->log_msg_fn)("Out of memory allocating cprsubdatabase.\n");
 		return(1);
@@ -849,7 +851,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 		size += f->num_cacheblocks;
 		if (f->pieces <= MIN_AUTOLOAD_PIECES || (int)((int64)((int64)size * (int64)CACHE_BLOCKSIZE) / ONE_MB) <= max_autoload) {
 			f->autoload = 1;
-			sprintf(msg, "autoload %s\n", f->name);
+			std::sprintf(msg, "autoload %s\n", f->name);
 			(*hdat->log_msg_fn)(msg);
 		}
 	}
@@ -864,12 +866,12 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 		if (!hdat->dbfiles[i].is_present)
 			continue;
 
-		sprintf(dbname, "%s%s.cpr", hdat->db_filepath, hdat->dbfiles[i].name);
+		std::sprintf(dbname, "%s%s.cpr", hdat->db_filepath, hdat->dbfiles[i].name);
 		hdat->dbfiles[i].fp = CreateFile((LPCSTR)dbname, GENERIC_READ, FILE_SHARE_READ,
 						NULL, OPEN_EXISTING, FILE_ATTRIBUTE_READONLY | FILE_FLAG_NO_BUFFERING,
 						NULL);
 		if (hdat->dbfiles[i].fp == INVALID_HANDLE_VALUE) {
-			sprintf(msg, "Cannot open %s\n", dbname);
+			std::sprintf(msg, "Cannot open %s\n", dbname);
 			(*hdat->log_msg_fn)(msg);
 			return(1);
 		}
@@ -911,7 +913,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 			 * Each array entry is either an index into ccbs or -1 if that cache block is not loaded.
 			 */
 			size = hdat->dbfiles[i].num_cacheblocks * sizeof(hdat->dbfiles[i].cache_bufferi[0]);
-			hdat->dbfiles[i].cache_bufferi = (int *)malloc(size);
+			hdat->dbfiles[i].cache_bufferi = (int *)std::malloc(size);
 			allocated_bytes += size;
 			if (hdat->dbfiles[i].cache_bufferi == NULL) {
 				(*hdat->log_msg_fn)("Cannot allocate memory for cache_bufferi array\n");
@@ -924,9 +926,9 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 		}
 	}
 
-	sprintf(msg, "Allocated %dkb for indexing\n", (int)((allocated_bytes - autoload_bytes) / 1024));
+	std::sprintf(msg, "Allocated %dkb for indexing\n", (int)((allocated_bytes - autoload_bytes) / 1024));
 	(*hdat->log_msg_fn)(msg);
-	sprintf(msg, "Allocated %dkb for permanent slice caches\n", (int)(autoload_bytes / 1024));
+	std::sprintf(msg, "Allocated %dkb for permanent slice caches\n", (int)(autoload_bytes / 1024));
 	(*hdat->log_msg_fn)(msg);
 
 	/* Figure out how much ram is left for lru cache buffers.
@@ -940,7 +942,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 			 * buffers if we can use that many.
 			 */
 			hdat->cacheblocks = min(MIN_CACHE_BUF_BYTES / CACHE_BLOCKSIZE, i);
-			sprintf(msg, "Allocating the minimum %d cache buffers\n",
+			std::sprintf(msg, "Allocating the minimum %d cache buffers\n",
 							hdat->cacheblocks);
 			(*hdat->log_msg_fn)(msg);
 		}
@@ -952,7 +954,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 
 		/* Allocate the CCB array. */
 		size = hdat->cacheblocks * sizeof(CCB);
-		hdat->ccbs = (CCB *)malloc(size);
+		hdat->ccbs = (CCB *)std::malloc(size);
 		if (!hdat->ccbs) {
 			(*hdat->log_msg_fn)("Cannot allocate memory for ccbs\n");
 			return(1);
@@ -969,7 +971,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 		hdat->ccbs_top = 0;
 
 		if (hdat->cacheblocks > 0) {
-			sprintf(msg, "Allocating %d cache buffers of size %d\n",
+			std::sprintf(msg, "Allocating %d cache buffers of size %d\n",
 						hdat->cacheblocks, CACHE_BLOCKSIZE);
 			(*hdat->log_msg_fn)(msg);
 		}
@@ -1004,7 +1006,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 			if (!f || !f->is_present || f->autoload)
 				continue;
 
-			sprintf(msg, "preload %s\n", f->name);
+			std::sprintf(msg, "preload %s\n", f->name);
 			(*hdat->log_msg_fn)(msg);
 
 			for (j = 0; j < f->num_cacheblocks && count < hdat->cacheblocks; ++j) {
@@ -1019,7 +1021,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 				break;
 		}
 		t1 = GetTickCount();
-		sprintf(msg, "Read %d buffers in %d sec, %.3f msec/buffer\n", 
+		std::sprintf(msg, "Read %d buffers in %d sec, %.3f msec/buffer\n", 
 					hdat->cacheblocks, (t1 - t0) / 1000, 
 					(double)(t1 - t0) / (double)hdat->cacheblocks);
 		(*hdat->log_msg_fn)(msg);
@@ -1027,7 +1029,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 	else
 		hdat->cacheblocks = 0;
 
-	sprintf(msg, "Available RAM: %dmb\n", get_mem_available_mb());
+	std::sprintf(msg, "Available RAM: %dmb\n", get_mem_available_mb());
 	(*hdat->log_msg_fn)(msg);
 
 	return(0);
@@ -1058,7 +1060,7 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64 *allocated_bytes)
 	DBP *dbp;
 
 	/* Open the compressed data file. */
-	sprintf(name, "%s%s.cpr", hdat->db_filepath, f->name);
+	std::sprintf(name, "%s%s.cpr", hdat->db_filepath, f->name);
 	cprfp = CreateFile((LPCSTR)name, GENERIC_READ, FILE_SHARE_READ,
 					NULL, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, NULL);
 	if (cprfp == INVALID_HANDLE_VALUE) {
@@ -1067,12 +1069,12 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64 *allocated_bytes)
 		 * this is for more pieces than SAME_PIECES_ONE_FILE pieces.
 		 */
 		if (f->pieces > SAME_PIECES_ONE_FILE) {
-			sprintf(msg, "%s not present\n", name);
+			std::sprintf(msg, "%s not present\n", name);
 			(*hdat->log_msg_fn)(msg);
 			return(0);
 		}
 		else {
-			sprintf(msg, "Cannot open %s\n", name);
+			std::sprintf(msg, "Cannot open %s\n", name);
 			(*hdat->log_msg_fn)(msg);
 			return(1);
 		}
@@ -1086,15 +1088,15 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64 *allocated_bytes)
 
 	/* Close the file. */
 	if (!CloseHandle(cprfp)) {
-		sprintf(msg, "Error from CloseHandle\n");
+		std::sprintf(msg, "Error from CloseHandle\n");
 		(*hdat->log_msg_fn)(msg);
 		return(1);
 	}
 
-	sprintf(name, "%s%s.idx", hdat->db_filepath, f->name);
-	fp = fopen(name, "r");
+	std::sprintf(name, "%s%s.idx", hdat->db_filepath, f->name);
+	fp = std::fopen(name, "r");
 	if (fp == 0) {
-		sprintf(msg, "cannot open index file %s\n", name);
+		std::sprintf(msg, "cannot open index file %s\n", name);
 		(*hdat->log_msg_fn)(msg);
 		return(1);
 	}
@@ -1104,14 +1106,14 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64 *allocated_bytes)
 	while (1) {
 
 		/* At this point it has to be a BASE line or else end of file. */
-		stat = fscanf(fp, " BASE%i,%i,%i,%i,%i,%c:",
+		stat = std::fscanf(fp, " BASE%i,%i,%i,%i,%i,%c:",
 				&bm, &bk, &wm, &wk, &subslicenum, &colorchar);
 
 		/* Done if end-of-file reached. */
 		if (stat <= 0)
 			break;
 		else if (stat < 6) {
-			sprintf(msg, "Error parsing %s\n", name);
+			std::sprintf(msg, "Error parsing %s\n", name);
 			(*hdat->log_msg_fn)(msg);
 			return(1);
 		}
@@ -1130,7 +1132,7 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64 *allocated_bytes)
 		 */
 		if (!dbp->subdb) {
 			dbp->num_subslices = get_num_subslices(bm, bk, wm, wk);
-			dbp->subdb = (CPRSUBDB *)calloc(dbp->num_subslices, sizeof(CPRSUBDB));
+			dbp->subdb = (CPRSUBDB *)std::calloc(dbp->num_subslices, sizeof(CPRSUBDB));
 			*allocated_bytes += dbp->num_subslices * sizeof(CPRSUBDB);
 			if (!dbp->subdb) {
 				(*hdat->log_msg_fn)("Cannot allocate subslice subdb\n");
@@ -1142,14 +1144,14 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64 *allocated_bytes)
 		/* Get the rest of the line.  It could be a n/n, or it could just
 		 * be a single character that is '+', '=', or '-'.
 		 */
-		stat = fgetc(fp);
-		if (isdigit(stat)) {
-			ungetc(stat, fp);
-			stat0 = fscanf(fp, "%d/%d", &first_idx_block, &startbyte);
+		stat = std::fgetc(fp);
+		if (std::isdigit(stat)) {
+			std::ungetc(stat, fp);
+			stat0 = std::fscanf(fp, "%d/%d", &first_idx_block, &startbyte);
 			if (stat0 < 2) {
-				stat = fscanf(fp, "%c", &c);
+				stat = std::fscanf(fp, "%c", &c);
 				if (stat < 1) {
-					sprintf(msg, "Bad line in %s\n", name);
+					std::sprintf(msg, "Bad line in %s\n", name);
 					(*hdat->log_msg_fn)(msg);
 					return(1);
 				}
@@ -1188,19 +1190,19 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64 *allocated_bytes)
 
 			/* Check for one or more info lines beginning with a '#'. */
 			while (1) {
-				stat = fgetc(fp);
+				stat = std::fgetc(fp);
 				if (stat == '\n')
 					continue;
 				if (stat == '#') {
 					char line[120];
 
-					fgets(line, sizeof(line), fp);
-					if (strstr(line, "haspartials"))
+					std::fgets(line, sizeof(line), fp);
+					if (std::strstr(line, "haspartials"))
 						dbpointer->haspartials = 1;
 				}
 				else {
 					if (stat != EOF)
-						ungetc(stat, fp);
+						std::ungetc(stat, fp);
 					break;
 				}
 			}
@@ -1212,7 +1214,7 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64 *allocated_bytes)
 			i = 1;
 			linecount = first_idx_block % IDX_BLOCK_MULT;
 			indices[0] = 0;		/* first block is index 0. */
-			while (fscanf(fp, "%d", &block_index_start) == 1) {
+			while (std::fscanf(fp, "%d", &block_index_start) == 1) {
 				if (++linecount >= IDX_BLOCK_MULT) {
 					linecount = 0;
 					indices[i] = block_index_start;
@@ -1222,12 +1224,12 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64 *allocated_bytes)
 					 * and copy.
 					 */
 					if (i == IDX_READBUFSIZE) {
-						dbpointer->indices = (INDEX *)realloc(dbpointer->indices, (count + IDX_READBUFSIZE) * sizeof(dbpointer->indices[0]));
+						dbpointer->indices = (INDEX *)std::realloc(dbpointer->indices, (count + IDX_READBUFSIZE) * sizeof(dbpointer->indices[0]));
 						if (dbpointer->indices == NULL) {
-							(*hdat->log_msg_fn)("malloc error for indices array!\n");
+							(*hdat->log_msg_fn)("std::malloc error for indices array!\n");
 							return(1);
 						}
-						memcpy(dbpointer->indices + count, indices, IDX_READBUFSIZE * sizeof(dbpointer->indices[0]));
+						std::memcpy(dbpointer->indices + count, indices, IDX_READBUFSIZE * sizeof(dbpointer->indices[0]));
 						count += IDX_READBUFSIZE;
 						i = 0;
 					}
@@ -1238,12 +1240,12 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64 *allocated_bytes)
 			 * copy index numbers from the local buffer.
 			 */
 			if (i > 0) {
-				dbpointer->indices = (INDEX *)realloc(dbpointer->indices, (count + i) * sizeof(dbpointer->indices[0]));
+				dbpointer->indices = (INDEX *)std::realloc(dbpointer->indices, (count + i) * sizeof(dbpointer->indices[0]));
 				if (dbpointer->indices == NULL) {
-					(*hdat->log_msg_fn)("malloc error for indices array!\n");
+					(*hdat->log_msg_fn)("std::malloc error for indices array!\n");
 					return(1);
 				}
-				memcpy(dbpointer->indices + count, indices, i * sizeof(dbpointer->indices[0]));
+				std::memcpy(dbpointer->indices + count, indices, i * sizeof(dbpointer->indices[0]));
 			}
 			count += i;
 			dbpointer->num_idx_blocks = count;
@@ -1265,7 +1267,7 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64 *allocated_bytes)
 				singlevalue = EGDB_LOSS;
 				break;
 			default:
-				sprintf(msg, "Bad singlevalue line in %s\n", name);
+				std::sprintf(msg, "Bad singlevalue line in %s\n", name);
 				(*hdat->log_msg_fn)(msg);
 				return(1);
 			}
@@ -1276,19 +1278,19 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64 *allocated_bytes)
 			dbpointer->file = f;
 		}
 	}
-	fclose(fp);
+	std::fclose(fp);
 
 	if (prev) {
 		prev->last_subidx_block = (unsigned char)(((LOWORD32(filesize) - 1) % IDX_BLOCKSIZE) / SUBINDEX_BLOCKSIZE);
 	
 		/* Check the total number of index blocks in this database. */
 		if (f->num_idx_blocks != count + prev->first_idx_block) {
-			sprintf(msg, "count of index blocks dont match: %d %d\n",
+			std::sprintf(msg, "count of index blocks dont match: %d %d\n",
 					f->num_idx_blocks, count + prev->first_idx_block);
 			(*hdat->log_msg_fn)(msg);
 		}
 	}
-	sprintf(msg, "%10d index blocks: %s\n", count + prev->first_idx_block, name);
+	std::sprintf(msg, "%10d index blocks: %s\n", count + prev->first_idx_block, name);
 	(*hdat->log_msg_fn)(msg);
 
 	return(0);
@@ -1308,7 +1310,7 @@ static void build_file_table(DBHANDLE *hdat)
 	count = 0;
 	for (npieces = 2; npieces <= MAXPIECES; ++npieces) {
 		if (npieces <= SAME_PIECES_ONE_FILE) {
-			sprintf(hdat->dbfiles[count].name, "db%d", npieces);
+			std::sprintf(hdat->dbfiles[count].name, "db%d", npieces);
 			hdat->dbfiles[count].pieces = npieces;
 			hdat->dbfiles[count].max_pieces_1side = min(npieces - 1, MAXPIECE);
 			++count;
@@ -1332,7 +1334,7 @@ static void build_file_table(DBHANDLE *hdat)
 						if (hdat->kings_1side_8pcs >= 0 && npieces == 8)
 							if (nbk > hdat->kings_1side_8pcs || nwk > hdat->kings_1side_8pcs)
 								continue;
-						sprintf(hdat->dbfiles[count].name, "db%d-%d%d%d%d",
+						std::sprintf(hdat->dbfiles[count].name, "db%d-%d%d%d%d",
 									npieces, nbm, nbk, nwm, nwk);
 						hdat->dbfiles[count].pieces = npieces;
 						hdat->dbfiles[count].max_pieces_1side = nbm + nbk;
@@ -1431,7 +1433,7 @@ static int egdb_close(EGDB_DRIVER *handle)
 		hdat->dbfiles[i].num_cacheblocks = 0;
 		hdat->dbfiles[i].fp = INVALID_HANDLE_VALUE;
 	}
-	memset(hdat->dbfiles, 0, sizeof(hdat->dbfiles));
+	std::memset(hdat->dbfiles, 0, sizeof(hdat->dbfiles));
 
 	for (i = 0; i < DBSIZE; ++i) {
 		p = hdat->cprsubdatabase + i;
@@ -1469,65 +1471,65 @@ static int verify_crc(EGDB_DRIVER *handle, void (*msg_fn)(char *), int *abort, E
 			continue;
 
 		/* Build the index filename. */
-		sprintf(filename, "%s.idx", hdat->dbfiles[i].name);
+		std::sprintf(filename, "%s.idx", hdat->dbfiles[i].name);
 		pcrc = find_file_crc(filename, dbcrc, ARRAY_SIZE(dbcrc));
 		if (!pcrc) {
-			sprintf(msg, "No crc value known for file %s\n", filename);
+			std::sprintf(msg, "No crc value known for file %s\n", filename);
 			(*hdat->log_msg_fn)(msg);
 			status = 1;
 			continue;
 		}
-		sprintf(filename, "%s%s.idx", hdat->db_filepath, hdat->dbfiles[i].name);
-		fp = fopen(filename, "rb");
+		std::sprintf(filename, "%s%s.idx", hdat->db_filepath, hdat->dbfiles[i].name);
+		fp = std::fopen(filename, "rb");
 		if (!fp) {
-			sprintf(msg, "Cannot open file %s for crc check.\n", filename);
+			std::sprintf(msg, "Cannot open file %s for crc check.\n", filename);
 			(*hdat->log_msg_fn)(msg);
 			status = 1;
 			continue;
 		}
-		sprintf(msg, "%s\n", filename);
+		std::sprintf(msg, "%s\n", filename);
 		(*hdat->log_msg_fn)(msg);
 
 		crc = file_crc_calc(fp, abort);
 		if (crc != pcrc->crc) {
-			sprintf(msg, "file %s failed crc check, expected %08x, got %08x\n",
+			std::sprintf(msg, "file %s failed crc check, expected %08x, got %08x\n",
 				filename, pcrc->crc, crc);
 			(*hdat->log_msg_fn)(msg);
 			status = 1;
 			continue;
 		}
-		fclose(fp);
+		std::fclose(fp);
 
 		/* Build the data filename. */
-		sprintf(filename, "%s.cpr", hdat->dbfiles[i].name);
+		std::sprintf(filename, "%s.cpr", hdat->dbfiles[i].name);
 		pcrc = find_file_crc(filename, dbcrc, ARRAY_SIZE(dbcrc));
 		if (!pcrc) {
-			sprintf(msg, "No crc value known for file %s\n", filename);
+			std::sprintf(msg, "No crc value known for file %s\n", filename);
 			(*hdat->log_msg_fn)(msg);
 			status = 1;
 			continue;
 		}
-		sprintf(filename, "%s%s.cpr", hdat->db_filepath, hdat->dbfiles[i].name);
-		fp = fopen(filename, "rb");
+		std::sprintf(filename, "%s%s.cpr", hdat->db_filepath, hdat->dbfiles[i].name);
+		fp = std::fopen(filename, "rb");
 		if (!fp) {
-			sprintf(msg, "Cannot open file %s for crc check.\n", filename);
+			std::sprintf(msg, "Cannot open file %s for crc check.\n", filename);
 			(*hdat->log_msg_fn)(msg);
 			status = 1;
 			continue;
 		}
 
-		sprintf(msg, "%s\n", filename);
+		std::sprintf(msg, "%s\n", filename);
 		(*hdat->log_msg_fn)(msg);
 
 		crc = file_crc_calc(fp, abort);
 		if (crc != pcrc->crc) {
-			sprintf(msg, "file %s failed crc check, expected %08x, got %08x\n",
+			std::sprintf(msg, "file %s failed crc check, expected %08x, got %08x\n",
 				filename, pcrc->crc, crc);
 			(*hdat->log_msg_fn)(msg);
 			status = 1;
 			continue;
 		}
-		fclose(fp);
+		std::fclose(fp);
 	}
 	return(status);
 }
@@ -1602,12 +1604,12 @@ EGDB_DRIVER *egdb_open_wld_runlen(int pieces, int kings_1side_8pcs,
 	int status;
 	EGDB_DRIVER *handle;
 
-	handle = (EGDB_DRIVER *)calloc(1, sizeof(EGDB_DRIVER));
+	handle = (EGDB_DRIVER *)std::calloc(1, sizeof(EGDB_DRIVER));
 	if (!handle) {
 		(*msg_fn)("Cannot allocate memory for driver handle.\n");
 		return(0);
 	}
-	handle->internal_data = calloc(1, sizeof(DBHANDLE));
+	handle->internal_data = std::calloc(1, sizeof(DBHANDLE));
 	if (!handle->internal_data) {
 		(*msg_fn)("Cannot allocate memory for driver handle.\n");
 		return(0);
