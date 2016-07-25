@@ -3,7 +3,6 @@
 // engine
 #include "board.h"
 #include "bool.h"
-#include "project.h"
 
 #include <cctype>
 #include <cstdio>
@@ -21,7 +20,7 @@ int print_fen(BOARD *board, int color, char *buf)
 	for (mask = board->white; mask; ) {
 
 		/* Peel off the lowest set bit in mask. */
-		sq = mask & -(int64)mask;
+		sq = mask & -(int64_t)mask;
 		bitnum = LSB64(sq);
 		square0 = bitnum_to_square0(bitnum);
 		if (sq & board->king)
@@ -38,7 +37,7 @@ int print_fen(BOARD *board, int color, char *buf)
 	for (mask = board->black; mask; ) {
 
 		/* Peel off the lowest set bit in mask. */
-		sq = mask & -(int64)mask;
+		sq = mask & -(int64_t)mask;
 		bitnum = LSB64(sq);
 		square0 = bitnum_to_square0(bitnum);
 		if (sq & board->king)

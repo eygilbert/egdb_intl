@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 /*
  * To use the library, include the header file egdb_intl.h in your application source
  * code and link with the lib file egdb_intl.lib.
@@ -176,7 +178,7 @@ typedef struct {
 	char no_errors[80];
 } EGDB_VERIFY_MSGS;
 
-typedef __int64 EGDB_BITBOARD;
+typedef int64_t EGDB_BITBOARD;
 
 /* This is the driver's definition of a draughts position.
  * The bitboards have a 1 bit gap after each group of 10 squares.

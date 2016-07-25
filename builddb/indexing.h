@@ -13,7 +13,7 @@
 #define MAXPIECE 5
 #define RANK0MAX ROWSIZE
 
-#define MAX_SUBSLICE_INDICES (int64)(0x80000000)
+#define MAX_SUBSLICE_INDICES (int64_t)(0x80000000)
 #define GHOSTS (((BITBOARD)1 << 10) | ((BITBOARD)1 << 21) | ((BITBOARD)1 << 32) | ((BITBOARD)1 << 43))
 
 BITBOARD free_square_bitmask(int logical_square, BITBOARD occupied);
@@ -22,17 +22,17 @@ BITBOARD free_square_bitmask_rev(int logical_square, BITBOARD occupied);
 BITBOARD place_pieces_fwd_no_interferences(unsigned int index, int num_squares, int first_square, int num_pieces);
 BITBOARD index2bitboard_fwd(unsigned int index, int num_squares, int num_pieces, BITBOARD occupied);
 BITBOARD index2bitboard_rev(unsigned int index, int num_squares, int num_pieces, BITBOARD occupied);
-int64 position_to_index_slice(EGDB_POSITION *p, int bm, int bk, int wm, int wk);
-void indextoposition_slice(int64 index, EGDB_POSITION *p, int bm, int bk, int wm, int wk);
+int64_t position_to_index_slice(EGDB_POSITION *p, int bm, int bk, int wm, int wk);
+void indextoposition_slice(int64_t index, EGDB_POSITION *p, int bm, int bk, int wm, int wk);
 void build_man_index_base();
-int64 getdatabasesize_slice(int bm, int bk, int wm, int wk);
+int64_t getdatabasesize_slice(int bm, int bk, int wm, int wk);
 
 
 
-inline uint32 index_pieces_1_type(BITBOARD bb, int offset)
+inline uint32_t index_pieces_1_type(BITBOARD bb, int offset)
 {
 	int piece, bitnum;
-	uint32 index;
+	uint32_t index;
 
 	for (index = 0, piece = 1; bb; ++piece) {
 
@@ -49,10 +49,10 @@ inline uint32 index_pieces_1_type(BITBOARD bb, int offset)
 }
 
 
-inline uint32 index_pieces_1_type(BITBOARD bb, BITBOARD interfering)
+inline uint32_t index_pieces_1_type(BITBOARD bb, BITBOARD interfering)
 {
 	int piece, bitnum, square0;
-	uint32 index;
+	uint32_t index;
 
 	for (piece = 1, index = 0; bb; ++piece) {
 
@@ -73,10 +73,10 @@ inline uint32 index_pieces_1_type(BITBOARD bb, BITBOARD interfering)
 }
 
 
-inline uint32 index_pieces_1_type_reverse(BITBOARD bb, BITBOARD interfering)
+inline uint32_t index_pieces_1_type_reverse(BITBOARD bb, BITBOARD interfering)
 {
 	int piece, bitnum, square0;
-	uint32 index;
+	uint32_t index;
 
 	for (index = 0, piece = 1; bb; ++piece) {
 		

@@ -10,7 +10,6 @@
 #include "bool.h"
 #include "fen.h"
 #include "move_api.h"
-#include "project.h"
 
 #include <io.h>
 #include <Windows.h>

@@ -6,60 +6,61 @@
 #include "board.h"
 #include "bool.h"
 #include "move_api.h"
-#include "project.h"
 
 #include <Windows.h>
 
-#define S1_UG (uint64)1
-#define S2_UG (uint64)2
-#define S3_UG (uint64)4
-#define S4_UG (uint64)8
-#define S5_UG (uint64)0x10
-#define S6_UG (uint64)0x20
-#define S7_UG (uint64)0x40
-#define S8_UG (uint64)0x80
-#define S9_UG (uint64)0x100
-#define S10_UG (uint64)0x200
-#define S11_UG (uint64)0x400
-#define S12_UG (uint64)0x800
-#define S13_UG (uint64)0x1000
-#define S14_UG (uint64)0x2000
-#define S15_UG (uint64)0x4000
-#define S16_UG (uint64)0x8000
-#define S17_UG (uint64)0x10000
-#define S18_UG (uint64)0x20000
-#define S19_UG (uint64)0x40000
-#define S20_UG (uint64)0x80000
-#define S21_UG (uint64)0x100000 
-#define S22_UG (uint64)0x200000
-#define S23_UG (uint64)0x400000
-#define S24_UG (uint64)0x800000
-#define S25_UG (uint64)0x1000000
-#define S26_UG (uint64)0x2000000
-#define S27_UG (uint64)0x4000000
-#define S28_UG (uint64)0x8000000
-#define S29_UG (uint64)0x10000000
-#define S30_UG (uint64)0x20000000
-#define S31_UG (uint64)0x40000000
-#define S32_UG (uint64)0x80000000
-#define S33_UG (uint64)0x100000000
-#define S34_UG (uint64)0x200000000
-#define S35_UG (uint64)0x400000000
-#define S36_UG (uint64)0x800000000
-#define S37_UG (uint64)0x1000000000
-#define S38_UG (uint64)0x2000000000
-#define S39_UG (uint64)0x4000000000
-#define S40_UG (uint64)0x8000000000
-#define S41_UG (uint64)0x10000000000
-#define S42_UG (uint64)0x20000000000
-#define S43_UG (uint64)0x40000000000
-#define S44_UG (uint64)0x80000000000
-#define S45_UG (uint64)0x100000000000
-#define S46_UG (uint64)0x200000000000
-#define S47_UG (uint64)0x400000000000
-#define S48_UG (uint64)0x800000000000
-#define S49_UG (uint64)0x1000000000000
-#define S50_UG (uint64)0x2000000000000
+#include <cstdint>
+
+#define S1_UG (uint64_t)1
+#define S2_UG (uint64_t)2
+#define S3_UG (uint64_t)4
+#define S4_UG (uint64_t)8
+#define S5_UG (uint64_t)0x10
+#define S6_UG (uint64_t)0x20
+#define S7_UG (uint64_t)0x40
+#define S8_UG (uint64_t)0x80
+#define S9_UG (uint64_t)0x100
+#define S10_UG (uint64_t)0x200
+#define S11_UG (uint64_t)0x400
+#define S12_UG (uint64_t)0x800
+#define S13_UG (uint64_t)0x1000
+#define S14_UG (uint64_t)0x2000
+#define S15_UG (uint64_t)0x4000
+#define S16_UG (uint64_t)0x8000
+#define S17_UG (uint64_t)0x10000
+#define S18_UG (uint64_t)0x20000
+#define S19_UG (uint64_t)0x40000
+#define S20_UG (uint64_t)0x80000
+#define S21_UG (uint64_t)0x100000 
+#define S22_UG (uint64_t)0x200000
+#define S23_UG (uint64_t)0x400000
+#define S24_UG (uint64_t)0x800000
+#define S25_UG (uint64_t)0x1000000
+#define S26_UG (uint64_t)0x2000000
+#define S27_UG (uint64_t)0x4000000
+#define S28_UG (uint64_t)0x8000000
+#define S29_UG (uint64_t)0x10000000
+#define S30_UG (uint64_t)0x20000000
+#define S31_UG (uint64_t)0x40000000
+#define S32_UG (uint64_t)0x80000000
+#define S33_UG (uint64_t)0x100000000
+#define S34_UG (uint64_t)0x200000000
+#define S35_UG (uint64_t)0x400000000
+#define S36_UG (uint64_t)0x800000000
+#define S37_UG (uint64_t)0x1000000000
+#define S38_UG (uint64_t)0x2000000000
+#define S39_UG (uint64_t)0x4000000000
+#define S40_UG (uint64_t)0x8000000000
+#define S41_UG (uint64_t)0x10000000000
+#define S42_UG (uint64_t)0x20000000000
+#define S43_UG (uint64_t)0x40000000000
+#define S44_UG (uint64_t)0x80000000000
+#define S45_UG (uint64_t)0x100000000000
+#define S46_UG (uint64_t)0x200000000000
+#define S47_UG (uint64_t)0x400000000000
+#define S48_UG (uint64_t)0x800000000000
+#define S49_UG (uint64_t)0x1000000000000
+#define S50_UG (uint64_t)0x2000000000000
 
 #define ROW0_UG (S1_UG | S2_UG | S3_UG | S4_UG | S5_UG)
 #define ROW1_UG (S6_UG | S7_UG | S8_UG | S9_UG | S10_UG)

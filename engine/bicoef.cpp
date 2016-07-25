@@ -1,10 +1,8 @@
 #include "bicoef.h"
 
-// engine
-#include "project.h"
-
 #include <Windows.h>
 
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 
@@ -13,7 +11,7 @@ unsigned int bicoef[MAXSQUARE_BICOEF + 1][MAXPIECES_BICOEF + 1];
 
 static unsigned int choose(int n, int k)
 {
-	int64 result = 1;
+	int64_t result = 1;
 	int i;
 
 	i = k;

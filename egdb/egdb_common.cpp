@@ -12,19 +12,18 @@
 #include "board.h"
 #include "bool.h"
 #include "lock.h"
-#include "project.h"
 
 #include <Windows.h>
 
 int get_num_subslices(int nbm, int nbk, int nwm, int nwk)
 {
-	int64 size, last;
+	int64_t size, last;
 	int num_subslices;
 
 	size = getdatabasesize_slice(nbm, nbk, nwm, nwk);
 	if (size > MAX_SUBSLICE_INDICES) {
-		num_subslices = (int)(size / (int64)MAX_SUBSLICE_INDICES);
-		last = size - (int64)num_subslices * (int64)MAX_SUBSLICE_INDICES;
+		num_subslices = (int)(size / (int64_t)MAX_SUBSLICE_INDICES);
+		last = size - (int64_t)num_subslices * (int64_t)MAX_SUBSLICE_INDICES;
 		if (last)
 			++num_subslices;
 	}
@@ -65,7 +64,7 @@ int read_file(HANDLE fp, unsigned char *buf, size_t size, int pagesize)
 }
 
 
-int set_file_pointer(HANDLE handle, int64 pos)
+int set_file_pointer(HANDLE handle, int64_t pos)
 {
 	I64_HIGH_LOW filepos;
 
@@ -78,7 +77,7 @@ int set_file_pointer(HANDLE handle, int64 pos)
 }
 
 
-int64 get_file_size(HANDLE handle)
+int64_t get_file_size(HANDLE handle)
 {
 	I64_HIGH_LOW filesize;
 

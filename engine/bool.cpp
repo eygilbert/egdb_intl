@@ -9,7 +9,6 @@
 #include "bicoef.h"
 #include "bitcount.h"
 #include "board.h"
-#include "project.h"
 
 #if !_WIN64
 #define USE_ASM // use assembler routines in LSB, MSB

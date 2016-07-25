@@ -2,7 +2,7 @@
 
 // engine
 #include "bool.h"
-#include "project.h"
+#include "project.h"	// ARRAY_SIZE
 
 bool cpu_has_popcount; 
 char bitcount_table[0x10000];
@@ -14,7 +14,7 @@ char bitcount_table[0x10000];
  * Only used to make the table for the table-based bitcount
  * on initialization.
  */
-int iterativebitcount(uint32 n)
+int iterativebitcount(uint32_t n)
 {
 	int r;
 
@@ -38,7 +38,7 @@ bool check_cpu_has_popcount()
 
 void init_bitcount()
 {
-	uint32 i;
+	uint32_t i;
 
 #ifdef _WIN64
 	cpu_has_popcount = check_cpu_has_popcount();

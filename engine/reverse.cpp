@@ -5,9 +5,10 @@
 #include "bitcount.h"
 #include "board.h"
 #include "bool.h"
-#include "project.h"
 
 #include <Windows.h>
+
+#include <cstdint>
 
 unsigned char ReverseByte[256];
 
@@ -47,16 +48,16 @@ unsigned int reverse_image(unsigned int image)
 }
 
 
-uint64 reverse_board50(uint64 image)
+uint64_t reverse_board50(uint64_t image)
 {
 	int bit;
-	uint64 rev;
+	uint64_t rev;
 
 	rev = 0;
 	while (image) {
 		bit = LSB64(image);
 		image = image & (image - 1);
-		rev |= ((uint64)1 << (NUM_BITBOARD_BITS - 1 - bit));
+		rev |= ((uint64_t)1 << (NUM_BITBOARD_BITS - 1 - bit));
 	}
 	return(rev);
 }

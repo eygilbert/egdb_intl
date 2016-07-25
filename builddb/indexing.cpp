@@ -8,7 +8,6 @@
 #include "bitcount.h"
 #include "board.h"
 #include "bool.h"
-#include "project.h"
 
 #include <Windows.h>
 
@@ -136,18 +135,18 @@ BITBOARD index2bitboard_rev(unsigned int index, int num_squares, int num_pieces,
 
 
 /* base man index[bm][wm][bm0] */
-static int64 man_index_base[MAXPIECE + 1][MAXPIECE + 1][RANK0MAX + 1];
+static int64_t man_index_base[MAXPIECE + 1][MAXPIECE + 1][RANK0MAX + 1];
 
 
-int64 position_to_index_slice(EGDB_POSITION *p, int bm, int bk, int wm, int wk)
+int64_t position_to_index_slice(EGDB_POSITION *p, int bm, int bk, int wm, int wk)
 {
 	BITBOARD bm0_mask;
 	BITBOARD bmmask, bkmask, wmmask, wkmask;
 	int bm0;
-	uint32 bmindex, bkindex, wmindex, wkindex, bm0index;
-	uint32 bmrange, wmrange, bm0range, bkrange, wkrange;
-	int64 index64;
-	int64 checker_index_base, checker_index;
+	uint32_t bmindex, bkindex, wmindex, wkindex, bm0index;
+	uint32_t bmrange, wmrange, bm0range, bkrange, wkrange;
+	int64_t index64;
+	int64_t checker_index_base, checker_index;
 
 	bmmask = p->black & ~p->king;
 	bm0_mask = bmmask & ROW0;
@@ -191,22 +190,22 @@ int64 position_to_index_slice(EGDB_POSITION *p, int bm, int bk, int wm, int wk)
 	/* Calculate the checker (man) index. */
 	checker_index = bm0index + checker_index_base +
 					bmindex * bm0range +
-					(int64)wmindex * (int64)bm0range * (int64)bmrange;
+					(int64_t)wmindex * (int64_t)bm0range * (int64_t)bmrange;
 
-	index64 = (int64)wkindex + 
-				(int64)bkindex * (int64)wkrange +
-				(int64)(checker_index) * (int64)bkrange * (int64)wkrange;
+	index64 = (int64_t)wkindex + 
+				(int64_t)bkindex * (int64_t)wkrange +
+				(int64_t)(checker_index) * (int64_t)bkrange * (int64_t)wkrange;
 	return(index64);
 }
 
 
-void indextoposition_slice(int64 index, EGDB_POSITION *p, int bm, int bk, int wm, int wk)
+void indextoposition_slice(int64_t index, EGDB_POSITION *p, int bm, int bk, int wm, int wk)
 {
 	int bm0;
 	BITBOARD bmmask, bkmask, wmmask, wkmask;
-	uint32 bmindex, bkindex, wmindex, wkindex, bm0index;
-	uint32 bmrange, wmrange, bm0range, bkrange, wkrange;
-	int64 multiplier, checker_index;
+	uint32_t bmindex, bkindex, wmindex, wkindex, bm0index;
+	uint32_t bmrange, wmrange, bm0range, bkrange, wkrange;
+	int64_t multiplier, checker_index;
 
 	/* Initialize the board. */
 	bmmask = 0;
@@ -220,7 +219,7 @@ void indextoposition_slice(int64 index, EGDB_POSITION *p, int bm, int bk, int wm
 	/* Indices in this subdb are assigned with index 0 having the highest
 	* number of black men on rank0, ...  Find the number of black men on rank0.
 	*/
-	multiplier = (int64)bkrange * (int64)wkrange;
+	multiplier = (int64_t)bkrange * (int64_t)wkrange;
 	checker_index = (index / multiplier);
 	index -= checker_index * multiplier;
 
@@ -238,19 +237,19 @@ void indextoposition_slice(int64 index, EGDB_POSITION *p, int bm, int bk, int wm
 
 	/* Extract the wmindex, bmindex, and bm0index. */
 	multiplier = bmrange * bm0range;
-	wmindex = (uint32)(checker_index / multiplier);
+	wmindex = (uint32_t)(checker_index / multiplier);
 	checker_index -= wmindex * multiplier;
 
 	multiplier = bm0range;
-	bmindex = (uint32)(checker_index / multiplier);
+	bmindex = (uint32_t)(checker_index / multiplier);
 	checker_index -= bmindex * multiplier;
-	bm0index = (uint32)checker_index;
+	bm0index = (uint32_t)checker_index;
 
 	/* Get bkindex and wkindex. */
-	bkindex = (uint32)(index / wkrange);
-	index -= (int64)bkindex * (int64)wkrange;
+	bkindex = (uint32_t)(index / wkrange);
+	index -= (int64_t)bkindex * (int64_t)wkrange;
 
-	wkindex = (uint32)(index);
+	wkindex = (uint32_t)(index);
 
 	/* Place black men, except those on rank0. */
 	bmmask = place_pieces_fwd_no_interferences(bmindex, 40, 5, bm - bm0);
@@ -276,7 +275,7 @@ void indextoposition_slice(int64 index, EGDB_POSITION *p, int bm, int bk, int wm
 void build_man_index_base()
 {
 	int bm, wm, bm0;
-	int64 base, partial;
+	int64_t base, partial;
 
 	for (bm = 0; bm <= MAXPIECE; ++bm) {
 		for (wm = 0; wm <= MAXPIECE; ++wm) {
@@ -285,7 +284,7 @@ void build_man_index_base()
 				man_index_base[bm][wm][bm0] = base;
 
 				/* First the number of men configurations excluding black's backrank. */
-				partial = (int64)bicoef[40][bm - bm0] * (int64)bicoef[45 - bm + bm0][wm];
+				partial = (int64_t)bicoef[40][bm - bm0] * (int64_t)bicoef[45 - bm + bm0][wm];
 
 				/* Add the contribution from black's kingrow. */
 				partial *= bicoef[5][bm0];
@@ -299,10 +298,10 @@ void build_man_index_base()
 /* return the number of database indices for this subdb.
  * needs binomial coefficients in the array bicoef[][] = choose from n, k
  */
-int64 getdatabasesize_slice(int bm, int bk, int wm, int wk)
+int64_t getdatabasesize_slice(int bm, int bk, int wm, int wk)
 {
-	int64 size;
-	int64 partial;
+	int64_t size;
+	int64_t partial;
 	int black_men_backrank;
 
 	/* Compute the number of men configurations first.  Place the black men, summing separately
@@ -312,7 +311,7 @@ int64 getdatabasesize_slice(int bm, int bk, int wm, int wk)
 	for (black_men_backrank = 0; black_men_backrank <= min(bm, 5); ++black_men_backrank) {
 
 		/* First the number of men configurations excluding black's backrank. */
-		partial = (int64)bicoef[40][bm - black_men_backrank] * (int64)bicoef[45 - bm + black_men_backrank][wm];
+		partial = (int64_t)bicoef[40][bm - black_men_backrank] * (int64_t)bicoef[45 - bm + black_men_backrank][wm];
 
 		/* Add the contribution from black's kingrow. */
 		if (black_men_backrank)

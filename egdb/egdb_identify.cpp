@@ -3,7 +3,7 @@
 #include "egdb_intl.h"
 
 // engine
-#include "project.h"
+#include "project.h"	// ARRAY_SIZE
 
 #include <Windows.h>
 

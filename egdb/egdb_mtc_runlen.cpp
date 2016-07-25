@@ -13,7 +13,7 @@
 #include "board.h"
 #include "bool.h"
 #include "lock.h"
-#include "project.h"
+#include "project.h"	// ARRAY_SIZE
 #include "reverse.h"
 
 #include <Windows.h>
@@ -131,10 +131,10 @@ static EGDB_STATS *get_db_stats(EGDB_DRIVER *handle)
 
 static void read_blocknum_from_file(DBHANDLE *hdat, CCB *ccb)
 {
-	int64 filepos;
+	int64_t filepos;
 	int stat;
 
-	filepos = (int64)ccb->blocknum * CACHE_BLOCKSIZE;
+	filepos = (int64_t)ccb->blocknum * CACHE_BLOCKSIZE;
 
 	/* Seek the start position. */
 	if (set_file_pointer(ccb->dbfile->fp, filepos)) {
@@ -218,8 +218,8 @@ static int needed_cache_buffers(DBHANDLE *hdat)
 static int dblookup(EGDB_DRIVER *handle, EGDB_POSITION *p, int color, int cl)
 {
 	DBHANDLE *hdat = (DBHANDLE *)handle->internal_data;
-	uint32 index;
-	int64 index64;
+	uint32_t index;
+	int64_t index64;
 	int bm, bk, wm, wk;
 	int i, subslicenum;
 	int idx_blocknum;	
@@ -269,8 +269,8 @@ static int dblookup(EGDB_DRIVER *handle, EGDB_POSITION *p, int color, int cl)
 
 	index64 = position_to_index_slice(p, bm, bk, wm, wk);
 
-	subslicenum = (int)(index64 / (int64)MAX_SUBSLICE_INDICES);
-	index = (uint32)(index64 - (int64)subslicenum * (int64)MAX_SUBSLICE_INDICES);
+	subslicenum = (int)(index64 / (int64_t)MAX_SUBSLICE_INDICES);
+	index = (uint32_t)(index64 - (int64_t)subslicenum * (int64_t)MAX_SUBSLICE_INDICES);
 
 	/* get pointer to db. */
 	dbp = hdat->cprsubdatabase + DBOFFSET(bm, bk, wm, wk, color);
@@ -658,7 +658,7 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int *allocated_bytes)
 	int first_idx_block;
 	CPRSUBDB *dbpointer;
 	int size;
-	int64 filesize;
+	int64_t filesize;
 	HANDLE cprfp;
 	DBP *dbp;
 

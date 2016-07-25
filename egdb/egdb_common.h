@@ -3,9 +3,6 @@
 // egdb
 #include "egdb_intl.h"
 
-// engine
-#include "project.h"
-
 #include <Windows.h>
 
 #define MAXMSG 256
@@ -39,18 +36,18 @@
 #define DBSIZE ((MAXPIECE + 1) * (MAXPIECE + 1) * (MAXPIECE + 1) * \
 			(MAXPIECE + 1) * NUMBEROFCOLORS)
 
-typedef uint32 INDEX;
+typedef uint32_t INDEX;
 
 
 
 /* Round a value 'a' up to the next integer multiple of blocksize 's'. */
 #define ROUND_UP(a, s) (((a) % (s)) ? ((1 + (a) / (s)) * (s)) : (a))
 
-#define LOWORD32(x) (uint32)((x) & 0xffffffff)
+#define LOWORD32(x) (uint32_t)((x) & 0xffffffff)
 
 /* Upper and lower words of a 64-bit int, for large file access. */
 typedef union {
-	int64 word64;
+	int64_t word64;
 	struct {
 		unsigned long low32;
 		unsigned long high32;
@@ -59,8 +56,8 @@ typedef union {
 
 extern int get_num_subslices(int nbm, int nbk, int nwm, int nwk);
 int read_file(HANDLE fp, unsigned char *buf, size_t size, int pagesize);
-int set_file_pointer(HANDLE handle, int64 pos);
-int64 get_file_size(HANDLE handle);
+int set_file_pointer(HANDLE handle, int64_t pos);
+int64_t get_file_size(HANDLE handle);
 void *aligned_large_alloc(size_t size);
 int get_mem_available_mb(void);
 int get_pagesize(void);
@@ -85,7 +82,7 @@ inline int needs_reversal(int nbm, int nbk, int nwm, int nwk, int color)
 /*
  * Do a binary search to find the block number that contains the target index.
  */
-__forceinline int find_block(int first, int last, uint32 block_starts[], uint32 target)
+__forceinline int find_block(int first, int last, uint32_t block_starts[], uint32_t target)
 {
 	int mid;
 

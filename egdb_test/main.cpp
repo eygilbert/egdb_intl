@@ -14,13 +14,14 @@
 #include "bool.h"
 #include "fen.h"
 #include "move_api.h"
-#include "project.h"
+#include "project.h"	// ARRAY_SIZE
 #include "reverse.h"
 
 #include <Windows.h>
 
 #include <cctype>
 #include <cmath>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -126,7 +127,7 @@ void print_msgs(char *msg)
 
 void verify(DB_INFO *db1, DB_INFO *db2, SLICE *slice, int max_lookups)
 {
-	int64 size, index, incr;
+	int64_t size, index, incr;
 	int value1, value2;
 	bool black_ok, white_ok;
 	EGDB_POSITION pos;
@@ -198,7 +199,7 @@ void verify(DB_INFO *db1, DB_INFO *db2, SLICE *slice, int max_lookups)
 
 void self_verify(EGDB_INFO *db, SLICE *slice, int max_lookups)
 {
-	int64 size, index, incr;
+	int64_t size, index, incr;
 	int value1, value2;
 	bool black_ok, white_ok;
 	EGDB_POSITION pos;
@@ -259,7 +260,7 @@ void self_verify(EGDB_INFO *db, SLICE *slice, int max_lookups)
 
 void verify_indexing(SLICE *slice, int max_tests)
 {
-	int64 size, index, return_index, incr;
+	int64_t size, index, return_index, incr;
 	EGDB_POSITION pos;
 
 	size = getdatabasesize_slice(slice->getnbm(), slice->getnbk(), slice->getnwm(), slice->getnwk());
@@ -302,7 +303,7 @@ int identify(char *dir, DB_INFO *db)
 
 bool is_conversion_move(BOARD *from, BOARD *to, int color)
 {
-	uint64 from_bits, to_bits, moved_bits;
+	uint64_t from_bits, to_bits, moved_bits;
 
 	/* It is a conversion move if its a capture. */
 	from_bits = from->black | from->white;

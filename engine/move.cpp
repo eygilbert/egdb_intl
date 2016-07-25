@@ -4,7 +4,7 @@
 #include "board.h"
 #include "bool.h"
 #include "move_api.h"
-#include "project.h"
+#include "project.h"	// ARRAY_SIZE
 
 #include <Windows.h>
 

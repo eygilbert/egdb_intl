@@ -15,7 +15,7 @@
 #include "board.h"
 #include "bool.h"
 #include "lock.h"
-#include "project.h"
+#include "project.h"	// ARRAY_SIZE
 #include "reverse.h"
 
 #include <Windows.h>
@@ -366,7 +366,7 @@ static DBCRC dbcrc[] = {
 
 
 /* Function prototypes. */
-int parseindexfile(DBHANDLE *, DBFILE *, int64 *allocated_bytes);
+int parseindexfile(DBHANDLE *, DBFILE *, int64_t *allocated_bytes);
 void build_file_table(DBHANDLE *hdat);
 void build_autoload_list(DBHANDLE *hdat);
 void assign_subindices(DBHANDLE *hdat, CPRSUBDB *subdb, CCB *ccbp);
@@ -503,10 +503,10 @@ static EGDB_STATS *get_db_stats(EGDB_DRIVER *handle)
 
 static void read_blocknum_from_file(DBHANDLE *hdat, CCB *ccb)
 {
-	int64 filepos;
+	int64_t filepos;
 	int stat;
 
-	filepos = (int64)ccb->blocknum * CACHE_BLOCKSIZE;
+	filepos = (int64_t)ccb->blocknum * CACHE_BLOCKSIZE;
 
 	/* Seek the start position. */
 	if (set_file_pointer(ccb->subdb->file->fp, filepos)) {
@@ -535,10 +535,10 @@ static void read_blocknum_from_file(DBHANDLE *hdat, CCB *ccb)
 static int dblookup(EGDB_DRIVER *handle, EGDB_POSITION *p, int color, int cl)
 {
 	DBHANDLE *hdat = (DBHANDLE *)handle->internal_data;
-	uint32 index;
+	uint32_t index;
 	unsigned short *runlength;
 	unsigned short value_runs_offset;
-	int64 index64;
+	int64_t index64;
 	int bm, bk, wm, wk;
 	int i, subslicenum;
 	int idx_blocknum, subidx_blocknum;	
@@ -587,8 +587,8 @@ static int dblookup(EGDB_DRIVER *handle, EGDB_POSITION *p, int color, int cl)
 
 	index64 = position_to_index_slice(p, bm, bk, wm, wk);
 
-	subslicenum = (int)(index64 / (int64)MAX_SUBSLICE_INDICES);
-	index = (uint32)(index64 - (int64)subslicenum * (int64)MAX_SUBSLICE_INDICES);
+	subslicenum = (int)(index64 / (int64_t)MAX_SUBSLICE_INDICES);
+	index = (uint32_t)(index64 - (int64_t)subslicenum * (int64_t)MAX_SUBSLICE_INDICES);
 
 	/* get pointer to db. */
 	dbp = hdat->cprsubdatabase + DBOFFSET(bm, bk, wm, wk, color);
@@ -922,11 +922,11 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 	int t0, t1, t2, t3;
 	char dbname[MAXFILENAME];
 	char msg[MAXMSG];
-	int64 allocated_bytes;		/* keep track of heap allocations in bytes. */
-	int64 autoload_bytes;			/* keep track of autoload allocations in bytes. */
+	int64_t allocated_bytes;		/* keep track of heap allocations in bytes. */
+	int64_t autoload_bytes;			/* keep track of autoload allocations in bytes. */
 	int cache_mb_avail;
 	int max_autoload;
-	int64 total_dbsize;
+	int64_t total_dbsize;
 	size_t size;
 	int count;
 	DBFILE *f;
@@ -999,7 +999,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 	total_dbsize = 0;
 	for (i = 0; i < hdat->numdbfiles; ++i) {
 		if (hdat->dbfiles[i].is_present)
-			total_dbsize += (int64)hdat->dbfiles[i].num_cacheblocks * CACHE_BLOCKSIZE;
+			total_dbsize += (int64_t)hdat->dbfiles[i].num_cacheblocks * CACHE_BLOCKSIZE;
 	}
 
 #define MIN_AUTOLOAD_RATIO .18
@@ -1032,7 +1032,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 			continue;
 
 		size += f->num_cacheblocks;
-		if (f->pieces <= MIN_AUTOLOAD_PIECES || (int)((int64)((int64)size * (int64)CACHE_BLOCKSIZE) / ONE_MB) <= max_autoload) {
+		if (f->pieces <= MIN_AUTOLOAD_PIECES || (int)((int64_t)((int64_t)size * (int64_t)CACHE_BLOCKSIZE) / ONE_MB) <= max_autoload) {
 			f->autoload = 1;
 			std::sprintf(msg, "autoload %s\n", f->name);
 			(*hdat->log_msg_fn)(msg);
@@ -1133,8 +1133,8 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 			(*hdat->log_msg_fn)(msg);
 		}
 		else {
-			hdat->cacheblocks = (int)(((int64)cache_mb * (int64)ONE_MB - (int64)allocated_bytes) / 
-					(int64)(CACHE_BLOCKSIZE + sizeof(CCB)));
+			hdat->cacheblocks = (int)(((int64_t)cache_mb * (int64_t)ONE_MB - (int64_t)allocated_bytes) / 
+					(int64_t)(CACHE_BLOCKSIZE + sizeof(CCB)));
 			hdat->cacheblocks = min(hdat->cacheblocks, i);
 		}
 
@@ -1229,7 +1229,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
  * Parse an index file and write all information in cprsubdatabase[].
  * A nonzero return value means some kind of error occurred.
  */
-static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64 *allocated_bytes)
+static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64_t *allocated_bytes)
 {
 	int stat0, stat;
 	char name[MAXFILENAME];
@@ -1246,7 +1246,7 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64 *allocated_bytes)
 	int first_idx_block;
 	CPRSUBDB *dbpointer, *prev;
 	int size;
-	int64 filesize;
+	int64_t filesize;
 	HANDLE cprfp;
 	DBP *dbp;
 

@@ -1,6 +1,9 @@
 #pragma once
 
-#include "project.h"
+#include <cstdint>
+
+typedef uint64_t BITBOARD;
+typedef int64_t SIGNED_BITBOARD;
 
 #define BLACK 0
 #define WHITE 1
@@ -142,11 +145,6 @@
 
 #define BLACK_KING_RANK_MASK ROW9
 #define WHITE_KING_RANK_MASK ROW0
-
-
-typedef uint64 BITBOARD;
-typedef int64 SIGNED_BITBOARD;
-
 
 /* Definition of a board.
  * bit 0 means square 1, bit 1 is square 2, ...

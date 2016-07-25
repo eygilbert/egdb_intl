@@ -5,9 +5,9 @@
 
 // engine
 #include "board.h"
-#include "project.h"
 
 #include <csetjmp>
+#include <cstdint>
 
 #define MAXREPDEPTH 64
 
@@ -20,10 +20,10 @@ typedef struct {
 	int nw;
 	int npieces;
 	int npieces_1_side;
-	uint64 blackmen;
-	uint64 blackkings;
-	uint64 whitemen;
-	uint64 whitekings;
+	uint64_t blackmen;
+	uint64_t blackkings;
+	uint64_t whitemen;
+	uint64_t whitekings;
 } MATERIAL;
 
 class EGDB_INFO {
