@@ -31,7 +31,7 @@
 
 #define DB_RUNLEN	"C:/Program Files/Kingsrow International/wld_runlength"	/* Need 6 pieces for test. */
 #define DB_TUN_V1	"C:/Program Files/Kingsrow International/wld_tun_v1"	/* Need 7 pieces for test. */
-#define DB_TUN_V2	"C:/Program Files/Kingsrow International/wld_tun_v2"	/* Need 8 pieces for test. */
+#define DB_TUN_V2	"C:/Program Files/Kingsrow International/wld_database"	/* Need 8 pieces for test. */
 #define DB_MTC		"C:/Program Files/Kingsrow International/mtc_database"	/* Need 8 pieces for test. */
 
 #define TDIFF(start) (((double)(clock() + 1 - start)) / (double)CLOCKS_PER_SEC)
