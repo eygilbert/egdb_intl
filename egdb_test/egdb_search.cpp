@@ -15,6 +15,7 @@
 #include <io.h>
 #include <Windows.h>
 
+#include <cassert>
 #include <climits>
 #include <csetjmp>
 #include <cstdio>
@@ -70,6 +71,7 @@ bool EGDB_INFO::is_lookup_possible_pieces(MATERIAL *mat)
  */
 bool EGDB_INFO::is_lookup_possible_with_nonside_caps(MATERIAL *mat)
 {
+	assert(EGDB_INFO::is_lookup_possible_pieces(mat));
 	if (egdb_excludes_some_nonside_caps == 0 || mat->npieces < 7)
 		return(true);
 
@@ -107,7 +109,9 @@ int EGDB_INFO::negate(int value)
 		return(EGDB_DRAW_OR_LOSS);
 	if (value == EGDB_DRAW_OR_LOSS)
 		return(EGDB_WIN_OR_DRAW);
-	return(value);		/* EGDB_UNKNOWN or EGDB_UNAVAILABLE */
+
+	assert(value == EGDB_UNKNOWN || value == EGDB_SUBDB_UNAVAILABLE);
+	return(value);
 }
 
 
@@ -146,7 +150,7 @@ bool EGDB_INFO::is_greater_or_equal(int left, int right)
 			return(true);
 	}
 
-	/* Should never fall through here. */
+	assert(false);
 	return(true);
 }
 
@@ -181,7 +185,7 @@ bool EGDB_INFO::is_greater(int left, int right)
 			return(true);
 	}
 
-	/* right must be EGDB_UNKNOWN or EGDB_SUBDB_UNAVAILABLE */
+	assert(right == EGDB_UNKNOWN || right == EGDB_SUBDB_UNAVAILABLE);
 	if (left == EGDB_LOSS || left == EGDB_UNKNOWN || left == EGDB_SUBDB_UNAVAILABLE)
 		return(false);
 

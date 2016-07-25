@@ -18,6 +18,7 @@
 
 #include <Windows.h>
 
+#include <cassert>
 #include <cctype>
 #include <cstdio>
 #include <cstdlib>
@@ -542,8 +543,10 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int cache_mb, char *filepath
 			hdat->cacheblocks = (cache_mb * ONE_MB - allocated_bytes) / 
 					(CACHE_BLOCKSIZE + sizeof(CCB));
 	}
-	else
-		hdat->cacheblocks = 0;		/* Should never get here. */
+	else {
+		assert(false);
+		hdat->cacheblocks = 0;
+	}
 
 	/* Allocate the CCB array. */
 	if (hdat->cacheblocks) {

@@ -18,6 +18,7 @@
 
 #include <Windows.h>
 
+#include <cassert>
 #include <cctype>
 #include <cstdio>
 #include <cstdlib>
@@ -480,7 +481,8 @@ static int dblookup(EGDB_DRIVER *handle, EGDB_POSITION *p, int color, int cl)
 
 			/* an uncompressed byte */
 			byte = diskblock[i];
-			i = (int)(index - n_idx);			/* should be 0 or 1 */
+			i = (int)(index - n_idx);
+			assert(i == 0 || i == 1);
 
 			switch (i) {
 			case 0:
@@ -537,7 +539,8 @@ static int dblookup(EGDB_DRIVER *handle, EGDB_POSITION *p, int color, int cl)
 
 			/* an uncompressed byte */
 			byte = diskblock[i];
-			i = (int)(index - n_idx);			/* should be 0,1,2,3 */
+			i = (int)(index - n_idx);
+			assert(i == 0 || i == 1 || i == 2 || i == 3);
 
 			switch (i) {
 			case 0:
