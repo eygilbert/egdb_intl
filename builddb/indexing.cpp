@@ -1,6 +1,6 @@
 #include <windows.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <cstdlib>
+#include <cstdio>
 #include "project.h"
 #include "board.h"
 #include "bool.h"

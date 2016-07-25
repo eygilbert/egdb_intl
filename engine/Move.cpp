@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include <cstdio>
 #include <windows.h>
 #include "project.h"
 #include "board.h"

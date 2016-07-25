@@ -1,10 +1,10 @@
 #include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <math.h>
-#include <time.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cctype>
+#include <cmath>
+#include <ctime>
 #include "project.h"
 #include "board.h"
 #include "bool.h"
@@ -17,15 +17,13 @@
 #include "indexing.h"
 #include "fen.h"
 
-#define FAST_TEST_MULT 5			/* using this speeds up the tests. */
-//#define FAST_TEST_MULT 1
+//#define FAST_TEST_MULT 5			/* using this speeds up the tests. */
+#define FAST_TEST_MULT 1
 
-#define DB_RUNLEN "c:/db_intl/wld_runlen"		/* Need 6 pieces for test. */
-//#define DB_TUN_V1 "c:/db_intl/wld_v1"			/* Need 7 pieces for test. */
-#define DB_TUN_V1 "e:/db_intl/wld_v1"			/* Need 7 pieces for test. */
-#define DB_TUN_V2 "c:/db_intl/wld_v2"			/* Need 8 pieces for test. */
-//#define DB_MTC "C:/db_intl/mtc"				/* Need 8 pieces for test. */
-#define DB_MTC "e:/db_intl/slice32_mtc"			/* Need 8 pieces for test. */
+#define DB_RUNLEN	"C:/Program Files/Kingsrow International/wld_runlength"	/* Need 6 pieces for test. */
+#define DB_TUN_V1	"C:/Program Files/Kingsrow International/wld_tun_v1"	/* Need 7 pieces for test. */
+#define DB_TUN_V2	"C:/Program Files/Kingsrow International/wld_tun_v2"	/* Need 8 pieces for test. */
+#define DB_MTC		"C:/Program Files/Kingsrow International/mtc_database"	/* Need 8 pieces for test. */
 
 #define TDIFF(start) (((double)(clock() + 1 - start)) / (double)CLOCKS_PER_SEC)
 

@@ -1,7 +1,7 @@
 #include <windows.h>
-#include <stdlib.h>
-#include <time.h>
-#include <stdio.h>
+#include <cstdlib>
+#include <ctime>
+#include <cstdio>
 #include <limits.h>
 #include <io.h>
 #include <setjmp.h>
