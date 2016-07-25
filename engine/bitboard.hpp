@@ -1,6 +1,6 @@
 #pragma once
 
-#include "board.h"
+#include "board.hpp"
 
 BITBOARD ungapped_to_gapped_bitboard(BITBOARD bb);
 BITBOARD gapped_to_ungapped_bitboard(BITBOARD bb);

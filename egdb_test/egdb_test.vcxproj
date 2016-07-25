@@ -198,24 +198,24 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\builddb\compression_tables.h" />
-    <ClInclude Include="..\BuildDb\indexing.h" />
-    <ClInclude Include="..\builddb\tunstall_decompress.h" />
-    <ClInclude Include="..\Egdb\crc.h" />
-    <ClInclude Include="..\Egdb\egdb_common.h" />
-    <ClInclude Include="..\Egdb\egdb_intl.h" />
-    <ClInclude Include="..\Engine\bicoef.h" />
-    <ClInclude Include="..\engine\bitboard.h" />
-    <ClInclude Include="..\Engine\bitcount.h" />
-    <ClInclude Include="..\Engine\board.h" />
-    <ClInclude Include="..\Engine\bool.h" />
-    <ClInclude Include="..\Engine\fen.h" />
-    <ClInclude Include="..\engine\lock.h" />
-    <ClInclude Include="..\engine\move.h" />
-    <ClInclude Include="..\engine\move_api.h" />
-    <ClInclude Include="..\Engine\project.h" />
-    <ClInclude Include="..\Engine\reverse.h" />
-    <ClInclude Include="egdb_search.h" />
+    <ClInclude Include="..\builddb\compression_tables.hpp" />
+    <ClInclude Include="..\BuildDb\indexing.hpp" />
+    <ClInclude Include="..\builddb\tunstall_decompress.hpp" />
+    <ClInclude Include="..\Egdb\crc.hpp" />
+    <ClInclude Include="..\Egdb\egdb_common.hpp" />
+    <ClInclude Include="..\Egdb\egdb_intl.hpp" />
+    <ClInclude Include="..\Engine\bicoef.hpp" />
+    <ClInclude Include="..\engine\bitboard.hpp" />
+    <ClInclude Include="..\Engine\bitcount.hpp" />
+    <ClInclude Include="..\Engine\board.hpp" />
+    <ClInclude Include="..\Engine\bool.hpp" />
+    <ClInclude Include="..\Engine\fen.hpp" />
+    <ClInclude Include="..\engine\lock.hpp" />
+    <ClInclude Include="..\Engine\move.hpp" />
+    <ClInclude Include="..\Engine\move_api.hpp" />
+    <ClInclude Include="..\Engine\project.hpp" />
+    <ClInclude Include="..\Engine\reverse.hpp" />
+    <ClInclude Include="egdb_search.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\egdb\huffman_decompress.txt" />

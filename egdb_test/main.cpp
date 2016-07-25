@@ -1,21 +1,21 @@
 // builddb
-#include "indexing.h"
+#include "indexing.hpp"
 
 // edgb
-#include "egdb_intl.h"
+#include "egdb_intl.hpp"
 
 // egdb_test
-#include "egdb_search.h"
+#include "egdb_search.hpp"
 
 // engine
-#include "bicoef.h"
-#include "bitcount.h"
-#include "board.h"
-#include "bool.h"
-#include "fen.h"
-#include "move_api.h"
-#include "project.h"	// ARRAY_SIZE
-#include "reverse.h"
+#include "bicoef.hpp"
+#include "bitcount.hpp"
+#include "board.hpp"
+#include "bool.hpp"
+#include "fen.hpp"
+#include "move_api.hpp"
+#include "project.hpp"	// ARRAY_SIZE
+#include "reverse.hpp"
 
 #include <Windows.h>
 

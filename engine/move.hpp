@@ -1,7 +1,7 @@
 #pragma once
 
 // engine
-#include "board.h"
+#include "board.hpp"
 
 typedef enum {
 	DIR_LFRB, DIR_RFLB

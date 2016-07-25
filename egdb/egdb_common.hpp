@@ -1,7 +1,7 @@
 #pragma once
 
 // egdb
-#include "egdb_intl.h"
+#include "egdb_intl.hpp"
 
 #include <Windows.h>
 

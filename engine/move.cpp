@@ -1,10 +1,10 @@
-#include "move.h"
+#include "move.hpp"
 
 // engine
-#include "board.h"
-#include "bool.h"
-#include "move_api.h"
-#include "project.h"	// ARRAY_SIZE
+#include "board.hpp"
+#include "bool.hpp"
+#include "move_api.hpp"
+#include "project.hpp"	// ARRAY_SIZE
 
 #include <Windows.h>
 

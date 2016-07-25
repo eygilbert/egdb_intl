@@ -1,17 +1,17 @@
-#include "egdb_common.h"
+#include "egdb_common.hpp"
 
 // builddb
-#include "indexing.h"
+#include "indexing.hpp"
 
 // egdb
-#include "egdb_intl.h"
+#include "egdb_intl.hpp"
 
 // engine
-#include "bicoef.h"
-#include "bitcount.h"
-#include "board.h"
-#include "bool.h"
-#include "lock.h"
+#include "bicoef.hpp"
+#include "bitcount.hpp"
+#include "board.hpp"
+#include "bool.hpp"
+#include "lock.hpp"
 
 #include <Windows.h>
 

@@ -1,7 +1,7 @@
-#include "board.h"
+#include "board.hpp"
 
 // engine
-#include "bool.h"
+#include "bool.hpp"
 
 char square0_to_bitnum_table[NUMSQUARES] = {
 	 0,  1,  2,  3,  4,  5,  6,  7,  8,  9,

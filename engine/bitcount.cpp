@@ -1,8 +1,8 @@
-#include "bitcount.h"
+#include "bitcount.hpp"
 
 // engine
-#include "bool.h"
-#include "project.h"	// ARRAY_SIZE
+#include "bool.hpp"
+#include "project.hpp"	// ARRAY_SIZE
 
 bool cpu_has_popcount; 
 char bitcount_table[0x10000];

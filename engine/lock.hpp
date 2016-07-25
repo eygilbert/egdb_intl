@@ -1,6 +1,6 @@
 #pragma once
 
-#include "project.h"	// CACHE_ALIGN, L1_CACHE_SIZE
+#include "project.hpp"	// CACHE_ALIGN, L1_CACHE_SIZE
 
 #define USE_CRITICAL_SECTION 0
 

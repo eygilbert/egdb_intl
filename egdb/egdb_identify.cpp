@@ -1,9 +1,9 @@
 // egdb
-#include "crc.h"
-#include "egdb_intl.h"
+#include "crc.hpp"
+#include "egdb_intl.hpp"
 
 // engine
-#include "project.h"	// ARRAY_SIZE
+#include "project.hpp"	// ARRAY_SIZE
 
 #include <Windows.h>
 

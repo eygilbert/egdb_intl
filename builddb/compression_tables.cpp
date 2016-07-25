@@ -1,7 +1,7 @@
-#include "compression_tables.h"
+#include "compression_tables.hpp"
 
 // egdb
-#include "egdb_intl.h"
+#include "egdb_intl.hpp"
 
 /*
  * skip numbers range from 5...MAXSKIP defined above, there are SKIPS of them.
