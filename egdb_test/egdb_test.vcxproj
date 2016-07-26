@@ -187,10 +187,8 @@
     <ClCompile Include="..\Egdb\egdb_wld_tunstall_v1.cpp" />
     <ClCompile Include="..\Egdb\egdb_wld_tunstall_v2.cpp" />
     <ClCompile Include="..\Engine\bicoef.cpp" />
-    <ClCompile Include="..\engine\bitboard.cpp" />
     <ClCompile Include="..\Engine\bitcount.cpp" />
     <ClCompile Include="..\Engine\board.cpp" />
-    <ClCompile Include="..\engine\bool.cpp" />
     <ClCompile Include="..\Engine\fen.cpp" />
     <ClCompile Include="..\engine\move.cpp" />
     <ClCompile Include="..\Engine\reverse.cpp" />
@@ -205,7 +203,6 @@
     <ClInclude Include="..\Egdb\egdb_common.h" />
     <ClInclude Include="..\Egdb\egdb_intl.h" />
     <ClInclude Include="..\Engine\bicoef.h" />
-    <ClInclude Include="..\engine\bitboard.h" />
     <ClInclude Include="..\Engine\bitcount.h" />
     <ClInclude Include="..\Engine\board.h" />
     <ClInclude Include="..\Engine\bool.h" />

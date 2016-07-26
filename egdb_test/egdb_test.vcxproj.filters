@@ -72,12 +72,6 @@
     <ClCompile Include="..\builddb\compression_tables.cpp">
       <Filter>builddb</Filter>
     </ClCompile>
-    <ClCompile Include="..\engine\bitboard.cpp">
-      <Filter>engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\engine\bool.cpp">
-      <Filter>engine</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Egdb\crc.h">
@@ -129,9 +123,6 @@
       <Filter>engine</Filter>
     </ClInclude>
     <ClInclude Include="..\engine\lock.h">
-      <Filter>engine</Filter>
-    </ClInclude>
-    <ClInclude Include="..\engine\bitboard.h">
       <Filter>engine</Filter>
     </ClInclude>
   </ItemGroup>
