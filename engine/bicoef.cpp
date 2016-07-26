@@ -1,5 +1,6 @@
 #include "engine/bicoef.h"
 #include <Windows.h>
+#include <algorithm>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
@@ -37,7 +38,7 @@ void initbicoef(void)
 	int i, j;
 
 	for (i = 0; i <= MAXSQUARE_BICOEF; i++) {
-		for (j = 1; j <= min(MAXPIECES_BICOEF, i); j++) {
+		for (j = 1; j <= (std::min)(MAXPIECES_BICOEF, i); j++) {
 
 			// choose j from i:
 			bicoef[i][j] = choose(i, j);

@@ -11,6 +11,7 @@
 #include "engine/project.h"	// ARRAY_SIZE
 #include "engine/reverse.h"
 #include <Windows.h>
+#include <algorithm>
 #include <cassert>
 #include <cctype>
 #include <cstdio>
@@ -937,7 +938,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 			/* We need more memory than he gave us, allocate 10mb of cache
 			 * buffers if we can use that many.
 			 */
-			hdat->cacheblocks = min(MIN_CACHE_BUF_BYTES / CACHE_BLOCKSIZE, i);
+			hdat->cacheblocks = (std::min)(MIN_CACHE_BUF_BYTES / CACHE_BLOCKSIZE, i);
 			std::sprintf(msg, "Allocating the minimum %d cache buffers\n",
 							hdat->cacheblocks);
 			(*hdat->log_msg_fn)(msg);
@@ -945,7 +946,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 		else {
 			hdat->cacheblocks = (int)(((int64_t)cache_mb * (int64_t)ONE_MB - (int64_t)allocated_bytes) / 
 					(int64_t)(CACHE_BLOCKSIZE + sizeof(CCB)));
-			hdat->cacheblocks = min(hdat->cacheblocks, i);
+			hdat->cacheblocks = (std::min)(hdat->cacheblocks, i);
 		}
 
 		/* Allocate the CCB array. */
@@ -974,7 +975,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 
 		/* Allocate the cache buffers in groups of CACHE_ALLOC_COUNT at a time. */
 		for (i = 0; i < hdat->cacheblocks; i += CACHE_ALLOC_COUNT) {
-			count = min(CACHE_ALLOC_COUNT, hdat->cacheblocks - i);
+			count = (std::min)(CACHE_ALLOC_COUNT, hdat->cacheblocks - i);
 			size = count * CACHE_BLOCKSIZE * sizeof(unsigned char);
 			blockp = (unsigned char *)aligned_large_alloc(size);
 			if (blockp == NULL) {
@@ -1308,7 +1309,7 @@ static void build_file_table(DBHANDLE *hdat)
 		if (npieces <= SAME_PIECES_ONE_FILE) {
 			std::sprintf(hdat->dbfiles[count].name, "db%d", npieces);
 			hdat->dbfiles[count].pieces = npieces;
-			hdat->dbfiles[count].max_pieces_1side = min(npieces - 1, MAXPIECE);
+			hdat->dbfiles[count].max_pieces_1side = (std::min)(npieces - 1, MAXPIECE);
 			++count;
 		}
 		else {
@@ -1398,7 +1399,7 @@ static int egdb_close(EGDB_DRIVER *handle)
 
 	/* Free the cache buffers in groups of CACHE_ALLOC_COUNT at a time. */
 	for (i = 0; i < hdat->cacheblocks; i += CACHE_ALLOC_COUNT) {
-		count = min(CACHE_ALLOC_COUNT, hdat->cacheblocks - i);
+		count = (std::min)(CACHE_ALLOC_COUNT, hdat->cacheblocks - i);
 		size = count * CACHE_BLOCKSIZE * sizeof(unsigned char);
 		VirtualFree(hdat->ccbs[i].data, 0, MEM_RELEASE);
 	}

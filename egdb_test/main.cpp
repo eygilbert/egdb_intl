@@ -10,6 +10,7 @@
 #include "engine/project.h"	// ARRAY_SIZE
 #include "engine/reverse.h"
 #include <Windows.h>
+#include <algorithm>
 #include <cctype>
 #include <cmath>
 #include <cstdint>
@@ -89,7 +90,7 @@ int SLICE::advance(void)
 			nwm = 0;
 		}
 	}
-	else if (nb < min(maxpiece, npieces - 1)) {
+	else if (nb < (std::min)(maxpiece, npieces - 1)) {
 		++nb;
 		--nw;
 		nbm = 0;
@@ -116,7 +117,7 @@ void print_msgs(char *msg)
 }
 
 
-void verify(DB_INFO *db1, DB_INFO *db2, SLICE *slice, int max_lookups)
+void verify(DB_INFO *db1, DB_INFO *db2, SLICE *slice, int64_t max_lookups)
 {
 	int64_t size, index, incr;
 	int value1, value2;
@@ -128,7 +129,7 @@ void verify(DB_INFO *db1, DB_INFO *db2, SLICE *slice, int max_lookups)
 	if (max_lookups < 1)
 		incr = 1;
 	else
-		incr = max(size / max_lookups, 1);
+		incr = (std::max)(size / max_lookups, 1LL);
 
 	/* If npieces >= 7, some slices do not have positions for both colors. */
 	black_ok = true;
@@ -188,7 +189,7 @@ void verify(DB_INFO *db1, DB_INFO *db2, SLICE *slice, int max_lookups)
 }
 
 
-void self_verify(EGDB_INFO *db, SLICE *slice, int max_lookups)
+void self_verify(EGDB_INFO *db, SLICE *slice, int64_t max_lookups)
 {
 	int64_t size, index, incr;
 	int value1, value2;
@@ -200,7 +201,7 @@ void self_verify(EGDB_INFO *db, SLICE *slice, int max_lookups)
 	if (max_lookups < 1)
 		incr = 1;
 	else
-		incr = max(size / max_lookups, 1);
+		incr = (std::max)(size / max_lookups, 1LL);
 
 	/* If npieces >= 7, some slices do not have positions for both colors. */
 	black_ok = true;
@@ -249,7 +250,7 @@ void self_verify(EGDB_INFO *db, SLICE *slice, int max_lookups)
 }
 
 
-void verify_indexing(SLICE *slice, int max_tests)
+void verify_indexing(SLICE *slice, int64_t max_tests)
 {
 	int64_t size, index, return_index, incr;
 	EGDB_POSITION pos;
@@ -258,7 +259,7 @@ void verify_indexing(SLICE *slice, int max_tests)
 	if (max_tests < 1)
 		incr = 1;
 	else
-		incr = max(size / max_tests, 1);
+		incr = (std::max)(size / max_tests, 1LL);
 
 	for (index = 0; index < size; index += incr) {
 		indextoposition_slice(index, &pos, slice->getnbm(), slice->getnbk(), slice->getnwm(), slice->getnwk());

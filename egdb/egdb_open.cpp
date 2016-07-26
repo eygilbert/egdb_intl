@@ -2,6 +2,7 @@
 #include "egdb/egdb_intl.h"
 #include "engine/lock.h"
 #include <Windows.h>
+#include <algorithm>
 #include <cctype>
 #include <cstdio>
 #include <cstdlib>
@@ -62,7 +63,7 @@ EGDB_DRIVER *egdb_open(char *options,
 	}
 	parse_options(options, &pieces, &kings_1side_8pcs);
 	if (pieces > 0)
-		pieces = __min(max_pieces, pieces);
+		pieces = (std::min)(max_pieces, pieces);
 	else
 		pieces = max_pieces;
 

@@ -5,6 +5,7 @@
 #include "engine/board.h"
 #include "engine/bool.h"
 #include <Windows.h>
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 
@@ -218,7 +219,7 @@ void indextoposition_slice(int64_t index, EGDB_POSITION *p, int bm, int bk, int 
 	index -= checker_index * multiplier;
 
 	/* Find bm0. */
-	for (bm0 = min(bm, 5); bm0 > 0; --bm0)
+	for (bm0 = (std::min)(bm, 5); bm0 > 0; --bm0)
 		if (man_index_base[bm][wm][bm0 - 1] > checker_index)
 			break;
 
@@ -274,7 +275,7 @@ void build_man_index_base()
 	for (bm = 0; bm <= MAXPIECE; ++bm) {
 		for (wm = 0; wm <= MAXPIECE; ++wm) {
 			base = 0;
-			for (bm0 = min(5, bm); bm0 >= 0; --bm0) {
+			for (bm0 = (std::min)(5, bm); bm0 >= 0; --bm0) {
 				man_index_base[bm][wm][bm0] = base;
 
 				/* First the number of men configurations excluding black's backrank. */
@@ -302,7 +303,7 @@ int64_t getdatabasesize_slice(int bm, int bk, int wm, int wk)
 	* the contributions of 0, 1, 2, 3, 4, or 5 black men on the backrank.
 	*/
 	size = 0;
-	for (black_men_backrank = 0; black_men_backrank <= min(bm, 5); ++black_men_backrank) {
+	for (black_men_backrank = 0; black_men_backrank <= (std::min)(bm, 5); ++black_men_backrank) {
 
 		/* First the number of men configurations excluding black's backrank. */
 		partial = (int64_t)bicoef[40][bm - black_men_backrank] * (int64_t)bicoef[45 - bm + black_men_backrank][wm];
