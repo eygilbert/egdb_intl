@@ -22,7 +22,7 @@
 //#define FAST_TEST_MULT 5			/* using this speeds up the tests. */
 #define FAST_TEST_MULT 1
 
-#define DB_RUNLEN	"C:/Program Files/Kingsrow International/wld_runlength"	/* Need 6 pieces for test. */
+#define DB_RUNLEN	"C:/Program Files/Kingsrow International/wld_runlen"	/* Need 6 pieces for test. */
 #define DB_TUN_V1	"C:/Program Files/Kingsrow International/wld_tun_v1"	/* Need 7 pieces for test. */
 #define DB_TUN_V2	"C:/Program Files/Kingsrow International/wld_database"	/* Need 8 pieces for test. */
 #define DB_MTC		"C:/Program Files/Kingsrow International/mtc_database"	/* Need 8 pieces for test. */
