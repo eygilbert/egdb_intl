@@ -337,7 +337,8 @@ int EGDB_INFO::lookup_with_rep_check(BOARD *p, int color, int depth, int maxdept
  */
 int EGDB_INFO::lookup_with_search(BOARD *p, int color, int maxdepth, bool force_root_search)
 {
-	int status, i, value;
+	int status, i;
+	int value = EGDB_UNKNOWN;	// prevent using unitialized memory
 
 	nodes = 0;
 	status = setjmp(env);	// NOTE: not in namespace std: http://stackoverflow.com/questions/7935913/why-isnt-setjmp-in-the-std-namespace-when-including-csetjmp
@@ -359,6 +360,8 @@ int EGDB_INFO::lookup_with_search(BOARD *p, int color, int maxdepth, bool force_
 		}
 	}
 
+    // if maxdepth <= 2, value will not have been initialized
+	assert(maxdepth > 2);
 	return(value);
 }
 

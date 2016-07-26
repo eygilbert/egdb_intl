@@ -76,7 +76,7 @@ int print_fen_header(BOARD *board, int color, char *buf, char *line_terminator)
 int parse_fen(char *buf, BOARD *board, int *ret_color)
 {
 	int square, square2, s;
-	int color;
+	int color = BLACK;	// prevent using unitialized memory
 	int king;
 	char *lastp;
 
