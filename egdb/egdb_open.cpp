@@ -28,7 +28,7 @@ static void parse_options(char *options, int *pieces, int *kings_1side_8pcs)
 		++p;
 		while (std::isspace(*p))
 			++p;
-		*pieces = atoi(p);
+		*pieces = std::atoi(p);
 	}
 	p = std::strstr(options, MAXKINGS_1SIDE_8PCS_OPTSTR);
 	if (p) {
@@ -38,7 +38,7 @@ static void parse_options(char *options, int *pieces, int *kings_1side_8pcs)
 		++p;
 		while (std::isspace(*p))
 			++p;
-		*kings_1side_8pcs = atoi(p);
+		*kings_1side_8pcs = std::atoi(p);
 	}
 }
 
