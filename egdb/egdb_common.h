@@ -100,7 +100,7 @@ __forceinline int find_block(int first, int last, uint32_t block_starts[], uint3
  * block and load it into that.
  * Update the LRU list to make this block the most recently used.
  */
-template <class DBHANDLE_T, class CPRSUBDB_T, class CCB_T> CCB_T *load_blocknum(DBHANDLE_T *hdat, CPRSUBDB_T *subdb, int blocknum)
+template <class CCB_T, class DBHANDLE_T, class CPRSUBDB_T> CCB_T *load_blocknum(DBHANDLE_T *hdat, CPRSUBDB_T *subdb, int blocknum)
 {
 	int old_blocknum;
 	CCB_T *ccbp;
@@ -138,7 +138,7 @@ template <class DBHANDLE_T, class CPRSUBDB_T, class CCB_T> CCB_T *load_blocknum(
  * This cache block was just accessed.
  * Update the lru to make this the most recently used.
  */
-template <class DBHANDLE_T, class DBFILE_T, class CCB_T> CCB_T *update_lru(DBHANDLE_T *hdat, DBFILE_T *db, int ccbi)
+template <class CCB_T, class DBHANDLE_T, class DBFILE_T> CCB_T *update_lru(DBHANDLE_T *hdat, DBFILE_T *db, int ccbi)
 {
 	int next, prev;
 	CCB_T *ccbp;

@@ -307,7 +307,7 @@ static int dblookup(EGDB_DRIVER *handle, EGDB_POSITION *p, int color, int cl)
 		if (ccbi != UNDEFINED_BLOCK_ID) {
 
 			/* Already cached.  Update the lru list. */
-			ccbp = update_lru<DBHANDLE, DBFILE, CCB>(hdat, dbpointer->file, ccbi);
+			ccbp = update_lru<CCB>(hdat, dbpointer->file, ccbi);
 		}
 		else {
 

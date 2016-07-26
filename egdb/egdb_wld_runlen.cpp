@@ -383,7 +383,7 @@ static int dblookup(EGDB_DRIVER *handle, EGDB_POSITION *p, int color, int cl)
 		if (ccbi != UNDEFINED_BLOCK_ID) {
 
 			/* Already cached.  Update the lru list. */
-			ccbp = update_lru<DBHANDLE, DBFILE, CCB>(hdat, dbpointer->file, ccbi);
+			ccbp = update_lru<CCB>(hdat, dbpointer->file, ccbi);
 		}
 		else {
 
@@ -396,7 +396,7 @@ static int dblookup(EGDB_DRIVER *handle, EGDB_POSITION *p, int color, int cl)
 			}
 
 			/* If necessary load this block from disk, update lru list. */
-			ccbp = load_blocknum<DBHANDLE, CPRSUBDB, CCB>(hdat, dbpointer, blocknum);
+			ccbp = load_blocknum<CCB>(hdat, dbpointer, blocknum);
 		}
 
 		/* Do a binary search to find the exact subindex.  This is complicated a bit by the
@@ -576,7 +576,7 @@ static void preload_subdb(DBHANDLE *hdat, CPRSUBDB *subdb, int *preloaded_cacheb
 	last_blocknum = (subdb->first_idx_block + subdb->num_idx_blocks - 1) / IDX_BLOCKS_PER_CACHE_BLOCK;
 	for (i = first_blocknum; i <= last_blocknum && *preloaded_cacheblocks < hdat->cacheblocks; ++i) {
 		if (subdb->file->cache_bufferi[i] == UNDEFINED_BLOCK_ID) {
-			load_blocknum<DBHANDLE, CPRSUBDB, CCB>(hdat, subdb, i);
+			load_blocknum<CCB>(hdat, subdb, i);
 			++(*preloaded_cacheblocks);
 		}
 	}
@@ -1010,7 +1010,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 				/* It might already be cached. */
 				if (f->cache_bufferi[j] == UNDEFINED_BLOCK_ID) {
 					subdb = find_first_subdb(hdat, f, j);
-					load_blocknum<DBHANDLE, CPRSUBDB, CCB>(hdat, subdb, j);
+					load_blocknum<CCB>(hdat, subdb, j);
 					++count;
 				}
 			}
