@@ -3,12 +3,10 @@
 //
 // must be initialized with a call to initbool()
 
-#include "bool.h"
-
-// engine
-#include "bicoef.h"
-#include "bitcount.h"
-#include "board.h"
+#include "engine/bool.h"
+#include "engine/bicoef.h"
+#include "engine/bitcount.h"
+#include "engine/board.h"
 
 #if !_WIN64
 #define USE_ASM // use assembler routines in LSB, MSB

@@ -1,13 +1,9 @@
-#include "reverse.h"
-
-// engine
-#include "bicoef.h"
-#include "bitcount.h"
-#include "board.h"
-#include "bool.h"
-
+#include "engine/reverse.h"
+#include "engine/bicoef.h"
+#include "engine/bitcount.h"
+#include "engine/board.h"
+#include "engine/bool.h"
 #include <Windows.h>
-
 #include <cstdint>
 
 unsigned char ReverseByte[256];

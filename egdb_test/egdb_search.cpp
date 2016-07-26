@@ -1,19 +1,13 @@
-#include "egdb_search.h"
-
-// egdb
-#include "egdb_intl.h"
-
-// engine
-#include "bicoef.h"
-#include "bitcount.h"
-#include "board.h"
-#include "bool.h"
-#include "fen.h"
-#include "move_api.h"
-
+#include "egdb_test/egdb_search.h"
+#include "egdb/egdb_intl.h"
+#include "engine/bicoef.h"
+#include "engine/bitcount.h"
+#include "engine/board.h"
+#include "engine/bool.h"
+#include "engine/fen.h"
+#include "engine/move_api.h"
 #include <io.h>
 #include <Windows.h>
-
 #include <cassert>
 #include <climits>
 #include <csetjmp>

@@ -1,7 +1,5 @@
 #pragma once
-
 #include <intrin.h>
-
 #include <cstdint>
 
 extern bool cpu_has_popcount;

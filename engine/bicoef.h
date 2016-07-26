@@ -6,4 +6,3 @@
 extern unsigned int bicoef[MAXSQUARE_BICOEF + 1][MAXPIECES_BICOEF + 1];
 
 void initbicoef(void);
-

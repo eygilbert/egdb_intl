@@ -1,14 +1,10 @@
-#include "bitboard.h"
-
-// engine
-#include "bicoef.h"
-#include "bitcount.h"
-#include "board.h"
-#include "bool.h"
-#include "move_api.h"
-
+#include "engine/bitboard.h"
+#include "engine/bicoef.h"
+#include "engine/bitcount.h"
+#include "engine/board.h"
+#include "engine/bool.h"
+#include "engine/move_api.h"
 #include <Windows.h>
-
 #include <cstdint>
 
 #define S1_UG (uint64_t)1

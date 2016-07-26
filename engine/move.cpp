@@ -1,13 +1,9 @@
-#include "move.h"
-
-// engine
-#include "board.h"
-#include "bool.h"
-#include "move_api.h"
-#include "project.h"	// ARRAY_SIZE
-
+#include "engine/move.h"
+#include "engine/board.h"
+#include "engine/bool.h"
+#include "engine/move_api.h"
+#include "engine/project.h"	// ARRAY_SIZE
 #include <Windows.h>
-
 #include <cstdio>
 #include <cstring>
 

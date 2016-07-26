@@ -1,12 +1,7 @@
-// egdb
-#include "egdb_common.h"
-#include "egdb_intl.h"
-
-// engine
-#include "lock.h"
-
+#include "egdb/egdb_common.h"
+#include "egdb/egdb_intl.h"
+#include "engine/lock.h"
 #include <Windows.h>
-
 #include <cctype>
 #include <cstdio>
 #include <cstdlib>

@@ -1,12 +1,7 @@
-// egdb
-#include "crc.h"
-#include "egdb_intl.h"
-
-// engine
-#include "project.h"	// ARRAY_SIZE
-
+#include "egdb/crc.h"
+#include "egdb/egdb_intl.h"
+#include "engine/project.h"	// ARRAY_SIZE
 #include <Windows.h>
-
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>

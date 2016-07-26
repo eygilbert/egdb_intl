@@ -1,16 +1,10 @@
-#include "indexing.h"
-
-// egdb
-#include "egdb_intl.h"
-
-// engine
-#include "bicoef.h"
-#include "bitcount.h"
-#include "board.h"
-#include "bool.h"
-
+#include "builddb/indexing.h"
+#include "egdb/egdb_intl.h"
+#include "engine/bicoef.h"
+#include "engine/bitcount.h"
+#include "engine/board.h"
+#include "engine/bool.h"
 #include <Windows.h>
-
 #include <cstdio>
 #include <cstdlib>
 

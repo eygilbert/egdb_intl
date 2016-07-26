@@ -1,5 +1,4 @@
-#include "crc.h"
-
+#include "egdb/crc.h"
 #include <cstdio>
 
 #pragma warning(disable : 4996)

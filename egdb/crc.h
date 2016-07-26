@@ -1,5 +1,4 @@
 #pragma once
-
 #include <cstdio>
 
 unsigned int crc_calc(char *buf, int len);

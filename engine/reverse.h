@@ -1,7 +1,5 @@
 #pragma once
-
-#include "board.h"
-
+#include "engine/board.h"
 #include <cstdint>
 
 void init_reverse();

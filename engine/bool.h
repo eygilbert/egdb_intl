@@ -1,7 +1,5 @@
 #pragma once
-
 #include <intrin.h>
-
 #include <cstdint>
 
 #define hiword(x) (((x) & 0xFFFF0000) >> 16)

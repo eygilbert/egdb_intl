@@ -1,11 +1,6 @@
 #pragma once
-
-// egdb
-#include "egdb_intl.h"
-
-// engine
-#include "board.h"
-
+#include "egdb/egdb_intl.h"
+#include "engine/board.h"
 #include <csetjmp>
 #include <cstdint>
 

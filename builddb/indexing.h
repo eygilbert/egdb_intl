@@ -1,13 +1,9 @@
 #pragma once
-
-// egdb
-#include "egdb_intl.h"
-
-// engine
-#include "bicoef.h"
-#include "bitcount.h"
-#include "board.h"
-#include "bool.h"
+#include "egdb/egdb_intl.h"
+#include "engine/bicoef.h"
+#include "engine/bitcount.h"
+#include "engine/board.h"
+#include "engine/bool.h"
 
 #define MAXSQUARE NUMSQUARES
 #define MAXPIECE 5

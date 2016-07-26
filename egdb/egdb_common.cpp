@@ -1,18 +1,11 @@
-#include "egdb_common.h"
-
-// builddb
-#include "indexing.h"
-
-// egdb
-#include "egdb_intl.h"
-
-// engine
-#include "bicoef.h"
-#include "bitcount.h"
-#include "board.h"
-#include "bool.h"
-#include "lock.h"
-
+#include "egdb/egdb_common.h"
+#include "builddb/indexing.h"
+#include "egdb/egdb_intl.h"
+#include "engine/bicoef.h"
+#include "engine/bitcount.h"
+#include "engine/board.h"
+#include "engine/bool.h"
+#include "engine/lock.h"
 #include <Windows.h>
 
 int get_num_subslices(int nbm, int nbk, int nwm, int nwk)

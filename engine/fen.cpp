@@ -1,9 +1,6 @@
-#include "fen.h"
-
-// engine
-#include "board.h"
-#include "bool.h"
-
+#include "engine/fen.h"
+#include "engine/board.h"
+#include "engine/bool.h"
 #include <cctype>
 #include <cstdio>
 #include <cstring>

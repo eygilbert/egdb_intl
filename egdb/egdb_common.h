@@ -1,8 +1,5 @@
 #pragma once
-
-// egdb
-#include "egdb_intl.h"
-
+#include "egdb/egdb_intl.h"
 #include <Windows.h>
 
 #define MAXMSG 256

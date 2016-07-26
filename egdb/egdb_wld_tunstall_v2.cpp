@@ -1,25 +1,18 @@
-// builddb
-#include "compression_tables.h"
-#include "indexing.h"
-#include "tunstall_decompress.h"
-#include "tunstall_decompress_v2.txt"
-
-// egdb
-#include "crc.h"
-#include "egdb_common.h"
-#include "egdb_intl.h"
-
-// engine
-#include "bicoef.h"
-#include "bitcount.h"
-#include "board.h"
-#include "bool.h"
-#include "lock.h"
-#include "project.h"	// ARRAY_SIZE
-#include "reverse.h"
-
+#include "builddb/compression_tables.h"
+#include "builddb/indexing.h"
+#include "builddb/tunstall_decompress.h"
+#include "egdb/crc.h"
+#include "egdb/egdb_common.h"
+#include "egdb/egdb_intl.h"
+#include "egdb/tunstall_decompress_v2.txt"
+#include "engine/bicoef.h"
+#include "engine/bitcount.h"
+#include "engine/board.h"
+#include "engine/bool.h"
+#include "engine/lock.h"
+#include "engine/project.h"	// ARRAY_SIZE
+#include "engine/reverse.h"
 #include <Windows.h>
-
 #include <cctype>
 #include <cstdio>
 #include <cstdlib>
