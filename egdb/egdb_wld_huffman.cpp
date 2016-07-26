@@ -1698,7 +1698,7 @@ static int egdb_close(EGDB_DRIVER *handle)
 	}
 
 	/* Free the cache control blocks. */
-	free(hdat->ccbs);
+	std::free(hdat->ccbs);
 
 	for (i = 0; i < sizeof(hdat->dbfiles) / sizeof(hdat->dbfiles[0]); ++i) {
 		if (hdat->dbfiles[i].pieces > hdat->dbpieces)
@@ -1712,7 +1712,7 @@ static int egdb_close(EGDB_DRIVER *handle)
 			hdat->dbfiles[i].file_cache = 0;
 		}
 		else {
-			free(hdat->dbfiles[i].cache_bufferi);
+			std::free(hdat->dbfiles[i].cache_bufferi);
 			hdat->dbfiles[i].cache_bufferi = 0;
 		}
 
@@ -1730,20 +1730,20 @@ static int egdb_close(EGDB_DRIVER *handle)
 		if (p->subdb != NULL) {
 			for (k = 0; k < p->num_subslices; ++k) {
 				if (p->subdb[k].indices)
-					free(p->subdb[k].indices);
+					std::free(p->subdb[k].indices);
 				if (p->subdb[k].start_values)
-					free(p->subdb[k].start_values);
+					std::free(p->subdb[k].start_values);
 				if (p->subdb[k].autoload_subindices)
-					free(p->subdb[k].autoload_subindices);
+					std::free(p->subdb[k].autoload_subindices);
 				if (p->subdb[k].autoload_subindex_info)
-					free(p->subdb[k].autoload_subindex_info);
+					std::free(p->subdb[k].autoload_subindex_info);
 			}
-			free(p->subdb);
+			std::free(p->subdb);
 		}
 	}
-	free(hdat->cprsubdatabase);
-	free(hdat);
-	free(handle);
+	std::free(hdat->cprsubdatabase);
+	std::free(hdat);
+	std::free(handle);
 	return(0);
 }
 
@@ -1911,8 +1911,8 @@ EGDB_DRIVER *egdb_open_wld_huff(int pieces, int kings_1side_8pcs,
 	((DBHANDLE *)(handle->internal_data))->db_type = db_type;
 	status = initdblookup((DBHANDLE *)handle->internal_data, pieces, kings_1side_8pcs, cache_mb, directory, msg_fn);
 	if (status) {
-		free(handle->internal_data);
-		free(handle);
+		std::free(handle->internal_data);
+		std::free(handle);
 		return(0);
 	}
 

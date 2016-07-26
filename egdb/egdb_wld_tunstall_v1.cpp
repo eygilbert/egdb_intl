@@ -1809,7 +1809,7 @@ static int egdb_close(EGDB_DRIVER *handle)
 		}
 
 		/* Free the cache control blocks. */
-		free(hdat->ccbs);
+		std::free(hdat->ccbs);
 	}
 
 	for (i = 0; i < sizeof(hdat->dbfiles) / sizeof(hdat->dbfiles[0]); ++i) {
@@ -1833,26 +1833,26 @@ static int egdb_close(EGDB_DRIVER *handle)
 	}
 	std::memset(hdat->dbfiles, 0, sizeof(hdat->dbfiles));
 	if (hdat->cache_ht)
-		free(hdat->cache_ht);
+		std::free(hdat->cache_ht);
 
 	if (hdat->cache_ht_nodes_base)
-		free(hdat->cache_ht_nodes_base);
+		std::free(hdat->cache_ht_nodes_base);
 
 	for (i = 0; i < DBSIZE; ++i) {
 		p = hdat->cprsubdatabase + i;
 		if (p->subdb != NULL) {
 			for (k = 0; k < p->num_subslices; ++k) {
 				if (p->subdb[k].indices)
-					free(p->subdb[k].indices);
+					std::free(p->subdb[k].indices);
 				if (p->subdb[k].autoload_subindices)
-					free(p->subdb[k].autoload_subindices);
+					std::free(p->subdb[k].autoload_subindices);
 			}
-			free(p->subdb);
+			std::free(p->subdb);
 		}
 	}
-	free(hdat->cprsubdatabase);
-	free(hdat);
-	free(handle);
+	std::free(hdat->cprsubdatabase);
+	std::free(hdat);
+	std::free(handle);
 	return(0);
 }
 
@@ -2013,7 +2013,7 @@ EGDB_DRIVER *egdb_open_wld_tun_v1(int pieces, int kings_1side_8pcs,
 	}
 	handle->internal_data = std::calloc(1, sizeof(DBHANDLE));
 	if (!handle->internal_data) {
-		free(handle);
+		std::free(handle);
 		(*msg_fn)("Cannot allocate memory for driver handle.\n");
 		return(0);
 	}
