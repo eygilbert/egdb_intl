@@ -1,6 +1,6 @@
 #pragma once
 
-#include "board.hpp"
+#include "board.h"
 
 int print_fen(BOARD *board, int color, char *buf);
 int print_fen_with_newline(BOARD *board, int color, char *buf);

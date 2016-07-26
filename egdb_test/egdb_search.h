@@ -1,10 +1,10 @@
 #pragma once
 
 // egdb
-#include "egdb_intl.hpp"
+#include "egdb_intl.h"
 
 // engine
-#include "board.hpp"
+#include "board.h"
 
 #include <csetjmp>
 #include <cstdint>

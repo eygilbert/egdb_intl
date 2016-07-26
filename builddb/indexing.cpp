@@ -1,13 +1,13 @@
-#include "indexing.hpp"
+#include "indexing.h"
 
 // egdb
-#include "egdb_intl.hpp"
+#include "egdb_intl.h"
 
 // engine
-#include "bicoef.hpp"
-#include "bitcount.hpp"
-#include "board.hpp"
-#include "bool.hpp"
+#include "bicoef.h"
+#include "bitcount.h"
+#include "board.h"
+#include "bool.h"
 
 #include <Windows.h>
 

@@ -1,9 +1,9 @@
 // egdb
-#include "egdb_common.hpp"
-#include "egdb_intl.hpp"
+#include "egdb_common.h"
+#include "egdb_intl.h"
 
 // engine
-#include "lock.hpp"
+#include "lock.h"
 
 #include <Windows.h>
 

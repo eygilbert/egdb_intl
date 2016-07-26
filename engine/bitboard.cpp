@@ -1,11 +1,11 @@
-#include "bitboard.hpp"
+#include "bitboard.h"
 
 // engine
-#include "bicoef.hpp"
-#include "bitcount.hpp"
-#include "board.hpp"
-#include "bool.hpp"
-#include "move_api.hpp"
+#include "bicoef.h"
+#include "bitcount.h"
+#include "board.h"
+#include "bool.h"
+#include "move_api.h"
 
 #include <Windows.h>
 

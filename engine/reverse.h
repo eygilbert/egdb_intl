@@ -1,6 +1,6 @@
 #pragma once
 
-#include "board.hpp"
+#include "board.h"
 
 #include <cstdint>
 

@@ -1,10 +1,10 @@
-#include "reverse.hpp"
+#include "reverse.h"
 
 // engine
-#include "bicoef.hpp"
-#include "bitcount.hpp"
-#include "board.hpp"
-#include "bool.hpp"
+#include "bicoef.h"
+#include "bitcount.h"
+#include "board.h"
+#include "bool.h"
 
 #include <Windows.h>
 

@@ -1,8 +1,8 @@
-#include "fen.hpp"
+#include "fen.h"
 
 // engine
-#include "board.hpp"
-#include "bool.hpp"
+#include "board.h"
+#include "bool.h"
 
 #include <cctype>
 #include <cstdio>

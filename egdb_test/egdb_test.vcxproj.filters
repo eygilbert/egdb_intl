@@ -80,59 +80,59 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\builddb\compression_tables.hpp">
-      <Filter>builddb</Filter>
-    </ClInclude>
-    <ClInclude Include="..\BuildDb\indexing.hpp">
-      <Filter>builddb</Filter>
-    </ClInclude>
-    <ClInclude Include="..\builddb\tunstall_decompress.hpp">
-      <Filter>builddb</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Egdb\crc.hpp">
+    <ClInclude Include="..\Egdb\crc.h">
       <Filter>egdb</Filter>
     </ClInclude>
-    <ClInclude Include="..\Egdb\egdb_common.hpp">
+    <ClInclude Include="..\Egdb\egdb_intl.h">
       <Filter>egdb</Filter>
     </ClInclude>
-    <ClInclude Include="..\Egdb\egdb_intl.hpp">
+    <ClInclude Include="..\Engine\bicoef.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\bitcount.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\bool.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\reverse.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BuildDb\indexing.h">
+      <Filter>builddb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\project.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\board.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Egdb\egdb_common.h">
       <Filter>egdb</Filter>
     </ClInclude>
-    <ClInclude Include="..\Engine\bicoef.hpp">
-      <Filter>engine</Filter>
-    </ClInclude>
-    <ClInclude Include="..\engine\bitboard.hpp">
-      <Filter>engine</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Engine\bitcount.hpp">
-      <Filter>engine</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Engine\board.hpp">
-      <Filter>engine</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Engine\bool.hpp">
-      <Filter>engine</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Engine\fen.hpp">
-      <Filter>engine</Filter>
-    </ClInclude>
-    <ClInclude Include="..\engine\lock.hpp">
-      <Filter>engine</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Engine\move.hpp">
-      <Filter>engine</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Engine\move_api.hpp">
-      <Filter>engine</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Engine\project.hpp">
-      <Filter>engine</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Engine\reverse.hpp">
-      <Filter>engine</Filter>
-    </ClInclude>
-    <ClInclude Include="egdb_search.hpp">
+    <ClInclude Include="egdb_search.h">
       <Filter>egdb_test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\fen.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\builddb\compression_tables.h">
+      <Filter>builddb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\builddb\tunstall_decompress.h">
+      <Filter>builddb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\move.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\move_api.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\lock.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\bitboard.h">
+      <Filter>engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

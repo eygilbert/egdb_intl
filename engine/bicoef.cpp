@@ -1,4 +1,4 @@
-#include "bicoef.hpp"
+#include "bicoef.h"
 
 #include <Windows.h>
 
