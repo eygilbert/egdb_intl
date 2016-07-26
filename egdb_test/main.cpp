@@ -111,7 +111,7 @@ int SLICE::advance(void)
 }
 
 
-void print_msgs(char *msg)
+void print_msgs(char const *msg)
 {
 	std::printf(msg);
 }
@@ -272,7 +272,7 @@ void verify_indexing(SLICE *slice, int64_t max_tests)
 }
 
 
-int identify(char *dir, DB_INFO *db)
+int identify(char const *dir, DB_INFO *db)
 {
 	int status;
 
@@ -515,7 +515,7 @@ void open_options_test(void)
 }
 
 
-void crc_verify_test(char *dbpath)
+void crc_verify_test(char const *dbpath)
 {
 	int abort;
 	EGDB_DRIVER *db;

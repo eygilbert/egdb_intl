@@ -59,7 +59,7 @@ int print_fen_with_newline(BOARD *board, int color, char *buf)
 }
 
 
-int print_fen_header(BOARD *board, int color, char *buf, char *line_terminator)
+int print_fen_header(BOARD *board, int color, char *buf, char const *line_terminator)
 {
 	int len;
 

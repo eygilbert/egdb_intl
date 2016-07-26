@@ -53,7 +53,7 @@ EGDB_FIND_INFO egdb_find_table[] = {
 };
 
 
-int egdb_identify(char *directory, EGDB_TYPE *egdb_type, int *max_pieces)
+int egdb_identify(char const *directory, EGDB_TYPE *egdb_type, int *max_pieces)
 {
 	int i, len, pieces;
 	unsigned int crc;

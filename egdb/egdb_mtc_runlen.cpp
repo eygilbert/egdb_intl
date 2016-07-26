@@ -82,7 +82,7 @@ typedef struct {
 	char db_filepath[MAXFILENAME];	/* Path to database files. */
 	int dbpieces;
 	int cacheblocks;				/* Total number of db cache blocks. */
-	void (*log_msg_fn)(char *);		/* for status and error messages. */
+	void (*log_msg_fn)(char const*);		/* for status and error messages. */
 	DBP *cprsubdatabase;
 	CCB *ccbs;
 	int ccbs_top;		/* index into ccbs[] of least recently used block. */
@@ -408,7 +408,7 @@ static int dblookup(EGDB_DRIVER *handle, EGDB_POSITION *p, int color, int cl)
  * A non-zero return value means some kind of error occurred.  The nature of
  * any errors are communicated through the msg_fn.
  */
-static int initdblookup(DBHANDLE *hdat, int pieces, int cache_mb, char *filepath, void (*msg_fn)(char *))
+static int initdblookup(DBHANDLE *hdat, int pieces, int cache_mb, char const *filepath, void (*msg_fn)(char const*))
 {
 	int i, j;
 	int t0, t1;
@@ -929,7 +929,7 @@ static int egdb_close(EGDB_DRIVER *handle)
 }
 
 
-static int verify_crc(EGDB_DRIVER *handle, void (*msg_fn)(char *), int *abort, EGDB_VERIFY_MSGS *msgs)
+static int verify_crc(EGDB_DRIVER *handle, void (*msg_fn)(char const*), int *abort, EGDB_VERIFY_MSGS *msgs)
 {
 	int i;
 	int status;
@@ -1048,7 +1048,7 @@ static int get_pieces(EGDB_DRIVER *handle, int *max_pieces, int *max_pieces_1sid
 
 
 EGDB_DRIVER *egdb_open_mtc_runlen(int pieces, int kings_1side_8pcs,
-				int cache_mb, char *directory, void (*msg_fn)(char *), EGDB_TYPE db_type)
+				int cache_mb, char const *directory, void (*msg_fn)(char const*), EGDB_TYPE db_type)
 {
 	int status;
 	EGDB_DRIVER *handle;

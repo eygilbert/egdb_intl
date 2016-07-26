@@ -127,7 +127,7 @@ typedef struct {
 	int dbpieces;
 	int kings_1side_8pcs;			/* limit, >= 0 */
 	int cacheblocks;				/* Total number of db cache blocks. */
-	void (*log_msg_fn)(char *);		/* for status and error messages. */
+	void (*log_msg_fn)(char const*);		/* for status and error messages. */
 	DBP *cprsubdatabase;
 	CCB *ccbs;
 	int ccbs_top;		/* index into ccbs[] of least recently used block. */
@@ -1007,7 +1007,7 @@ static CPRSUBDB *find_first_subdb(DBHANDLE *hdat, DBFILE *file, int blocknumnum)
  * A non-zero return value means some kind of error occurred.  The nature of
  * any errors are communicated through the msg_fn.
  */
-static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int cache_mb, char *filepath, void (*msg_fn)(char *))
+static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int cache_mb, char const *filepath, void (*msg_fn)(char const*))
 {
 	int i, j, stat;
 	int t0, t1;
@@ -1749,7 +1749,7 @@ static int egdb_close(EGDB_DRIVER *handle)
 }
 
 
-static int verify_crc(EGDB_DRIVER *handle, void (*msg_fn)(char *), int *abort, EGDB_VERIFY_MSGS *msgs)
+static int verify_crc(EGDB_DRIVER *handle, void (*msg_fn)(char const*), int *abort, EGDB_VERIFY_MSGS *msgs)
 {
 	int i;
 	int status;
@@ -1894,7 +1894,7 @@ static int get_pieces(EGDB_DRIVER *handle, int *max_pieces, int *max_pieces_1sid
 
 
 EGDB_DRIVER *egdb_open_wld_huff(int pieces, int kings_1side_8pcs,
-				int cache_mb, char *directory, void (*msg_fn)(char *), EGDB_TYPE db_type)
+				int cache_mb, char const *directory, void (*msg_fn)(char const*), EGDB_TYPE db_type)
 {
 	int status;
 	EGDB_DRIVER *handle;

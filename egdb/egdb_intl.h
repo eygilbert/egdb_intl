@@ -58,7 +58,7 @@
  * A message function that writes messages to stdout can be provided
  * like this:
  *
- *        void msg_fn(char *msg)
+ *        void msg_fn(char const *msg)
  *        {
  *             printf(msg);
  *        }
@@ -196,17 +196,17 @@ typedef struct egdb_driver {
 	int (*lookup)(struct egdb_driver *handle, EGDB_POSITION *position, int color, int cl);
 	void (*reset_stats)(struct egdb_driver *handle);
 	EGDB_STATS *(*get_stats)(struct egdb_driver *handle);
-	int (*verify)(struct egdb_driver *handle, void (*msg_fn)(char *), int *abort, EGDB_VERIFY_MSGS *msgs);
+	int (*verify)(struct egdb_driver *handle, void (*msg_fn)(char const*), int *abort, EGDB_VERIFY_MSGS *msgs);
 	int (*close)(struct egdb_driver *handle);
 	int (*get_pieces)(struct egdb_driver *handle, int *max_pieces, int *max_pieces_1side, int *max_9pc_kings, int *max_8pc_kings_1side);
 	void *internal_data;
 } EGDB_DRIVER;
 
 /* Open an endgame database driver. */
-EGDB_DRIVER *egdb_open(char *options, 
+EGDB_DRIVER *egdb_open(char const *options, 
 						int cache_mb,
-						char *directory,
-						void (*msg_fn)(char *));
+						char const *directory,
+						void (*msg_fn)(char const*));
 
 /*
  * Identify which type of database is present, and the maximum number of pieces
@@ -216,5 +216,5 @@ EGDB_DRIVER *egdb_open(char *options,
  * The return value is non-zero if no database is found.  In this case the values
  * for egdb_type and max_pieces are undefined on return.
  */
-int egdb_identify(char *directory, EGDB_TYPE *egdb_type, int *max_pieces);
+int egdb_identify(char const *directory, EGDB_TYPE *egdb_type, int *max_pieces);
 

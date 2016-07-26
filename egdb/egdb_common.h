@@ -195,7 +195,7 @@ template <class DBHANDLE_T> int needed_cache_buffers(DBHANDLE_T *hdat)
 }
 
 
-template <class DBCRC_T> DBCRC_T *find_file_crc(char *name, DBCRC_T *table, int size)
+template <class DBCRC_T> DBCRC_T *find_file_crc(char const *name, DBCRC_T *table, int size)
 {
 	int i;
 
