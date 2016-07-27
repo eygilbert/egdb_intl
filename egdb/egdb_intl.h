@@ -177,7 +177,7 @@ typedef struct {
 	char no_errors[80];
 } EGDB_VERIFY_MSGS;
 
-typedef int64_t EGDB_BITBOARD;
+typedef uint64_t EGDB_BITBOARD;
 
 /* This is the driver's definition of a draughts position.
  * The bitboards have a 1 bit gap after each group of 10 squares.

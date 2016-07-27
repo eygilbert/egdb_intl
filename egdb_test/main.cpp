@@ -19,13 +19,21 @@
 #include <cstring>
 #include <ctime>
 
-//#define FAST_TEST_MULT 5			/* using this speeds up the tests. */
-#define FAST_TEST_MULT 1
+#define FAST_TEST_MULT 1		/* Set to 5 to speed up the tests. */
 
+#define EYG		// RH
+#ifdef EYG
+#define DB_RUNLEN "C:/db_intl/wld_runlen"	/* Need 6 pieces for test. */
+#define DB_TUN_V1 "E:/db_intl/wld_v1"		/* Need 7 pieces for test. */
+#define DB_TUN_V2 "C:/db_intl/wld_v2"		/* Need 8 pieces for test. */
+#define DB_MTC "E:/db_intl/slice32_mtc"		/* Need 8 pieces for test. */
+#endif
+#ifdef RH
 #define DB_RUNLEN	"C:/Program Files/Kingsrow International/wld_runlen"	/* Need 6 pieces for test. */
 #define DB_TUN_V1	"C:/Program Files/Kingsrow International/wld_tun_v1"	/* Need 7 pieces for test. */
 #define DB_TUN_V2	"C:/Program Files/Kingsrow International/wld_database"	/* Need 8 pieces for test. */
 #define DB_MTC		"C:/Program Files/Kingsrow International/mtc_database"	/* Need 8 pieces for test. */
+#endif
 
 #define TDIFF(start) (((double)(clock() + 1 - start)) / (double)CLOCKS_PER_SEC)
 
@@ -247,6 +255,79 @@ void self_verify(EGDB_INFO *db, SLICE *slice, int64_t max_lookups)
 			}
 		}
 	}
+}
+
+
+int tun_v1_9pc_self_verify(int64_t max_lookups)
+{
+	clock_t t0;
+	EGDB_INFO db;
+	int64_t size, index, incr;
+	int value1, value2;
+	EGDB_POSITION pos;
+
+	std::printf("\nSelf-verify Tunstall v1 9-piece test.\n");
+
+	db.handle = egdb_open("maxpieces=9", 3000, DB_TUN_V1, print_msgs);
+	if (!db.handle) {
+		std::printf("Cannot open tun v1 db\n");
+		return(1);
+	}
+	db.handle->get_pieces(db.handle, &db.dbpieces, &db.dbpieces_1side, &db.db9_kings, &db.db8_kings_1side);
+	db.egdb_excludes_some_nonside_caps = false;
+	t0 = clock();
+
+	size = getdatabasesize_slice(5, 0, 4, 0);
+	if (max_lookups < 1)
+		incr = 1;
+	else
+		incr = (std::max)(size / max_lookups, 1LL);
+
+	for (index = 0; index < size; index += incr) {
+		indextoposition_slice(index, &pos, 5, 0, 4, 0);
+		if (!canjump((BOARD *)&pos, BLACK)) {
+			value1 = db.handle->lookup(db.handle, &pos, BLACK, 0);
+			value2 = db.lookup_with_search((BOARD *)&pos, BLACK, 6, true);
+			if (value2 != EGDB_SUBDB_UNAVAILABLE) {
+				switch (value1) {
+				case EGDB_UNKNOWN:
+					if (value2 != EGDB_UNKNOWN && value2 != EGDB_SUBDB_UNAVAILABLE) {
+						std::printf("v1 %d, v2 %d\n", value1, value2);
+					}
+					break;
+				case EGDB_WIN:
+					if (value2 != EGDB_WIN && value2 != EGDB_WIN_OR_DRAW) {
+						std::printf("v1 %d, v2 %d\n", value1, value2);
+					}
+					break;
+				case EGDB_LOSS:
+					if (value2 != EGDB_LOSS && value2 != EGDB_DRAW_OR_LOSS) {
+						std::printf("v1 %d, v2 %d\n", value1, value2);
+					}
+					break;
+				case EGDB_DRAW:
+					if (value2 != EGDB_DRAW && value2 != EGDB_DRAW_OR_LOSS && value2 != EGDB_WIN_OR_DRAW) {
+						std::printf("v1 %d, v2 %d\n", value1, value2);
+					}
+					break;
+				case EGDB_DRAW_OR_LOSS:
+					if (value2 != EGDB_DRAW_OR_LOSS) {
+						std::printf("v1 %d, v2 %d\n", value1, value2);
+					}
+					break;
+				case EGDB_WIN_OR_DRAW:
+					if (value2 != EGDB_WIN_OR_DRAW && value2 != EGDB_UNKNOWN) {
+						std::printf("v1 %d, v2 %d\n", value1, value2);
+					}
+					break;
+				}
+			}
+		}
+		if (!canjump((BOARD *)&pos, WHITE)) {
+
+		}
+	}
+	return(0);
 }
 
 
@@ -638,6 +719,9 @@ int main(int argc, char* argv[])
 
 	crc_verify_test(DB_TUN_V1);
 	crc_verify_test(DB_TUN_V2);
+
+	/* 9-piece tunstall v1 test. */
+//	tun_v1_9pc_self_verify(1000);
 	return 0;
 }
 
