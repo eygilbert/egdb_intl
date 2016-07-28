@@ -145,11 +145,8 @@
 #define MAXPIECES_OPTSTR "maxpieces"
 #define MAXKINGS_1SIDE_8PCS_OPTSTR "maxkings_1side_8pcs"
 
-
 /* Decode a moves-to-conv number that is >= the threshold for saving. */
 #define MTC_DECODE(val) (2 * ((val) - MTC_SKIPS))
-
-#define EGDB_HAS_NONSIDE_CAPTURES 1
 
 typedef enum {
 	EGDB_WLD_RUNLEN = 0,
@@ -196,7 +193,7 @@ typedef struct egdb_driver {
 	int (*lookup)(struct egdb_driver *handle, EGDB_POSITION *position, int color, int cl);
 	void (*reset_stats)(struct egdb_driver *handle);
 	EGDB_STATS *(*get_stats)(struct egdb_driver *handle);
-	int (*verify)(struct egdb_driver *handle, void (*msg_fn)(char const*), int *abort, EGDB_VERIFY_MSGS *msgs);
+	int (*verify)(struct egdb_driver *handle, void (*msg_fn)(char const *msg), int *abort, EGDB_VERIFY_MSGS *msgs);
 	int (*close)(struct egdb_driver *handle);
 	int (*get_pieces)(struct egdb_driver *handle, int *max_pieces, int *max_pieces_1side, int *max_9pc_kings, int *max_8pc_kings_1side);
 	void *internal_data;
@@ -206,7 +203,7 @@ typedef struct egdb_driver {
 EGDB_DRIVER *egdb_open(char const *options, 
 						int cache_mb,
 						char const *directory,
-						void (*msg_fn)(char const*));
+						void (*msg_fn)(char const *msg));
 
 /*
  * Identify which type of database is present, and the maximum number of pieces

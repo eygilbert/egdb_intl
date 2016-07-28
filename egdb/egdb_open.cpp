@@ -19,6 +19,9 @@ static void parse_options(char const *options, int *pieces, int *kings_1side_8pc
 {
 	*pieces = 0;
 	*kings_1side_8pcs = -1;
+	if (options == NULL)
+		return;
+
 	{
 		char const *p = std::strstr(options, MAXPIECES_OPTSTR);
 		if (p) {
