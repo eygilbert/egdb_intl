@@ -127,8 +127,6 @@
     <ClCompile Include="..\engine\bicoef.cpp" />
     <ClCompile Include="..\engine\bitcount.cpp" />
     <ClCompile Include="..\engine\board.cpp" />
-    <ClCompile Include="..\engine\fen.cpp" />
-    <ClCompile Include="..\engine\move.cpp" />
     <ClCompile Include="..\engine\reverse.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
@@ -143,10 +141,7 @@
     <ClInclude Include="..\engine\bitcount.h" />
     <ClInclude Include="..\engine\board.h" />
     <ClInclude Include="..\engine\bool.h" />
-    <ClInclude Include="..\engine\fen.h" />
     <ClInclude Include="..\engine\lock.h" />
-    <ClInclude Include="..\engine\move.h" />
-    <ClInclude Include="..\engine\move_api.h" />
     <ClInclude Include="..\engine\project.h" />
     <ClInclude Include="..\engine\reverse.h" />
   </ItemGroup>

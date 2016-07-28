@@ -45,16 +45,7 @@
     <ClInclude Include="..\engine\bool.h">
       <Filter>engine</Filter>
     </ClInclude>
-    <ClInclude Include="..\engine\fen.h">
-      <Filter>engine</Filter>
-    </ClInclude>
     <ClInclude Include="..\engine\lock.h">
-      <Filter>engine</Filter>
-    </ClInclude>
-    <ClInclude Include="..\engine\move.h">
-      <Filter>engine</Filter>
-    </ClInclude>
-    <ClInclude Include="..\engine\move_api.h">
       <Filter>engine</Filter>
     </ClInclude>
     <ClInclude Include="..\engine\project.h">
@@ -108,12 +99,6 @@
       <Filter>engine</Filter>
     </ClCompile>
     <ClCompile Include="..\engine\board.cpp">
-      <Filter>engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\engine\fen.cpp">
-      <Filter>engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\engine\move.cpp">
       <Filter>engine</Filter>
     </ClCompile>
     <ClCompile Include="..\engine\reverse.cpp">
