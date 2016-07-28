@@ -125,11 +125,25 @@ void print_msgs(char const *msg)
 }
 
 
+char *valstr(int value)
+{
+	if (value == EGDB_LOSS)
+		return("EGDB_LOSS");
+	else if (value == EGDB_DRAW)
+		return("EGDB_DRAW");
+	else if (value == EGDB_WIN)
+		return("EGDB_WIN");
+	else
+		return("");
+}
+
+
 void verify(DB_INFO *db1, DB_INFO *db2, SLICE *slice, int64_t max_lookups)
 {
 	int64_t size, index, incr;
 	int value1, value2;
 	bool black_ok, white_ok;
+	bool did_black, did_white;
 	EGDB_POSITION pos;
 
 	std::printf("Verifying db%d%d%d%d\n", slice->getnbm(), slice->getnbk(), slice->getnwm(), slice->getnwk());
@@ -142,6 +156,9 @@ void verify(DB_INFO *db1, DB_INFO *db2, SLICE *slice, int64_t max_lookups)
 	/* If npieces >= 7, some slices do not have positions for both colors. */
 	black_ok = true;
 	white_ok = true;
+	did_black = false;
+	did_white = false;
+
 	if (slice->getnpieces() >= 7) {
 		if (db1->excludes_some_sidetomove_colors) {
 			indextoposition_slice(0, &pos, slice->getnbm(), slice->getnbk(), slice->getnwm(), slice->getnwk());
@@ -184,6 +201,10 @@ void verify(DB_INFO *db1, DB_INFO *db2, SLICE *slice, int64_t max_lookups)
 			if (value1 != value2) {
 				std::printf("Verify error. index %I64d, color BLACK, v1 %d, v2 %d\n", index, value1, value2);
 			}
+			if (!did_black && index > size / 2 && slice->getnpieces() < 7) {
+				did_black = true;
+				std::printf("{0x%016I64x, 0x%016I64x, 0x%016I64x, EGDB_BLACK, %s},\n", pos.black, pos.white, pos.king, valstr(value1));
+			}
 		}
 
 		if (white_ok && !canjump((BOARD *)&pos, WHITE)) {
@@ -191,6 +212,10 @@ void verify(DB_INFO *db1, DB_INFO *db2, SLICE *slice, int64_t max_lookups)
 			value2 = db2->handle->lookup(db2->handle, &pos, WHITE, 0);
 			if (value1 != value2) {
 				std::printf("Verify error. index %I64d, color WHITE, v1 %d, v2 %d\n", index, value1, value2);
+			}
+			if (!did_white && index > size / 2 && slice->getnpieces() < 7) {
+				did_white = true;
+				std::printf("{0x%016I64x, 0x%016I64x, 0x%016I64x, EGDB_WHITE, %s},\n", pos.black, pos.white, pos.king, valstr(value1));
 			}
 		}
 	}
@@ -667,6 +692,7 @@ int main(int argc, char* argv[])
 
 	/* Close db2, leave db1 open for the next test. */
 	db2.handle->close(db2.handle);
+exit(0);
 
 	std::printf("\nVerifying WLD runlen against WLD Tunstall v2 (up to 6 pieces).\n");
 	if (identify(DB_RUNLEN, &db2))
