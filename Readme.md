@@ -48,7 +48,7 @@ Version 2 of the WLD db is identified as type EGDB_WLD_TUN_V2. Version 2 filenam
 
 The MTC db is identified as type EGDB_MTC_RUNLEN. It has filenames with suffixes ".cpr_mtc" and ".idx_mtc". This db has data for both side-to-move colors, and for positions with non-side capture. To make the db considerably smaller, it does not have data for positions where the distance to a conversion move is less than 10 plies. The return from lookup for such positions is MTC_LESS_THAN_THRESHOLD. Draughts engines typically do not need databases for such positions because a search can usually provide a good move. The db only has valid data for positions that are a win or loss. You cannot tell this from the return value of a lookup in the MTC db, so before querying an MTC value you should use a WLD db to determine that the position is a win or a loss. 
 
-Functions
+egdb_open
 ---------
 EGDB_DRIVER *egdb_open(char const *options, int cache_mb, char const *directory, void (*msg_fn)(char const *msg));
 
@@ -58,7 +58,7 @@ Opening a db takes some time. It allocates memory for caching db values, and rea
 
 "options" is a string of optional open settings. The options are of the form name=value. Multiple options are separated by a semicolon. Either a NULL pointer or an empty string ("") can be given for no options. The options were more useful a few years ago when computers had less memory. Now they are not usually needed. These options are defined:
 
-"maxpieces" sets the maximum number of pieces for which the driver will lookup values. By default the driver will use all the database files that it finds during initialization. If you restrict the number of pieces, the driver will not have to load indexing data for larger position, saving time during initialization and using it allotted memory more efficiently.
+"maxpieces" sets the maximum number of pieces for which the driver will lookup values. By default the driver will use all the database files that it finds during initialization. If you restrict the number of pieces, the driver will not have to load indexing data for larger positions, saving time during initialization and using its allotted memory more efficiently.
 
 "maxkings_1side_8pcs" restricts the set of 8-piece positions for which the driver will lookup values. This saves time and memory during initialization.
 
@@ -72,4 +72,38 @@ Opening a db takes some time. It allocates memory for caching db values, and rea
         {
              printf(msg);
         }
+
+In kingsrow I save driver messages to a log file. It can be useful when diagnosing an unexpected problem.
+
+EGDB_DRIVER
+-----------
+/* The driver handle type */
+typedef struct egdb_driver {
+	int (*lookup)(struct egdb_driver *handle, EGDB_POSITION *position, int color, int cl);
+	void (*reset_stats)(struct egdb_driver *handle);
+	EGDB_STATS *(*get_stats)(struct egdb_driver *handle);
+	int (*verify)(struct egdb_driver *handle, void (*msg_fn)(char const *msg), int *abort, EGDB_VERIFY_MSGS *msgs);
+	int (*close)(struct egdb_driver *handle);
+	int (*get_pieces)(struct egdb_driver *handle, int *max_pieces, int *max_pieces_1side, int *max_9pc_kings, int *max_8pc_kings_1side);
+	void *internal_data;
+} EGDB_DRIVER;
+
+"lookup" is the function that returns a database value. For the WLD databases, the values returned by lookup are typically defined by one of the macros EGDB_WIN, EGDB_LOSS, or EGDB_DRAW. If the query is of a subset that has incompete data, such as 5men vs. 4men, lookup might also return EGDB_UNKNOWN, EGDB_DRAW_OR_LOSS, or EGDB_WIN_OR_DRAW. If you query a side-to-move of a 7pc or 8pc that is excluded from the database, you will get EGDB_UNKNOWN. If you had set the conditional lookup arguement true, you might get the return EGDB_NOT_IN_CACHE. If for example you query an 8pc position, but you only opened the driver for a maximum of 7 pieces, then you will get the value EGDB_SUBDB_UNAVAILABLE. For the MTC databases, the values returned by lookup are either the number plies to a conversion move, or the value MTC_LESS_THAN_THRESHOLD for positions that are close to a conversion move. The mtc databases do not store positions which are closer than MTC_THRESHOLD plies to a conversion move. It will only return even mtc values, because the database represents the mtc value internally by distance/2. The true value is either the value returned, or (value-1). An application program can infer the true even or odd value of a position by looking up the mtc values of the position's successors. If the best successor mtc value is the same as the position's, then the position's true value is 1 less than the returned value.
+  "handle" is the value returned from egdb_open.
+  "position" is a bitboard representation of the position to query. See the definition of EGDB_POSITION in egdb_intl.h.
+  "color" is the side-to-move, either EGDB_BLACK or EGDB_WHITE.
+  "cl" is the conditional lookup argument. If it is true, then the driver will only get the value of the position if the data is already cached in ram somewhere, otherwise EGDB_NOT_IN_CACHE will be returned. If the conditional lookup argument if false, the driver will always attempt to get a value for the position even if it has to read a disk file to get it.
+"reset_stats" and "get_stats" are functions for collecting statistics about the db use. These functions are primarily for use by the driver developer and might be disabled in this public release of the driver.
+"verify" checks that every db index and data file has a correct CRC value. It returns 0 if all CRCs compared ok. If there are any CRCs that do not match, a non-zero value is returned, and an erro message is written through the msg_fn. There is an abort argument that can be used to cancel the verification process (because it can take a while). To abort verification, set the value of *abort to non-zero. "msgs" is a struct of language localization messages used by verify. For English messages, define it like this:
+
+	EGDB_VERIFY_MSGS verify_msgs = {
+		"crc failed",
+		"ok",
+		"errors",
+		"no errors"
+	};
+
+"close" is used to close the driver and free resources. If the application needs to change anything about an egdb driver after it has been opened, such as number of pieces or megabytes of ram to use, it must be closed and then opened again with the new parameters.  Close returns 0 on success, non-zero if there are any errors.
+"get_pieces" is a way to query some attributes of the open database.
+
 
