@@ -88,12 +88,20 @@ typedef struct egdb_driver {
 	void *internal_data;
 } EGDB_DRIVER;
 
-"lookup" is the function that returns a database value. For the WLD databases, the values returned by lookup are typically defined by one of the macros EGDB_WIN, EGDB_LOSS, or EGDB_DRAW. If the query is of a subset that has incompete data, such as 5men vs. 4men, lookup might also return EGDB_UNKNOWN, EGDB_DRAW_OR_LOSS, or EGDB_WIN_OR_DRAW. If you query a side-to-move of a 7pc or 8pc that is excluded from the database, you will get EGDB_UNKNOWN. If you had set the conditional lookup arguement true, you might get the return EGDB_NOT_IN_CACHE. If for example you query an 8pc position, but you only opened the driver for a maximum of 7 pieces, then you will get the value EGDB_SUBDB_UNAVAILABLE. For the MTC databases, the values returned by lookup are either the number plies to a conversion move, or the value MTC_LESS_THAN_THRESHOLD for positions that are close to a conversion move. The mtc databases do not store positions which are closer than MTC_THRESHOLD plies to a conversion move. It will only return even mtc values, because the database represents the mtc value internally by distance/2. The true value is either the value returned, or (value-1). An application program can infer the true even or odd value of a position by looking up the mtc values of the position's successors. If the best successor mtc value is the same as the position's, then the position's true value is 1 less than the returned value.
+"lookup" is the function that returns a database value. For the WLD databases, the values returned by lookup are typically defined by one of the macros EGDB_WIN, EGDB_LOSS, or EGDB_DRAW. If the query is of a subset that has incompete data, such as 5men vs. 4men, lookup might also return EGDB_UNKNOWN, EGDB_DRAW_OR_LOSS, or EGDB_WIN_OR_DRAW. If you query a side-to-move of a 7pc or 8pc that is excluded from the database, you will get EGDB_UNKNOWN. If you had set the conditional lookup arguement true, you might get the return EGDB_NOT_IN_CACHE. If for example you query an 8pc position, but you only opened the driver for a maximum of 7 pieces, then you will get the value EGDB_SUBDB_UNAVAILABLE.
+
+For the MTC databases, the values returned by lookup are either the number plies to a conversion move, or the value MTC_LESS_THAN_THRESHOLD for positions that are close to a conversion move. The mtc databases do not store positions that are closer than MTC_THRESHOLD plies to a conversion move. It will only return even mtc values, because the database represents the mtc value internally by distance/2. The true value is either the value returned, or (value-1). An application program can infer the true even or odd value of a position by looking up the mtc values of the position's successors. If the best successor mtc value is the same as the position's, then the position's true value is 1 less than the returned value.
+
   "handle" is the value returned from egdb_open.
+
   "position" is a bitboard representation of the position to query. See the definition of EGDB_POSITION in egdb_intl.h.
+
   "color" is the side-to-move, either EGDB_BLACK or EGDB_WHITE.
+
   "cl" is the conditional lookup argument. If it is true, then the driver will only get the value of the position if the data is already cached in ram somewhere, otherwise EGDB_NOT_IN_CACHE will be returned. If the conditional lookup argument if false, the driver will always attempt to get a value for the position even if it has to read a disk file to get it.
+
 "reset_stats" and "get_stats" are functions for collecting statistics about the db use. These functions are primarily for use by the driver developer and might be disabled in this public release of the driver.
+
 "verify" checks that every db index and data file has a correct CRC value. It returns 0 if all CRCs compared ok. If there are any CRCs that do not match, a non-zero value is returned, and an erro message is written through the msg_fn. There is an abort argument that can be used to cancel the verification process (because it can take a while). To abort verification, set the value of *abort to non-zero. "msgs" is a struct of language localization messages used by verify. For English messages, define it like this:
 
 	EGDB_VERIFY_MSGS verify_msgs = {
@@ -104,6 +112,7 @@ typedef struct egdb_driver {
 	};
 
 "close" is used to close the driver and free resources. If the application needs to change anything about an egdb driver after it has been opened, such as number of pieces or megabytes of ram to use, it must be closed and then opened again with the new parameters.  Close returns 0 on success, non-zero if there are any errors.
+
 "get_pieces" is a way to query some attributes of the open database.
 
 
