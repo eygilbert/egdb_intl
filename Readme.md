@@ -77,16 +77,16 @@ In kingsrow I save driver messages to a log file. It can be useful when diagnosi
 
 EGDB_DRIVER
 -----------
-/* The driver handle type */  
-typedef struct egdb_driver {  
-	int (*lookup)(struct egdb_driver *handle, EGDB_POSITION *position, int color, int cl);  
-	void (*reset_stats)(struct egdb_driver *handle);  
-	EGDB_STATS *(*get_stats)(struct egdb_driver *handle);  
-	int (*verify)(struct egdb_driver *handle, void (*msg_fn)(char const *msg), int *abort, EGDB_VERIFY_MSGS *msgs);  
-	int (*close)(struct egdb_driver *handle);  
-	int (*get_pieces)(struct egdb_driver *handle, int *max_pieces, int *max_pieces_1side, int *max_9pc_kings, int *max_8pc_kings_1side);  
-	void *internal_data;  
-} EGDB_DRIVER;
+        /* The driver handle type */  
+        typedef struct egdb_driver {  
+             int (*lookup)(struct egdb_driver *handle, EGDB_POSITION *position, int color, int cl);  
+             void (*reset_stats)(struct egdb_driver *handle);  
+             EGDB_STATS *(*get_stats)(struct egdb_driver *handle);  
+             int (*verify)(struct egdb_driver *handle, void (*msg_fn)(char const *msg), int *abort, EGDB_VERIFY_MSGS *msgs);  
+             int (*close)(struct egdb_driver *handle);  
+             int (*get_pieces)(struct egdb_driver *handle, int *max_pieces, int *max_pieces_1side, int *max_9pc_kings, int *max_8pc_kings_1side);  
+             void *internal_data;  
+        } EGDB_DRIVER;
 
 "lookup" is the function that returns a database value. For the WLD databases, the values returned by lookup are typically defined by one of the macros EGDB_WIN, EGDB_LOSS, or EGDB_DRAW. If the query is of a subset that has incompete data, such as 5men vs. 4men, lookup might also return EGDB_UNKNOWN, EGDB_DRAW_OR_LOSS, or EGDB_WIN_OR_DRAW. If you query a side-to-move of a 7pc or 8pc that is excluded from the database, you will get EGDB_UNKNOWN. If you had set the conditional lookup arguement true, you might get the return EGDB_NOT_IN_CACHE. If for example you query an 8pc position, but you only opened the driver for a maximum of 7 pieces, then you will get the value EGDB_SUBDB_UNAVAILABLE.
 
