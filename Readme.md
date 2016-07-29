@@ -98,6 +98,7 @@ For the MTC databases, the values returned by lookup are either the number plies
 
   "color" is the side-to-move, either EGDB_BLACK or EGDB_WHITE.
 
+  "cl" is the conditional lookup argument. If it is true, then the driver will only get the value of the position if the data is already cached in ram somewhere, otherwise EGDB_NOT_IN_CACHE will be returned. If the conditional lookup argument if false, the driver will always attempt to get a value for the position even if it has to read a disk file to get it. An example of a place to use conditional lookup is in qsearch, where you don't want the search to be slowed by disk access. If the database is not on a fast SSD you might want to use conditional lookup in other areas of a search to limit the slowing.
 
 "reset_stats" and "get_stats" are functions for collecting statistics about the db use. These functions are primarily for use by the driver developer and might be disabled in this public release of the driver.
 
