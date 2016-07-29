@@ -8,7 +8,7 @@ Description
 -----------
 Egdb_intl is a set of C++ source files with functions to access the kingsrow international draughts endgame databases. The code can be used to access 2 versions of the win, loss, draw (WLD) db, and the moves-to-conversion (MTC) db. These databases have information for positions with up to 8 pieces and with up to 5 pieces on one side. The source files are identical to those used in the kingsrow draughts program.
 
-From 2010 to 2014 I distributed version 1 of the databases on a portable external hard drive. This db is 407gb of data, which includes a small subset of 9-piece positions, 5 men vs. 4 men. In 2014 I created version 2 by re-compressing the db using better compression techniques, and excluding more positions to make the compression work better. Version 2 is 56gb of data, and is available for download from a file server. See link below.
+From 2010 to 2014 I distributed version 1 of the databases on a portable external hard drive. This db is 407gb of data, which includes a small subset of 9-piece positions, 5 men vs. 4 men (I disabled the 9-piece functionality in this driver because I found through testing that on average it was less effective than not using it). In 2014 I created version 2 by re-compressing the db using better compression techniques, and excluding more positions to make the compression work better. Version 2 is 56gb of data, and is available for download from a file server. See link below.
 
 The source code can be compiled for Windows using Microsoft Visual Studio 2015, and for Linux. Rein Halbersma ported the code to Linux and improved it in other ways also. Thanks Rein!
 
@@ -94,15 +94,14 @@ For the MTC databases, the values returned by lookup are either the number plies
 
   "handle" is the value returned from egdb_open.
 
-  "position" is a bitboard representation of the position to query. See the definition of EGDB_POSITION in egdb_intl.h.
+  "position" is a bitboard representation of the position to query. See the definition of EGDB_POSITION in egdb_intl.h. It is a conventional 10x10 board representation using bit 0 for square 1, bit 1 for square 2, ..., and gaps at bits 10, 21, 32, and 43.
 
   "color" is the side-to-move, either EGDB_BLACK or EGDB_WHITE.
 
-  "cl" is the conditional lookup argument. If it is true, then the driver will only get the value of the position if the data is already cached in ram somewhere, otherwise EGDB_NOT_IN_CACHE will be returned. If the conditional lookup argument if false, the driver will always attempt to get a value for the position even if it has to read a disk file to get it.
 
 "reset_stats" and "get_stats" are functions for collecting statistics about the db use. These functions are primarily for use by the driver developer and might be disabled in this public release of the driver.
 
-"verify" checks that every db index and data file has a correct CRC value. It returns 0 if all CRCs compared ok. If there are any CRCs that do not match, a non-zero value is returned, and an erro message is written through the msg_fn. There is an abort argument that can be used to cancel the verification process (because it can take a while). To abort verification, set the value of *abort to non-zero. "msgs" is a struct of language localization messages used by verify. For English messages, define it like this:
+"verify" checks that every db index and data file has a correct CRC value. It returns 0 if all CRCs compared ok. If there are any CRCs that do not match, a non-zero value is returned, and an error message is written through the msg_fn. There is an abort argument that can be used to cancel the verification process (because it can take a while). To abort verification, set the value of *abort to non-zero. "msgs" is a struct of language localization messages used by verify. For English messages, define it like this:
 
 	EGDB_VERIFY_MSGS verify_msgs = {
 		"crc failed",
@@ -121,4 +120,4 @@ int egdb_identify(char const *directory, EGDB_TYPE *egdb_type, int *max_pieces);
 
 Check if a database exists in directory, and if so return its type and the maximum number of pieces for which it has data.
 The return value of the function is 0 if a database is found, and its type and piece info are written to the reference arguments.
-The return value is non-zero if no database is found. In this case the values for egdb_type and max_pieces are undefined on return.
+The return value is non-zero if no database is found. In this case the values for egdb_type and max_pieces are unchanged on return.
