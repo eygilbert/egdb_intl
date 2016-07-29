@@ -19,7 +19,7 @@
 #include <cstdlib>
 #include <utility>
 
-#define MAXPIECES 9
+#define MAXPIECES 8
 
 #define LOG_HITS 0
 

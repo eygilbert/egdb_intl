@@ -350,7 +350,7 @@ int EGDB_INFO::lookup_with_search(BOARD *p, int color, int maxdepth, bool force_
 		return(EGDB_UNKNOWN);
 	}
 
-	for (i = 2; i < maxdepth; ++i) {
+	for (i = 1; i < maxdepth; ++i) {
 		value = lookup_with_rep_check(p, color, 0, i, EGDB_LOSS, EGDB_WIN, force_root_search);
 		switch (value) {
 		case EGDB_WIN:

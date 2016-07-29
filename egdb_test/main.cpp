@@ -258,6 +258,14 @@ void self_verify(EGDB_INFO *db, SLICE *slice, int64_t max_lookups)
 	}
 }
 
+void errmsg_9pc_self_verify(int v1, int v2, int color, int64_t index, BOARD *board)
+{
+	char fenbuf[100];
+
+	print_fen(board, color, fenbuf);
+	std::printf("index %I64d, v1 %d, v2 %d, %s\n", index, v1, v2, fenbuf);
+}
+
 
 int tun_v1_9pc_self_verify(int64_t max_lookups)
 {
@@ -293,32 +301,32 @@ int tun_v1_9pc_self_verify(int64_t max_lookups)
 				switch (value1) {
 				case EGDB_UNKNOWN:
 					if (value2 != EGDB_UNKNOWN && value2 != EGDB_SUBDB_UNAVAILABLE) {
-						std::printf("v1 %d, v2 %d\n", value1, value2);
+						errmsg_9pc_self_verify(value1, value2, BLACK, index, (BOARD *)&pos);
 					}
 					break;
 				case EGDB_WIN:
 					if (value2 != EGDB_WIN && value2 != EGDB_WIN_OR_DRAW) {
-						std::printf("v1 %d, v2 %d\n", value1, value2);
+						errmsg_9pc_self_verify(value1, value2, BLACK, index, (BOARD *)&pos);
 					}
 					break;
 				case EGDB_LOSS:
 					if (value2 != EGDB_LOSS && value2 != EGDB_DRAW_OR_LOSS) {
-						std::printf("v1 %d, v2 %d\n", value1, value2);
+						errmsg_9pc_self_verify(value1, value2, BLACK, index, (BOARD *)&pos);
 					}
 					break;
 				case EGDB_DRAW:
 					if (value2 != EGDB_DRAW && value2 != EGDB_DRAW_OR_LOSS && value2 != EGDB_WIN_OR_DRAW) {
-						std::printf("v1 %d, v2 %d\n", value1, value2);
+						errmsg_9pc_self_verify(value1, value2, BLACK, index, (BOARD *)&pos);
 					}
 					break;
 				case EGDB_DRAW_OR_LOSS:
 					if (value2 != EGDB_DRAW_OR_LOSS) {
-						std::printf("v1 %d, v2 %d\n", value1, value2);
+						errmsg_9pc_self_verify(value1, value2, BLACK, index, (BOARD *)&pos);
 					}
 					break;
 				case EGDB_WIN_OR_DRAW:
 					if (value2 != EGDB_WIN_OR_DRAW && value2 != EGDB_UNKNOWN) {
-						std::printf("v1 %d, v2 %d\n", value1, value2);
+						errmsg_9pc_self_verify(value1, value2, BLACK, index, (BOARD *)&pos);
 					}
 					break;
 				}
@@ -634,12 +642,19 @@ int main(int argc, char* argv[])
 		return(1);
 
 	/* Open the endgame db drivers. */
-	db1.handle = egdb_open("maxpieces=7", 2000, DB_TUN_V2, print_msgs);
+#ifdef RH
+	const int maxpieces = 7;
+#else
+	const int maxpieces = 8;
+#endif
+	char opt[50];
+	sprintf(opt, "maxpieces=%d", maxpieces);
+	db1.handle = egdb_open(opt, 2000, DB_TUN_V2, print_msgs);
 	if (!db1.handle) {
 		std::printf("Cannot open tun v2 db\n");
 		return(1);
 	}
-	db2.handle = egdb_open("maxpieces=7", 2000, DB_TUN_V1, print_msgs);
+	db2.handle = egdb_open(opt, 2000, DB_TUN_V1, print_msgs);
 	if (!db2.handle) {
 		std::printf("Cannot open tun v1 db\n");
 		return(1);
@@ -662,7 +677,7 @@ int main(int argc, char* argv[])
 	while (1) {
 		std::printf("%.2fsec: ", TDIFF(t0));
 		verify(&db1, &db2, &slice, 50000 / FAST_TEST_MULT);
-		if (slice.advance() > 7)
+		if (slice.advance() > maxpieces)
 			break;
 	}
 
@@ -721,8 +736,6 @@ int main(int argc, char* argv[])
 	crc_verify_test(DB_TUN_V1);
 	crc_verify_test(DB_TUN_V2);
 
-	/* 9-piece tunstall v1 test. */
-//	tun_v1_9pc_self_verify(1000);
 	return 0;
 }
 

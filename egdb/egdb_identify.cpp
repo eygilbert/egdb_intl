@@ -18,7 +18,6 @@ typedef struct {
 
 EGDB_FIND_INFO egdb_find_table[] = {
 	{EGDB_WLD_TUN_V2, "db9-5040.idx1", 9, 0xef847fc5},
-	{EGDB_WLD_TUN_V1, "db9-5040.idx", 9, 0x1f866ec6},
 	{EGDB_WLD_RUNLEN, "db9-5040.idx", 9, 0xa6c3208e},	/* Version 2, with more resolved. */
 	{EGDB_WLD_RUNLEN, "db9-5040.idx", 9, 0xa473f0eb},	/* first version. */
 	{EGDB_WLD_TUN_V2, "db8-4040.idx1", 8, 0x40993827},

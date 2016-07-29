@@ -87,13 +87,6 @@ EGDB_DRIVER *egdb_open(char const *options,
 						char const *directory,
 						void (*msg_fn)(char const *msg));
 
-/*
- * Identify which type of database is present, and the maximum number of pieces
- * for which it has data.
- * The return value of the function is 0 if a database is found, and its
- * database type and piece info are written using the pointer arguments.
- * The return value is non-zero if no database is found.  In this case the values
- * for egdb_type and max_pieces are undefined on return.
- */
+/* Identify a db, get its size and type. */
 int egdb_identify(char const *directory, EGDB_TYPE *egdb_type, int *max_pieces);
 

@@ -44,7 +44,7 @@ Excluded Positions
 ------------------
 Version 1 of the WLD db is identified as type EGDB_WLD_TUN_V1. Version 1 filenames have suffixes ".cpr" and ".idx". This db does not have valid data for any position that is a capture for the side-to-move. There is no way to know this from the lookup return value, which will typically be one of the win, loss, or draw values. Before calling lookup, you should first test that the position is not a capture.
 
-Version 2 of the WLD db is identified as type EGDB_WLD_TUN_V2. Version 2 filenames have suffixes ".cpr1" and ".idx1". Like version 1, it does not have valid data for positions that are a capture for the side-to-move. Additionally, for positions with 7 and 8 pieces that have more than 1 king present, it does not have valid data for positions that would be captures for the opposite of the side-to-move (non-side captures), and it only has data for one side. Which side is excluded varies with position. It's not always black or always white, although it is consistent within each slice. It's whatever makes the compression more effective. If you call lookup and the data for the side that is not present, you get the return EGDB_UNKNOWN. 
+Version 2 of the WLD db is identified as type EGDB_WLD_TUN_V2. Version 2 filenames have suffixes ".cpr1" and ".idx1". Like version 1, it does not have valid data for positions that are a capture for the side-to-move. Additionally, for positions with 7 and 8 pieces that have more than 1 king present, it does not have valid data for positions that would be captures for the opposite of the side-to-move (non-side captures), and it only has data for one side. Which side is excluded varies with position. It's not always black or always white, although it is consistent within each slice. It's whatever makes the compression more effective. If you call lookup and the data for that side is not present, you get the return EGDB_UNKNOWN. 
 
 The MTC db is identified as type EGDB_MTC_RUNLEN. It has filenames with suffixes ".cpr_mtc" and ".idx_mtc". This db has data for both side-to-move colors, and for positions with non-side capture. To make the db considerably smaller, it does not have data for positions where the distance to a conversion move is less than 10 plies. The return from lookup for such positions is MTC_LESS_THAN_THRESHOLD. Draughts engines typically do not need databases for such positions because a search can usually provide a good move. The db only has valid data for positions that are a win or loss. You cannot tell this from the return value of a lookup in the MTC db, so before querying an MTC value you should use a WLD db to determine that the position is a win or a loss. 
 
@@ -115,4 +115,10 @@ For the MTC databases, the values returned by lookup are either the number plies
 
 "get_pieces" is a way to query some attributes of the open database.
 
+egdb_identify
+-------------
+int egdb_identify(char const *directory, EGDB_TYPE *egdb_type, int *max_pieces);
 
+Check if a database exists in directory, and if so return its type and the maximum number of pieces for which it has data.
+The return value of the function is 0 if a database is found, and its type and piece info are written to the reference arguments.
+The return value is non-zero if no database is found. In this case the values for egdb_type and max_pieces are undefined on return.
