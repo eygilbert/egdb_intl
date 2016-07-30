@@ -165,7 +165,6 @@
 
 #ifndef USE_WIN_API
 
-	#include <cassert>
 	#include <cstdint>
 
 	typedef std::FILE*	FILE_HANDLE;
@@ -186,10 +185,10 @@
 	//long 
 	int64_t get_file_size(FILE_HANDLE stream)
 	{
-		assert(_ftelli64(stream) == 0);
+		int64_t const curr = _ftelli64(stream);
 		_fseeki64(stream, 0, SEEK_END);
-		int64_t size = _ftelli64(stream);
-		_fseeki64(stream, 0, SEEK_SET);
+		int64_t const size = _ftelli64(stream);
+		_fseeki64(stream, curr, SEEK_SET);
 		return size;
 	}
 
