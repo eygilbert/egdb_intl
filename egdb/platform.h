@@ -47,7 +47,7 @@
 
 #endif
 
-#define USE_WIN_API 
+//#define USE_WIN_API 
 
 // ------
 // Memory
@@ -165,7 +165,8 @@
 
 #ifndef USE_WIN_API
 
-	#include <cstint>
+	#include <cassert>
+	#include <cstdint>
 
 	typedef std::FILE*	FILE_HANDLE;
 	typedef bool		BOOL_T;
@@ -185,8 +186,11 @@
 	//long 
 	int64_t get_file_size(FILE_HANDLE stream)
 	{
-		// std::ftell(stream);
-		return _ftelli64(stream);
+		assert(_ftelli64(stream) == 0);
+		_fseeki64(stream, 0, SEEK_END);
+		int64_t size = _ftelli64(stream);
+		_fseeki64(stream, 0, SEEK_SET);
+		return size;
 	}
 
 	inline
