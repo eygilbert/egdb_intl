@@ -3,7 +3,6 @@
 #include "engine/bitcount.h"
 #include "engine/board.h"
 #include "engine/bool.h"
-#include <Windows.h>
 #include <cstdint>
 
 unsigned char ReverseByte[256];

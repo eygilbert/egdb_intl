@@ -7,12 +7,12 @@
 #include "engine/fen.h"
 #include "engine/move_api.h"
 #include <io.h>
-#include <Windows.h>
 #include <cassert>
 #include <climits>
 #include <csetjmp>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <ctime>
 
 bool EGDB_INFO::requires_nonside_capture_test(BOARD *p)
@@ -235,13 +235,12 @@ bool is_repetition(BOARD *history, BOARD *p, int depth)
 		if (men ^ earlier_men)
 			break;
 
-		if (!memcmp(p, history + i, sizeof(*p)))
+		if (!std::memcmp(p, history + i, sizeof(*p)))
 			return(true);
 	}
 
 	return(false);
 }
-
 
 /*
  * Caution: this function is not thread-safe.

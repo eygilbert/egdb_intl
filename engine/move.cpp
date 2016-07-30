@@ -3,7 +3,6 @@
 #include "engine/bool.h"
 #include "engine/move_api.h"
 #include "engine/project.h"	// ARRAY_SIZE
-#include <Windows.h>
 #include <cstdio>
 #include <cstring>
 

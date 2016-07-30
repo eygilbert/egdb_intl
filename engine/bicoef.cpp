@@ -1,5 +1,4 @@
 #include "engine/bicoef.h"
-#include <Windows.h>
 #include <algorithm>
 #include <cstdint>
 #include <cstdio>

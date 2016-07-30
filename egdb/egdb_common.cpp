@@ -7,7 +7,6 @@
 #include "engine/board.h"
 #include "engine/bool.h"
 #include "engine/lock.h"
-#include <Windows.h>
 
 int get_num_subslices(int nbm, int nbk, int nwm, int nwk)
 {
@@ -56,38 +55,3 @@ int read_file(FILE_HANDLE fp, unsigned char *buf, size_t size, int pagesize)
 	}
 	return(1);
 }
-
-
-int set_file_pointer(FILE_HANDLE handle, int64_t pos)
-{
-	I64_HIGH_LOW filepos;
-
-	/* Seek the start position. */
-	filepos.word64 = pos;
-	if (SetFilePointer(handle, filepos.words32.low32, (long *)&filepos.words32.high32, FILE_BEGIN) == -1)
-		return(1);
-
-	return(0);
-}
-
-
-int64_t get_file_size(FILE_HANDLE handle)
-{
-	I64_HIGH_LOW filesize;
-
-	filesize.words32.low32 = GetFileSize(handle, &filesize.words32.high32);
-	return(filesize.word64);
-}
-
-
-int get_mem_available_mb(void)
-{
-	MEMORYSTATUS memstat;
-
-	GlobalMemoryStatus(&memstat);
-	return((int)(memstat.dwAvailPhys / (1024 * 1024)));
-}
-
-
-
-

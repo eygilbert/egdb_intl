@@ -9,7 +9,6 @@
 #include "engine/move_api.h"
 #include "engine/project.h"	// ARRAY_SIZE
 #include "engine/reverse.h"
-#include <Windows.h>
 #include <algorithm>
 #include <cctype>
 #include <cmath>

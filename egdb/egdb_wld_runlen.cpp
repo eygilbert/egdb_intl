@@ -11,7 +11,6 @@
 #include "engine/lock.h"
 #include "engine/project.h"	// ARRAY_SIZE
 #include "engine/reverse.h"
-#include <Windows.h>
 #include <algorithm>
 #include <cassert>
 #include <cctype>

@@ -1,13 +1,10 @@
 #include "egdb/crc.h"
 #include "egdb/egdb_intl.h"
+#include "egdb/platform.h"
 #include "engine/project.h"	// ARRAY_SIZE
-#include <Windows.h>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-
-#define MAXFILENAME MAX_PATH
-
 
 typedef struct {
 	EGDB_TYPE egdb_type;

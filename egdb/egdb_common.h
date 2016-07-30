@@ -1,7 +1,6 @@
 #pragma once
 #include "egdb/egdb_intl.h"
 #include "egdb/platform.h"
-#include <Windows.h>
 
 #define MAXMSG 256
 #define ONE_MB 1048576
@@ -43,20 +42,9 @@ typedef uint32_t INDEX;
 
 #define LOWORD32(x) (uint32_t)((x) & 0xffffffff)
 
-/* Upper and lower words of a 64-bit int, for large file access. */
-typedef union {
-	int64_t word64;
-	struct {
-		unsigned long low32;
-		unsigned long high32;
-	} words32;
-} I64_HIGH_LOW;
 
 extern int get_num_subslices(int nbm, int nbk, int nwm, int nwk);
 int read_file(FILE_HANDLE fp, unsigned char *buf, size_t size, int pagesize);
-int set_file_pointer(FILE_HANDLE handle, int64_t pos);
-int64_t get_file_size(FILE_HANDLE handle);
-int get_mem_available_mb(void);
 
 inline int needs_reversal(int nbm, int nbk, int nwm, int nwk, int color)
 {
