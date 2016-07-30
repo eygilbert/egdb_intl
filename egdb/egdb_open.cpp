@@ -1,6 +1,5 @@
 #include "egdb/egdb_common.h"
 #include "egdb/egdb_intl.h"
-#include "engine/lock.h"
 #include <algorithm>
 #include <cctype>
 #include <cstdio>

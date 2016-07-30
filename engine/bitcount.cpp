@@ -1,3 +1,4 @@
+#include "egdb/platform.h"
 #include "engine/bitcount.h"
 #include "engine/bool.h"
 #include "engine/project.h"	// ARRAY_SIZE
@@ -23,16 +24,6 @@ int iterativebitcount(uint32_t n)
 	}
 	return r;
 }
-
-
-bool check_cpu_has_popcount()
-{
-	int cpuinfo[4] = {-1};
-
-	__cpuid(cpuinfo, 1);
-	return((cpuinfo[2] >> 23) & 1);
-}
-
 
 void init_bitcount()
 {

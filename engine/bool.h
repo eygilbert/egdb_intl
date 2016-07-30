@@ -1,5 +1,5 @@
 #pragma once
-#include <intrin.h>
+#include "egdb/platform.h"
 #include <cstdint>
 
 #define hiword(x) (((x) & 0xFFFF0000) >> 16)
@@ -20,45 +20,25 @@ inline uint64_t clear_lsb(uint64_t x)
 
 inline int LSB(uint32_t x)
 {
-	unsigned long bitpos;
-
-	if (_BitScanForward(&bitpos, x))
-		return(bitpos);
-	else
-		return(0);
+	return bit_scan_forward(x);
 }
 
 
 inline int MSB(uint32_t x)
 {
-	unsigned long bitpos;
-
-	if (_BitScanReverse(&bitpos, x))
-		return(bitpos);
-	else
-		return(0);
+	return bit_scan_reverse(x);
 }
 
 
 #ifdef _WIN64
 inline int LSB64(uint64_t x)
 {
-	unsigned long bitpos;
-
-	if (_BitScanForward64(&bitpos, x))
-		return(bitpos);
-	else
-		return(0);
+	return bit_scan_forward64(x);
 }
 
 inline int MSB64(uint64_t x)
 {
-	unsigned long bitpos;
-
-	if (_BitScanReverse64(&bitpos, x))
-		return(bitpos);
-	else
-		return(0);
+	return bit_scan_reverse64(x);
 }
 
 #else

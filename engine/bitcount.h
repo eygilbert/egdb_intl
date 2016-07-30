@@ -1,5 +1,5 @@
 #pragma once
-#include <intrin.h>
+#include "egdb/platform.h"
 #include <cstdint>
 
 extern bool cpu_has_popcount;
@@ -24,7 +24,7 @@ inline int bitcount16(uint16_t n)
 {
 #ifdef _WIN64
 	if (cpu_has_popcount)
-		return(__popcnt(n));
+		return(bit_pop_count(n));
 	else
 #endif
 		return(bitcount16_emul(n));
@@ -35,7 +35,7 @@ inline int bitcount(uint32_t n)
 {
 #ifdef _WIN64
 	if (cpu_has_popcount)
-		return(__popcnt(n));
+		return(bit_pop_count(n));
 	else
 #endif
 		return(bitcount32_emul(n));
@@ -47,7 +47,7 @@ inline int bitcount(uint32_t n)
 inline int bitcount64(uint64_t n)
 {
 	if (cpu_has_popcount)
-		return((int)__popcnt64(n));
+		return((int)bit_pop_count64(n));
 	else
 		return(bitcount32_emul((uint32_t)(n & 0xffffffff)) + bitcount32_emul((uint32_t)(n >> 32) & 0xffffffff));
 }

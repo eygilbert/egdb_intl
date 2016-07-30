@@ -8,7 +8,6 @@
 #include "engine/bitcount.h"
 #include "engine/board.h"
 #include "engine/bool.h"
-#include "engine/lock.h"
 #include "engine/project.h"	// ARRAY_SIZE
 #include "engine/reverse.h"
 #include <algorithm>
