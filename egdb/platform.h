@@ -44,7 +44,8 @@ typedef DWORD		DWORD_T;
 inline
 FILE_HANDLE open_file(char const* name)
 {
-	return CreateFile(name, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_READONLY | FILE_FLAG_NO_BUFFERING, NULL);
+	FILE_HANDLE return_value = CreateFile(name, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_READONLY | FILE_FLAG_NO_BUFFERING, NULL);
+	return return_value == INVALID_HANDLE_VALUE ? nullptr : return_value;
 }
 
 inline
@@ -90,7 +91,8 @@ inline
 FILE_HANDLE open_file(char const* name)
 {
 	FILE_HANDLE stream = std::fopen(name, "r");	// read-only
-	std::setbuf(stream, nullptr);				// no-buffering
+	if (stream != nullptr)
+		std::setbuf(stream, nullptr);			// no-buffering
 	return stream;
 }
 
