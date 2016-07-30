@@ -3,6 +3,7 @@
 #include "egdb/crc.h"
 #include "egdb/egdb_common.h"
 #include "egdb/egdb_intl.h"
+#include "egdb/platform.h"
 #include "engine/bicoef.h"
 #include "engine/bitcount.h"
 #include "engine/board.h"
@@ -48,7 +49,7 @@ typedef struct {
 	char name[20];			/* db filename prefix. */
 	int num_idx_blocks;		/* number of index blocks in this db file. */
 	int num_cacheblocks;	/* number of cache blocks in this db file. */
-	HANDLE fp;
+	FILE_HANDLE fp;
 	int *cache_bufferi;		/* An array of indices into cache_buffers[], indexed by block number. */
 } DBFILE;
 
@@ -491,14 +492,12 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int cache_mb, char const *fi
 			continue;
 
 		std::sprintf(dbname, "%s%s.cpr_mtc", hdat->db_filepath, hdat->dbfiles[i].name);
-		hdat->dbfiles[i].fp = CreateFile((LPCSTR)dbname, GENERIC_READ, FILE_SHARE_READ,
-						NULL, OPEN_EXISTING, FILE_ATTRIBUTE_READONLY | FILE_FLAG_NO_BUFFERING,
-						NULL);
+		hdat->dbfiles[i].fp = open_file(dbname);
 
 		/* If the file is not there, no problem.  A lot of slices have
 		 * no useful mtc data.
 		 */
-		if (hdat->dbfiles[i].fp == INVALID_HANDLE_VALUE)
+		if (hdat->dbfiles[i].fp == nullptr)
 			continue;
 
 		/* Allocate the array of indices into ccbs[].
@@ -594,7 +593,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int cache_mb, char const *fi
 			if (!f || !f->is_present)
 				continue;
 
-			if (f->fp == INVALID_HANDLE_VALUE)
+			if (f->fp == nullptr)
 				continue;
 
 			std::sprintf(msg, "preload %s\n", f->name);
@@ -653,18 +652,17 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int *allocated_bytes)
 	CPRSUBDB *dbpointer;
 	int size;
 	int64_t filesize;
-	HANDLE cprfp;
+	FILE_HANDLE cprfp;
 	DBP *dbp;
 
 	/* Open the compressed data file. */
 	std::sprintf(name, "%s%s.cpr_mtc", hdat->db_filepath, f->name);
-	cprfp = CreateFile((LPCSTR)name, GENERIC_READ, FILE_SHARE_READ,
-					NULL, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, NULL);
+	cprfp = open_file(name);
 
 	/* No problem if we cant open a file.  Most slices dont have any
 	 * useful mtc data.
 	 */
-	if (cprfp == INVALID_HANDLE_VALUE)
+	if (cprfp == nullptr)
 		return(0);
 
 	/* Get the size in bytes and index blocks. */
@@ -674,15 +672,15 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int *allocated_bytes)
 		++f->num_idx_blocks;
 
 	/* Close the file. */
-	if (!CloseHandle(cprfp)) {
-		std::sprintf(msg, "Error from CloseHandle\n");
+	if (!close_file(cprfp)) {
+		std::sprintf(msg, "Error from close_file\n");
 		(*hdat->log_msg_fn)(msg);
 		return(1);
 	}
 
 	std::sprintf(name, "%s%s.idx_mtc", hdat->db_filepath, f->name);
 	fp = std::fopen(name, "r");
-	if (fp == 0) {
+	if (fp == nullptr) {
 		std::sprintf(msg, "cannot open index file %s\n", name);
 		(*hdat->log_msg_fn)(msg);
 		return(1);
@@ -843,7 +841,7 @@ static void build_file_table(DBHANDLE *hdat)
 			std::sprintf(hdat->dbfiles[count].name, "db%d", npieces);
 			hdat->dbfiles[count].pieces = npieces;
 			hdat->dbfiles[count].max_pieces_1side = (std::min)(npieces - 1, MAXPIECE);
-			hdat->dbfiles[count].fp = INVALID_HANDLE_VALUE;
+			hdat->dbfiles[count].fp = nullptr;
 			++count;
 		}
 		else {
@@ -866,7 +864,7 @@ static void build_file_table(DBHANDLE *hdat)
 									npieces, nbm, nbk, nwm, nwk);
 						hdat->dbfiles[count].pieces = npieces;
 						hdat->dbfiles[count].max_pieces_1side = nbm + nbk;
-						hdat->dbfiles[count].fp = INVALID_HANDLE_VALUE;
+						hdat->dbfiles[count].fp = nullptr;
 						++count;
 					}
 				}
@@ -887,7 +885,7 @@ static int egdb_close(EGDB_DRIVER *handle)
 	for (i = 0; i < hdat->cacheblocks; i += CACHE_ALLOC_COUNT) {
 		count = (std::min)(CACHE_ALLOC_COUNT, hdat->cacheblocks - i);
 		size = count * CACHE_BLOCKSIZE * sizeof(unsigned char);
-		VirtualFree(hdat->ccbs[i].data, 0, MEM_RELEASE);
+		virtual_free(hdat->ccbs[i].data);
 	}
 
 	/* Free the cache control blocks. */
@@ -903,12 +901,12 @@ static int egdb_close(EGDB_DRIVER *handle)
 		std::free(hdat->dbfiles[i].cache_bufferi);
 		hdat->dbfiles[i].cache_bufferi = 0;
 
-		if (hdat->dbfiles[i].fp != INVALID_HANDLE_VALUE)
-			CloseHandle(hdat->dbfiles[i].fp);
+		if (hdat->dbfiles[i].fp != nullptr)
+			close_file(hdat->dbfiles[i].fp);
 
 		hdat->dbfiles[i].num_idx_blocks = 0;
 		hdat->dbfiles[i].num_cacheblocks = 0;
-		hdat->dbfiles[i].fp = INVALID_HANDLE_VALUE;
+		hdat->dbfiles[i].fp = nullptr;
 	}
 	std::memset(hdat->dbfiles, 0, sizeof(hdat->dbfiles));
 

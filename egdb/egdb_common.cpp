@@ -1,6 +1,7 @@
 #include "egdb/egdb_common.h"
 #include "builddb/indexing.h"
 #include "egdb/egdb_intl.h"
+#include "egdb/platform.h"
 #include "engine/bicoef.h"
 #include "engine/bitcount.h"
 #include "engine/board.h"
@@ -33,11 +34,11 @@ int get_num_subslices(int nbm, int nbk, int nwm, int nwk)
  * integer multiples of pagesize, and the read buffer must be sized accordingly.
  * Return 1 on success, 0 on error.
  */
-int read_file(HANDLE fp, unsigned char *buf, size_t size, int pagesize)
+int read_file(FILE_HANDLE fp, unsigned char *buf, size_t size, int pagesize)
 {
-	int stat;
-	DWORD bytes_read;
-	DWORD request_size;
+	BOOL_T stat;
+	DWORD_T bytes_read;
+	DWORD_T request_size;
 	const int CHUNKSIZE = 0x100000;
 
 	while (size > 0) {
@@ -45,7 +46,7 @@ int read_file(HANDLE fp, unsigned char *buf, size_t size, int pagesize)
 			request_size = CHUNKSIZE;
 		else
 			request_size = ROUND_UP((int)size, pagesize);
-		stat = ReadFile(fp, buf, request_size, &bytes_read, NULL);
+		stat = read_from_file(fp, buf, request_size, &bytes_read);
 		if (!stat)
 			return(0);
 		if (bytes_read < request_size)
@@ -57,7 +58,7 @@ int read_file(HANDLE fp, unsigned char *buf, size_t size, int pagesize)
 }
 
 
-int set_file_pointer(HANDLE handle, int64_t pos)
+int set_file_pointer(FILE_HANDLE handle, int64_t pos)
 {
 	I64_HIGH_LOW filepos;
 
@@ -70,20 +71,12 @@ int set_file_pointer(HANDLE handle, int64_t pos)
 }
 
 
-int64_t get_file_size(HANDLE handle)
+int64_t get_file_size(FILE_HANDLE handle)
 {
 	I64_HIGH_LOW filesize;
 
 	filesize.words32.low32 = GetFileSize(handle, &filesize.words32.high32);
 	return(filesize.word64);
-}
-
-
-void *aligned_large_alloc(size_t size)
-{
-	void *blockp;
-	blockp = VirtualAlloc(0, size, MEM_COMMIT, PAGE_READWRITE);
-	return(blockp);
 }
 
 
@@ -96,11 +89,5 @@ int get_mem_available_mb(void)
 }
 
 
-int get_pagesize(void)
-{
-	SYSTEM_INFO sysinfo;
 
-	GetSystemInfo(&sysinfo);
-	return(sysinfo.dwPageSize);
-}
 

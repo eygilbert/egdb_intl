@@ -21,7 +21,7 @@
 
 #define FAST_TEST_MULT 1		/* Set to 5 to speed up the tests. */
 
-#define EYG		// RH
+#define RH
 #ifdef EYG
 #define DB_RUNLEN "C:/db_intl/wld_runlen"	/* Need 6 pieces for test. */
 #define DB_TUN_V1 "E:/db_intl/wld_v1"		/* Need 7 pieces for test. */

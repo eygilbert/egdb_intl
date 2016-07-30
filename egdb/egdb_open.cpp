@@ -10,7 +10,7 @@
 
 EGDB_DRIVER *egdb_open_wld_runlen(int pieces, int kings_1side_8pcs, int cache_mb, char const *directory, void (*msg_fn)(char const*), EGDB_TYPE db_type);
 EGDB_DRIVER *egdb_open_mtc_runlen(int pieces, int kings_1side_8pcs, int cache_mb, char const *directory, void (*msg_fn)(char const*), EGDB_TYPE db_type);
-EGDB_DRIVER *egdb_open_wld_huff(int pieces, int kings_1side_8pcs, int cache_mb, char const *directory, void (*msg_fn)(char const*), EGDB_TYPE db_type);
+EGDB_DRIVER *egdb_open_wld_huff  (int pieces, int kings_1side_8pcs, int cache_mb, char const *directory, void (*msg_fn)(char const*), EGDB_TYPE db_type);
 EGDB_DRIVER *egdb_open_wld_tun_v1(int pieces, int kings_1side_8pcs, int cache_mb, char const *directory, void (*msg_fn)(char const*), EGDB_TYPE db_type);
 EGDB_DRIVER *egdb_open_wld_tun_v2(int pieces, int kings_1side_8pcs, int cache_mb, char const *directory, void (*msg_fn)(char const*), EGDB_TYPE db_type);
 

@@ -3,6 +3,7 @@
 #include "egdb/crc.h"
 #include "egdb/egdb_common.h"
 #include "egdb/egdb_intl.h"
+#include "egdb/platform.h"
 #include "engine/bicoef.h"
 #include "engine/bitcount.h"
 #include "engine/board.h"
@@ -74,7 +75,7 @@ typedef struct {
 	int num_idx_blocks;		/* number of index blocks in this db file. */
 	int num_cacheblocks;	/* number of cache blocks in this db file. */
 	unsigned char *file_cache;/* if not null the whole db file is here. */
-	HANDLE fp;
+	FILE_HANDLE fp;
 	int *cache_bufferi;		/* An array of indices into cache_buffers[], indexed by block number. */
 #if LOG_HITS
 	int hits;
@@ -1140,10 +1141,8 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 			continue;
 
 		std::sprintf(dbname, "%s%s.cpr", hdat->db_filepath, hdat->dbfiles[i].name);
-		hdat->dbfiles[i].fp = CreateFile((LPCSTR)dbname, GENERIC_READ, FILE_SHARE_READ,
-						NULL, OPEN_EXISTING, FILE_ATTRIBUTE_READONLY | FILE_FLAG_NO_BUFFERING,
-						NULL);
-		if (hdat->dbfiles[i].fp == INVALID_HANDLE_VALUE) {
+		hdat->dbfiles[i].fp = open_file(dbname);
+		if (hdat->dbfiles[i].fp == nullptr) {
 			std::sprintf(msg, "Cannot open %s\n", dbname);
 			(*hdat->log_msg_fn)(msg);
 			return(1);
@@ -1166,11 +1165,11 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 				return(-1);
 			}
 
-			read_file(hdat->dbfiles[i].fp, hdat->dbfiles[i].file_cache, size, get_pagesize());
+			read_file(hdat->dbfiles[i].fp, hdat->dbfiles[i].file_cache, size, get_page_size());
 
 			/* Close the db file, we are done with it. */
-			CloseHandle(hdat->dbfiles[i].fp);
-			hdat->dbfiles[i].fp = INVALID_HANDLE_VALUE;
+			close_file(hdat->dbfiles[i].fp);
+			hdat->dbfiles[i].fp = nullptr;
 
 			/* Allocate the subindices. */
 			stat = init_autoload_subindices(hdat, hdat->dbfiles + i, &size);
@@ -1330,14 +1329,13 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64_t *allocated_bytes)
 	CPRSUBDB *dbpointer, *prev;
 	int size;
 	int64_t filesize;
-	HANDLE cprfp;
+	FILE_HANDLE cprfp;
 	DBP *dbp;
 
 	/* Open the compressed data file. */
 	std::sprintf(name, "%s%s.cpr", hdat->db_filepath, f->name);
-	cprfp = CreateFile((LPCSTR)name, GENERIC_READ, FILE_SHARE_READ,
-					NULL, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, NULL);
-	if (cprfp == INVALID_HANDLE_VALUE) {
+	cprfp = open_file(name);
+	if (cprfp == nullptr) {
 
 		/* We can't find the compressed data file.  Its ok as long as 
 		 * this is for more pieces than SAME_PIECES_ONE_FILE pieces.
@@ -1361,8 +1359,8 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64_t *allocated_bytes)
 		++f->num_idx_blocks;
 
 	/* Close the file. */
-	if (!CloseHandle(cprfp)) {
-		std::sprintf(msg, "Error from CloseHandle\n");
+	if (!close_file(cprfp)) {
+		std::sprintf(msg, "Error from close_file\n");
 		(*hdat->log_msg_fn)(msg);
 		return(1);
 	}
@@ -1695,7 +1693,7 @@ static int egdb_close(EGDB_DRIVER *handle)
 	for (i = 0; i < hdat->cacheblocks; i += CACHE_ALLOC_COUNT) {
 		count = (std::min)(CACHE_ALLOC_COUNT, hdat->cacheblocks - i);
 		size = count * CACHE_BLOCKSIZE * sizeof(unsigned char);
-		VirtualFree(hdat->ccbs[i].data, 0, MEM_RELEASE);
+		virtual_free(hdat->ccbs[i].data);
 	}
 
 	/* Free the cache control blocks. */
@@ -1709,7 +1707,7 @@ static int egdb_close(EGDB_DRIVER *handle)
 			continue;
 
 		if (hdat->dbfiles[i].file_cache) {
-			VirtualFree(hdat->dbfiles[i].file_cache, 0, MEM_RELEASE);
+			virtual_free(hdat->dbfiles[i].file_cache);
 			hdat->dbfiles[i].file_cache = 0;
 		}
 		else {
@@ -1717,12 +1715,12 @@ static int egdb_close(EGDB_DRIVER *handle)
 			hdat->dbfiles[i].cache_bufferi = 0;
 		}
 
-		if (hdat->dbfiles[i].fp != INVALID_HANDLE_VALUE)
-			CloseHandle(hdat->dbfiles[i].fp);
+		if (hdat->dbfiles[i].fp != nullptr)
+			close_file(hdat->dbfiles[i].fp);
 
 		hdat->dbfiles[i].num_idx_blocks = 0;
 		hdat->dbfiles[i].num_cacheblocks = 0;
-		hdat->dbfiles[i].fp = INVALID_HANDLE_VALUE;
+		hdat->dbfiles[i].fp = nullptr;
 	}
 	std::memset(hdat->dbfiles, 0, sizeof(hdat->dbfiles));
 

@@ -202,6 +202,7 @@
     <ClInclude Include="..\Egdb\crc.h" />
     <ClInclude Include="..\Egdb\egdb_common.h" />
     <ClInclude Include="..\Egdb\egdb_intl.h" />
+    <ClInclude Include="..\egdb\platform.h" />
     <ClInclude Include="..\Engine\bicoef.h" />
     <ClInclude Include="..\Engine\bitcount.h" />
     <ClInclude Include="..\Engine\board.h" />
