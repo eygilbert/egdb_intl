@@ -47,7 +47,7 @@
 
 #endif
 
-//#define USE_WIN_API 
+#define USE_WIN_API 
 
 // ------
 // Memory
@@ -95,7 +95,7 @@
 	inline
 	FILE_HANDLE open_file(char const* name)
 	{
-		FILE_HANDLE return_value = CreateFile(name, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_READONLY | FILE_FLAG_NO_BUFFERING, NULL);
+		FILE_HANDLE return_value = CreateFile(name, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_READONLY, NULL);
 		return return_value == INVALID_HANDLE_VALUE ? nullptr : return_value;
 	}
 
