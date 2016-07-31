@@ -22,3 +22,7 @@ x64/Release/*
 *.user
 egdb_test/egdb_test.VC.opendb
 *.opendb
+egdb_test/linux.txt
+egdb_test/linux_buffering_on.txt
+egdb_test/win.txt
+egdb_test/win_ffnb_off.txt
