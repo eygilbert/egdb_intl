@@ -174,10 +174,7 @@
 	inline
 	FILE_HANDLE open_file(char const* name)
 	{
-		FILE_HANDLE stream = std::fopen(name, "rb");	// read-only
-		if (stream != nullptr)
-			std::setbuf(stream, NULL);				// no-buffering
-		return stream;
+		return std::fopen(name, "rb");	// read-only
 	}
 
 	inline
