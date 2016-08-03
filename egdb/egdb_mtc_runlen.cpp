@@ -95,8 +95,6 @@ typedef struct {
 	unsigned int crc;
 } DBCRC;
 
-static LOCKT egdb_lock;
-
 /* A table of crc values for each database file. */
 static DBCRC dbcrc[] = {
 	0
@@ -434,7 +432,6 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int cache_mb, char const *fi
 	std::sprintf(msg, "Available RAM: %dmb\n", get_mem_available_mb());
 	(*hdat->log_msg_fn)(msg);
 
-	init_lock(egdb_lock);
 	init_bitcount();
 
 	/* initialize binomial coefficients. */
