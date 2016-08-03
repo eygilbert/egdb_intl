@@ -113,7 +113,7 @@ typedef struct {
 	unsigned int crc;
 } DBCRC;
 
-static LOCKT egdb_lock;
+static_define_lock(egdb_lock);
 
 /* A table of crc values for each database file. */
 static DBCRC dbcrc[] = {
