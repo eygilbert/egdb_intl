@@ -577,7 +577,7 @@ void test_mutual_exclusion(char const *dbpath, LOCKT *lock)
 	std::chrono::milliseconds delay_time(3000);
 	std::this_thread::sleep_for(delay_time);
 	if (value != EGDB_UNKNOWN) {
-		printf("Lock did not inforce mutual exclusion.\n");
+		printf("Lock did not enforce mutual exclusion.\n");
 		exit(1);
 	}
 	release_lock(*lock);
