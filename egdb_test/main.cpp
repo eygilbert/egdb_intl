@@ -6,6 +6,7 @@
 #include "engine/board.h"
 #include "engine/bool.h"
 #include "engine/fen.h"
+#include "engine/lock.h"
 #include "engine/move_api.h"
 #include "engine/project.h"	// ARRAY_SIZE
 #include "engine/reverse.h"
@@ -17,10 +18,11 @@
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
+#include <thread>
 
 #define FAST_TEST_MULT 1		/* Set to 5 to speed up the tests. */
 
-#define RH
+#define EYG
 #ifdef EYG
 #define DB_RUNLEN "C:/db_intl/wld_runlen"	/* Need 6 pieces for test. */
 #define DB_TUN_V1 "E:/db_intl/wld_v1"		/* Need 7 pieces for test. */
@@ -255,87 +257,6 @@ void self_verify(EGDB_INFO *db, SLICE *slice, int64_t max_lookups)
 			}
 		}
 	}
-}
-
-void errmsg_9pc_self_verify(int v1, int v2, int color, int64_t index, BOARD *board)
-{
-	char fenbuf[100];
-
-	print_fen(board, color, fenbuf);
-	std::printf("index %I64d, v1 %d, v2 %d, %s\n", index, v1, v2, fenbuf);
-}
-
-
-int tun_v1_9pc_self_verify(int64_t max_lookups)
-{
-	clock_t t0;
-	EGDB_INFO db;
-	int64_t size, index, incr;
-	int value1, value2;
-	EGDB_POSITION pos;
-
-	std::printf("\nSelf-verify Tunstall v1 9-piece test.\n");
-
-	db.handle = egdb_open("maxpieces=9", 3000, DB_TUN_V1, print_msgs);
-	if (!db.handle) {
-		std::printf("Cannot open tun v1 db\n");
-		return(1);
-	}
-	db.handle->get_pieces(db.handle, &db.dbpieces, &db.dbpieces_1side, &db.db9_kings, &db.db8_kings_1side);
-	db.egdb_excludes_some_nonside_caps = false;
-	t0 = clock();
-
-	size = getdatabasesize_slice(5, 0, 4, 0);
-	if (max_lookups < 1)
-		incr = 1;
-	else
-		incr = (std::max)(size / max_lookups, 1LL);
-
-	for (index = 0; index < size; index += incr) {
-		indextoposition_slice(index, &pos, 5, 0, 4, 0);
-		if (!canjump((BOARD *)&pos, BLACK)) {
-			value1 = db.handle->lookup(db.handle, &pos, BLACK, 0);
-			value2 = db.lookup_with_search((BOARD *)&pos, BLACK, 6, true);
-			if (value2 != EGDB_SUBDB_UNAVAILABLE) {
-				switch (value1) {
-				case EGDB_UNKNOWN:
-					if (value2 != EGDB_UNKNOWN && value2 != EGDB_SUBDB_UNAVAILABLE) {
-						errmsg_9pc_self_verify(value1, value2, BLACK, index, (BOARD *)&pos);
-					}
-					break;
-				case EGDB_WIN:
-					if (value2 != EGDB_WIN && value2 != EGDB_WIN_OR_DRAW) {
-						errmsg_9pc_self_verify(value1, value2, BLACK, index, (BOARD *)&pos);
-					}
-					break;
-				case EGDB_LOSS:
-					if (value2 != EGDB_LOSS && value2 != EGDB_DRAW_OR_LOSS) {
-						errmsg_9pc_self_verify(value1, value2, BLACK, index, (BOARD *)&pos);
-					}
-					break;
-				case EGDB_DRAW:
-					if (value2 != EGDB_DRAW && value2 != EGDB_DRAW_OR_LOSS && value2 != EGDB_WIN_OR_DRAW) {
-						errmsg_9pc_self_verify(value1, value2, BLACK, index, (BOARD *)&pos);
-					}
-					break;
-				case EGDB_DRAW_OR_LOSS:
-					if (value2 != EGDB_DRAW_OR_LOSS) {
-						errmsg_9pc_self_verify(value1, value2, BLACK, index, (BOARD *)&pos);
-					}
-					break;
-				case EGDB_WIN_OR_DRAW:
-					if (value2 != EGDB_WIN_OR_DRAW && value2 != EGDB_UNKNOWN) {
-						errmsg_9pc_self_verify(value1, value2, BLACK, index, (BOARD *)&pos);
-					}
-					break;
-				}
-			}
-		}
-		if (!canjump((BOARD *)&pos, WHITE)) {
-
-		}
-	}
-	return(0);
 }
 
 
@@ -627,6 +548,49 @@ void crc_verify_test(char const *dbpath)
 }
 
 
+void parallel_read(EGDB_DRIVER *db, int &value)
+{
+	EGDB_POSITION pos;
+
+	indextoposition_slice(0, &pos, 2, 1, 2, 1);
+	value = db->lookup(db, &pos, EGDB_BLACK, 0);
+}
+
+
+void test_mutual_exclusion(char const *dbpath, LOCKT *lock)
+{
+	EGDB_DRIVER *db;
+	int value;
+
+	std::printf("\nTesting mutual exclusion, %s\n", dbpath);
+
+	/* Open with minimum cache memory, so that all lookups will have to go to disk. */
+	db = egdb_open("maxpieces=6", 0, dbpath, print_msgs);
+	if (!db) {
+		std::printf("Cannot open db at %s\n", dbpath);
+		exit(1);
+	}
+	
+	value = EGDB_UNKNOWN;
+	take_lock(*lock);
+	std::thread threadobj(parallel_read, db, std::ref(value));
+	std::chrono::milliseconds delay_time(3000);
+	std::this_thread::sleep_for(delay_time);
+	if (value != EGDB_UNKNOWN) {
+		printf("Lock did not inforce mutual exclusion.\n");
+		exit(1);
+	}
+	release_lock(*lock);
+	std::this_thread::sleep_for(delay_time);
+	if (value == EGDB_UNKNOWN) {
+		printf("Releasking lock did not disable mutual exclusion.\n");
+		exit(1);
+	}
+	threadobj.detach();
+	db->close(db);
+}
+
+
 int main(int argc, char* argv[])
 {
 	DB_INFO db1, db2;
@@ -734,6 +698,11 @@ int main(int argc, char* argv[])
 
 	crc_verify_test(DB_TUN_V1);
 	crc_verify_test(DB_TUN_V2);
+
+	extern LOCKT *get_tun_v1_lock();
+	extern LOCKT *get_tun_v2_lock();
+	test_mutual_exclusion(DB_TUN_V1, get_tun_v1_lock());
+	test_mutual_exclusion(DB_TUN_V2, get_tun_v2_lock());
 
 	return 0;
 }

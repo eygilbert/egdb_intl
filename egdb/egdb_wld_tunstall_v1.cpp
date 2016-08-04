@@ -1269,6 +1269,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 			 * buffers if we can use that many.
 			 */
 			hdat->cacheblocks = (std::min)(MIN_CACHE_BUF_BYTES / CACHE_BLOCKSIZE, i);
+			hdat->cache_ht_size = (3 * hdat->cacheblocks) / 2;
 			std::sprintf(msg, "Allocating the minimum %d cache buffers\n",
 							hdat->cacheblocks);
 			(*hdat->log_msg_fn)(msg);
@@ -2029,6 +2030,13 @@ EGDB_DRIVER *egdb_open_wld_tun_v1(int pieces, int kings_1side_8pcs,
 	handle->close = egdb_close;
 	handle->get_pieces = get_pieces;
 	return(handle);
+}
+
+
+/* Used to test mutual exclusion locking. */
+LOCKT *get_tun_v1_lock(void)
+{
+	return(&egdb_lock);
 }
 
 

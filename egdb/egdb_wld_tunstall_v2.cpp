@@ -1852,4 +1852,10 @@ EGDB_DRIVER *egdb_open_wld_tun_v2(int pieces, int kings_1side_8pcs,
 }
 
 
+/* Used to test mutual exclusion locking. */
+LOCKT *get_tun_v2_lock(void)
+{
+	return(&egdb_lock);
+}
+
 
