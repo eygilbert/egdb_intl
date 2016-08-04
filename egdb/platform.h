@@ -31,7 +31,6 @@
 	int get_mem_available_mb(void)
 	{
 		MEMORYSTATUS memstat;
-
 		GlobalMemoryStatus(&memstat);
 		return((int)(memstat.dwAvailPhys / (1024 * 1024)));
 	}
@@ -40,14 +39,13 @@
 	bool check_cpu_has_popcount()
 	{
 		int cpuinfo[4] = { -1 };
-
 		__cpuid(cpuinfo, 1);
 		return((cpuinfo[2] >> 23) & 1);
 	}
 
 #endif
 
-//#define USE_WIN_API 
+#define USE_WIN_API 
 
 // ------
 // Memory
@@ -77,6 +75,7 @@
 
 #ifdef USE_WIN_API
 
+	#include <cassert>
 	#include <cstdint>
 	
 	typedef HANDLE		FILE_HANDLE;
@@ -96,6 +95,9 @@
 	FILE_HANDLE open_file(char const* name)
 	{
 		FILE_HANDLE return_value = CreateFile(name, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_READONLY, NULL);
+		assert(return_value != NULL);	// Win API is inconsistent which invalid handle values it returns
+										// CreateFile uses -1, but other functions use 0
+										// the assert guards against the outside chance that 0 is a *valid handle* from CreateFile
 		return return_value == INVALID_HANDLE_VALUE ? nullptr : return_value;
 	}
 
@@ -103,7 +105,6 @@
 	int64_t get_file_size(FILE_HANDLE handle)
 	{
 		I64_HIGH_LOW filesize;
-
 		filesize.words32.low32 = GetFileSize(handle, &filesize.words32.high32);
 		return(filesize.word64);
 	}
