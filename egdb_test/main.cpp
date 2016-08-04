@@ -22,13 +22,14 @@
 
 #define FAST_TEST_MULT 1		/* Set to 5 to speed up the tests. */
 
-#define EYG
+//#define EYG
 #ifdef EYG
 #define DB_RUNLEN "C:/db_intl/wld_runlen"	/* Need 6 pieces for test. */
 #define DB_TUN_V1 "E:/db_intl/wld_v1"		/* Need 7 pieces for test. */
 #define DB_TUN_V2 "C:/db_intl/wld_v2"		/* Need 8 pieces for test. */
 #define DB_MTC "E:/db_intl/slice32_mtc"		/* Need 8 pieces for test. */
 #endif
+#define RH
 #ifdef RH
 #define DB_RUNLEN	"C:/Program Files/Kingsrow International/wld_runlen"	/* Need 6 pieces for test. */
 #define DB_TUN_V1	"C:/Program Files/Kingsrow International/wld_tun_v1"	/* Need 7 pieces for test. */
