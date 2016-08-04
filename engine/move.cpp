@@ -1,3 +1,4 @@
+#include "egdb/platform.h"
 #include "engine/move.h"
 #include "engine/board.h"
 #include "engine/bool.h"
@@ -122,7 +123,7 @@ void init_move_tables()
 	}
 }
 
-#ifdef _WIN64
+#ifdef ENVIRONMENT64
 
 BITBOARD has_king_jumps_fwd(BITBOARD gen, BITBOARD free, BITBOARD opp, int shift)
 {

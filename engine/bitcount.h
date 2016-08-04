@@ -22,7 +22,7 @@ inline int bitcount32_emul(uint32_t n)
 
 inline int bitcount16(uint16_t n)
 {
-#ifdef _WIN64
+#ifdef ENVIRONMENT64
 	if (cpu_has_popcount)
 		return(bit_pop_count(n));
 	else
@@ -33,7 +33,7 @@ inline int bitcount16(uint16_t n)
 
 inline int bitcount(uint32_t n)
 {
-#ifdef _WIN64
+#ifdef ENVIRONMENT64
 	if (cpu_has_popcount)
 		return(bit_pop_count(n));
 	else
@@ -42,7 +42,7 @@ inline int bitcount(uint32_t n)
 }
 
 
-#ifdef _WIN64
+#ifdef ENVIRONMENT64
 
 inline int bitcount64(uint64_t n)
 {

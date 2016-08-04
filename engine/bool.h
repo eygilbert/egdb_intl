@@ -30,7 +30,7 @@ inline int MSB(uint32_t x)
 }
 
 
-#ifdef _WIN64
+#ifdef ENVIRONMENT64
 inline int LSB64(uint64_t x)
 {
 	return bit_scan_forward64(x);

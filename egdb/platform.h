@@ -1,10 +1,28 @@
 #pragma once
 
-//#define USE_WIN_API 
+#define USE_WIN_API 
 
 // ------------------
 // System information
 // ------------------
+
+#ifdef _MSC_VER
+
+	#if _WIN64
+		#define ENVIRONMENT64
+	#else
+		#define ENVIRONMENT32
+	#endif
+
+#else
+
+	#if __x86_64__ || __ppc64__
+		#define ENVIRONMENT64
+	#else
+		#define ENVIRONMENT32
+	#endif
+
+#endif
 
 #ifdef _MSC_VER
 
@@ -322,7 +340,7 @@
 		return __popcnt(x);
 	}
 
-	#ifdef _WIN64
+	#ifdef ENVIRONMENT64
 
 		inline 
 		int bit_scan_forward64(uint64_t x)
@@ -376,7 +394,7 @@
 		return __builtin_popcount(x);
 	}
 
-	#ifdef _WIN64
+	#ifdef ENVIRONMENT64
 
 		inline
 		int bit_scan_forward64(uint64_t x)

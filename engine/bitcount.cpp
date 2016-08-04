@@ -29,7 +29,7 @@ void init_bitcount()
 {
 	uint32_t i;
 
-#ifdef _WIN64
+#ifdef ENVIRONMENT64
 	cpu_has_popcount = check_cpu_has_popcount();
 #endif
 	for (i = 0; i < ARRAY_SIZE(bitcount_table); ++i)
