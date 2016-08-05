@@ -14,6 +14,7 @@
 #include <cctype>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <utility>
 
 #define USE_AUTOLOAD 1

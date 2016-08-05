@@ -15,6 +15,7 @@
 #include <cctype>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <utility>
 
 #define MAXPIECES 9
