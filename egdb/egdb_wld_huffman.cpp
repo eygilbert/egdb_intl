@@ -160,10 +160,10 @@ unsigned short huffman_decompress_table[1 << MAX_HUFFCODE_BITS] = {
 };
 
 /* Function prototypes. */
-int parseindexfile(DBHANDLE *, DBFILE *, int64_t *allocated_bytes);
-void build_file_table(DBHANDLE *hdat);
-void build_autoload_list(DBHANDLE *hdat);
-void assign_subindices(DBHANDLE *hdat, CPRSUBDB *subdb, CCB *ccbp);
+static int parseindexfile(DBHANDLE *, DBFILE *, int64_t *allocated_bytes);
+static void build_file_table(DBHANDLE *hdat);
+static void build_autoload_list(DBHANDLE *hdat);
+static void assign_subindices(DBHANDLE *hdat, CPRSUBDB *subdb, CCB *ccbp);
 
 
 static void reset_db_stats(EGDB_DRIVER *handle)

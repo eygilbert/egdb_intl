@@ -103,8 +103,8 @@ static DBCRC dbcrc[] = {
 
 
 /* Function prototypes. */
-int parseindexfile(DBHANDLE *, DBFILE *, int *allocated_bytes);
-void build_file_table(DBHANDLE *hdat);
+static int parseindexfile(DBHANDLE *, DBFILE *, int *allocated_bytes);
+static void build_file_table(DBHANDLE *hdat);
 
 
 static void reset_db_stats(EGDB_DRIVER *handle)
