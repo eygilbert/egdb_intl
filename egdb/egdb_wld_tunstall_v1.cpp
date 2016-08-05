@@ -422,13 +422,6 @@ static void build_file_table(DBHANDLE *hdat);
 static void build_autoload_list(DBHANDLE *hdat);
 static void assign_subindices(DBHANDLE *hdat, CPRSUBDB *subdb, CCB *ccbp);
 
-
-static unsigned short *get_runlength_table(int ncatalog)
-{
-	return(decompress_catalog[ncatalog].runlength_table);
-}
-
-
 unsigned int calc_cache_hashindex(int tablesize, unsigned int filenum, unsigned int blocknum)
 {
 	unsigned int hashcode;
