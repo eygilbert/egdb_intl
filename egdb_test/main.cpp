@@ -12,6 +12,7 @@
 #include "engine/reverse.h"
 #include <algorithm>
 #include <cctype>
+#include <cinttypes>
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
@@ -123,9 +124,8 @@ int SLICE::advance(void)
 
 void print_msgs(char const *msg)
 {
-	std::printf(msg);
+	std::printf("%s", msg);
 }
-
 
 void verify(DB_INFO *db1, DB_INFO *db2, SLICE *slice, int64_t max_lookups)
 {
@@ -185,7 +185,7 @@ void verify(DB_INFO *db1, DB_INFO *db2, SLICE *slice, int64_t max_lookups)
 			value1 = db1->handle->lookup(db1->handle, &pos, BLACK, 0);
 			value2 = db2->handle->lookup(db2->handle, &pos, BLACK, 0);
 			if (value1 != value2) {
-				std::printf("Verify error. index %I64d, color BLACK, v1 %d, v2 %d\n", index, value1, value2);
+				std::printf("Verify error..%" PRId64 "color BLACK, v1 %d, v2 %d\n", index, value1, value2);
 			}
 		}
 
@@ -193,7 +193,7 @@ void verify(DB_INFO *db1, DB_INFO *db2, SLICE *slice, int64_t max_lookups)
 			value1 = db1->handle->lookup(db1->handle, &pos, WHITE, 0);
 			value2 = db2->handle->lookup(db2->handle, &pos, WHITE, 0);
 			if (value1 != value2) {
-				std::printf("Verify error. index %I64d, color WHITE, v1 %d, v2 %d\n", index, value1, value2);
+				std::printf("Verify error.%" PRId64 "color WHITE, v1 %d, v2 %d\n", index, value1, value2);
 			}
 		}
 	}
@@ -246,7 +246,7 @@ void self_verify(EGDB_INFO *db, SLICE *slice, int64_t max_lookups)
 			value1 = db->handle->lookup(db->handle, &pos, BLACK, 0);
 			value2 = db->lookup_with_search((BOARD *)&pos, BLACK, 64, true);
 			if (value1 != value2 && value2 != EGDB_UNKNOWN) {
-				std::printf("Verify error. index %I64d, color BLACK, v1 %d, v2 %d\n", index, value1, value2);
+				std::printf("Verify error.%" PRId64 "color BLACK, v1 %d, v2 %d\n", index, value1, value2);
 			}
 		}
 
@@ -254,7 +254,7 @@ void self_verify(EGDB_INFO *db, SLICE *slice, int64_t max_lookups)
 			value1 = db->handle->lookup(db->handle, &pos, WHITE, 0);
 			value2 = db->lookup_with_search((BOARD *)&pos, WHITE, 64, true);
 			if (value1 != value2 && value2 != EGDB_UNKNOWN) {
-				std::printf("Verify error. index %I64d, color WHITE, v1 %d, v2 %d\n", index, value1, value2);
+				std::printf("Verify error.%" PRId64 "color WHITE, v1 %d, v2 %d\n", index, value1, value2);
 			}
 		}
 	}
@@ -276,7 +276,7 @@ void verify_indexing(SLICE *slice, int64_t max_tests)
 		indextoposition_slice(index, &pos, slice->getnbm(), slice->getnbk(), slice->getnwm(), slice->getnwk());
 		return_index = position_to_index_slice(&pos, slice->getnbm(), slice->getnbk(), slice->getnwm(), slice->getnwk());
 		if (return_index != index) {
-			std::printf("index verify error, index %I64d, return index %I64d\n", index, return_index);
+			std::printf("index verify error%" PRId64 "return index%" PRId64 "\n", index, return_index);
 			std::exit(1);
 		}
 	}
