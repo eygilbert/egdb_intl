@@ -31,7 +31,6 @@
 #define IDX_BLOCKS_PER_CACHE_BLOCK 1
 #define CACHE_BLOCKSIZE (IDX_BLOCKSIZE * IDX_BLOCKS_PER_CACHE_BLOCK)
 
-#define MAXFILENAME MAX_PATH
 #define MAXFILES 200		/* This is enough for an 8pc database. */
 
 /* Having types with the same name as types in other files confuses the debugger. */

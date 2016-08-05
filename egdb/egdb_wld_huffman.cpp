@@ -36,7 +36,6 @@
 #define CACHE_BLOCKSIZE (IDX_BLOCKSIZE * IDX_BLOCKS_PER_CACHE_BLOCK)
 #define SUBINDEX_BLOCKSIZE (IDX_BLOCKSIZE / NUM_SUBINDICES)
 
-#define MAXFILENAME MAX_PATH
 #define MAXFILES 200		/* This is enough for an 8pc database. */
 
 /* For subindicies, we need to know the first and second values and the bit offset.
