@@ -98,7 +98,7 @@ typedef struct {
 
 /* A table of crc values for each database file. */
 static DBCRC dbcrc[] = {
-	0
+	"", 0
 };
 
 
