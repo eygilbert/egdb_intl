@@ -154,7 +154,7 @@
 	inline
 	void *aligned_large_alloc(size_t size)
 	{
-		return std::aligned_alloc(size, get_allocation_granularity());
+		return aligned_alloc(size, get_allocation_granularity());
 	}
 
 	inline
