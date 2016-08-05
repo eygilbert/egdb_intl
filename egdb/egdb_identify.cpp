@@ -8,7 +8,7 @@
 
 typedef struct {
 	EGDB_TYPE egdb_type;
-	char *name;
+	char const *name;
 	int pieces;
 	unsigned int crc;
 } EGDB_FIND_INFO;
