@@ -138,7 +138,7 @@ int64_t position_to_index_slice(EGDB_POSITION *p, int bm, int bk, int wm, int wk
 	BITBOARD bmmask, bkmask, wmmask, wkmask;
 	int bm0;
 	uint32_t bmindex, bkindex, wmindex, wkindex, bm0index;
-	uint32_t bmrange, wmrange, bm0range, bkrange, wkrange;
+	uint32_t bmrange, bm0range, bkrange, wkrange;
 	int64_t index64;
 	int64_t checker_index_base, checker_index;
 
@@ -177,7 +177,6 @@ int64_t position_to_index_slice(EGDB_POSITION *p, int bm, int bk, int wm, int wk
 
 	bmrange = bicoef[40][bm - bm0];
 	bm0range = bicoef[5][bm0];
-	wmrange = bicoef[45 - bm][wm];
 	bkrange = bicoef[MAXSQUARE - bm - wm][bk];
 	wkrange = bicoef[MAXSQUARE - bm - wm - bk][wk];
 
@@ -198,7 +197,7 @@ void indextoposition_slice(int64_t index, EGDB_POSITION *p, int bm, int bk, int 
 	int bm0;
 	BITBOARD bmmask, bkmask, wmmask, wkmask;
 	uint32_t bmindex, bkindex, wmindex, wkindex, bm0index;
-	uint32_t bmrange, wmrange, bm0range, bkrange, wkrange;
+	uint32_t bmrange, bm0range, bkrange, wkrange;
 	int64_t multiplier, checker_index;
 
 	/* Initialize the board. */
@@ -226,7 +225,6 @@ void indextoposition_slice(int64_t index, EGDB_POSITION *p, int bm, int bk, int 
 
 	/* Compute the range of indices for each piece type. */
 	bmrange = bicoef[40][bm - bm0];
-	wmrange = bicoef[45 - bm][wm];
 	bm0range = bicoef[5][bm0];
 
 	/* Extract the wmindex, bmindex, and bm0index. */
