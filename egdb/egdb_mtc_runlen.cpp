@@ -423,8 +423,8 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int cache_mb, char const *fi
 
 	/* Add trailing backslash if needed. */
 	size = (int)strlen(hdat->db_filepath);
-	if (size && (hdat->db_filepath[size - 1] != '\\'))
-		strcat(hdat->db_filepath, "\\");
+	if (size && (hdat->db_filepath[size - 1] != '/'))
+		strcat(hdat->db_filepath, "/");
 
 	hdat->dbpieces = pieces;
 	hdat->log_msg_fn = msg_fn;

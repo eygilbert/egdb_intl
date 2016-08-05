@@ -59,8 +59,8 @@ int egdb_identify(char const *directory, EGDB_TYPE *egdb_type, int *max_pieces)
 	char name[MAXFILENAME];
 
 	len = (int)strlen(directory);
-	if (len && (directory[len - 1] != '\\'))
-		sep = "\\";
+	if (len && (directory[len - 1] != '/'))
+		sep = "/";
 	else
 		sep = "";
 
