@@ -257,16 +257,18 @@ int EGDB_INFO::lookup_with_rep_check(BOARD *p, int color, int depth, int maxdept
 		longjmp(env, 1);
 
 	/* Check for one side with no pieces. */
-	if (p->black == 0)
+	if (p->black == 0) {
 		if (color == BLACK)
 			return(EGDB_LOSS);
 		else
 			return(EGDB_WIN);
-	if (p->white == 0)
+	}
+	if (p->white == 0) {
 		if (color == BLACK)
 			return(EGDB_WIN);
 		else
 			return(EGDB_LOSS);
+	}
 
 	/* Check for draw by repetition. */
 	if (is_repetition(rep_check_positions, p, depth))
