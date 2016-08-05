@@ -276,7 +276,7 @@
 		inline
 		int set_file_pointer(FILE_HANDLE stream, int64_t offset)
 		{
-			std::fseek(stream, offset, SEEK_SET);
+			return std::fseek(stream, offset, SEEK_SET);
 		}
 
 	#endif
