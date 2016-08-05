@@ -166,7 +166,7 @@ void verify(DB_INFO *db1, DB_INFO *db2, SLICE *slice, int64_t max_lookups)
 		}
 		if (black_ok == false && white_ok == false) {
 			std::printf("Between db1 and db2, neither black or white can be probed. Shouldn't be possible.\n");
-			exit(1);
+			std::exit(1);
 		}
 	}
 
@@ -229,7 +229,7 @@ void self_verify(EGDB_INFO *db, SLICE *slice, int64_t max_lookups)
 		}
 		if (black_ok == false && white_ok == false) {
 			std::printf("Neither black or white can be probed. Shouldn't be possible.\n");
-			exit(1);
+			std::exit(1);
 		}
 	}
 
@@ -277,7 +277,7 @@ void verify_indexing(SLICE *slice, int64_t max_tests)
 		return_index = position_to_index_slice(&pos, slice->getnbm(), slice->getnbk(), slice->getnwm(), slice->getnwk());
 		if (return_index != index) {
 			std::printf("index verify error, index %I64d, return index %I64d\n", index, return_index);
-			exit(1);
+			std::exit(1);
 		}
 	}
 }
@@ -416,22 +416,22 @@ void mtc_test()
 	status = egdb_identify(DB_MTC, &type, &max_pieces);
 	if (status) {
 		std::printf("MTC db not found at %s\n", DB_MTC);
-		exit(1);
+		std::exit(1);
 	}
 	if (type != EGDB_MTC_RUNLEN) {
 		std::printf("Wrong db type, not MTC.\n");
-		exit(1);
+		std::exit(1);
 	}
 	if (max_pieces != 8) {
 		std::printf("Need 8 pieces MTC for test, only found %d.\n", max_pieces);
-		exit(1);
+		std::exit(1);
 	}
 
 	/* Open the endgame db drivers. */
 	wld.handle = egdb_open("maxpieces=8", 3000, DB_TUN_V2, print_msgs);
 	if (!wld.handle) {
 		std::printf("Cannot open tun v2 db\n");
-		exit(1);
+		std::exit(1);
 	}
 	wld.handle->get_pieces(wld.handle, &max_pieces, &max_pieces_1side, &max_9pc_kings, &max_8pc_kings_1side);
 	wld.dbpieces = max_pieces;
@@ -441,12 +441,12 @@ void mtc_test()
 	mtc = egdb_open("maxpieces=8", 100, DB_MTC, print_msgs);
 	if (!mtc) {
 		std::printf("Cannot open MTC db\n");
-		exit(1);
+		std::exit(1);
 	}
 	fp = std::fopen(mtc_stats_filename, "r");
 	if (!fp) {
 		std::printf("Cannot open %s for reading\n", mtc_stats_filename);
-		exit(1);
+		std::exit(1);
 	}
 
 	for (int count = 0; ; ) {
@@ -484,20 +484,20 @@ void open_options_test(void)
 	db = egdb_open("maxpieces=8;maxkings_1side_8pcs=2", 500, DB_TUN_V2, print_msgs);
 	if (!db) {
 		std::printf("Cannot open db at %s\n", DB_TUN_V2);
-		exit(1);
+		std::exit(1);
 	}
 	indextoposition_slice(0, &pos, 2, 2, 2, 2);
 	value1 = db->lookup(db, &pos, BLACK, 0);
 	if (value1 != EGDB_WIN && value1 != EGDB_DRAW && value1 != EGDB_LOSS) {
 		std::printf("bad value returned from lookup() in options test.\n");
-		exit(1);
+		std::exit(1);
 	}
 	indextoposition_slice(0, &pos, 1, 3, 2, 2);
 	value1 = db->lookup(db, &pos, BLACK, 0);
 	value2 = db->lookup(db, &pos, WHITE, 0);
 	if (value1 != EGDB_SUBDB_UNAVAILABLE || value2 != EGDB_SUBDB_UNAVAILABLE) {
 		std::printf("bad value returned from lookup() in options test.\n");
-		exit(1);
+		std::exit(1);
 	}
 
 	db->close(db);
@@ -506,20 +506,20 @@ void open_options_test(void)
 	db = egdb_open("maxpieces=6", 500, DB_TUN_V2, print_msgs);
 	if (!db) {
 		std::printf("Cannot open db at %s\n", DB_TUN_V2);
-		exit(1);
+		std::exit(1);
 	}
 	indextoposition_slice(0, &pos, 2, 1, 3, 0);
 	value1 = db->lookup(db, &pos, BLACK, 0);
 	if (value1 != EGDB_WIN && value1 != EGDB_DRAW && value1 != EGDB_LOSS) {
 		std::printf("bad value returned from lookup() in options test.\n");
-		exit(1);
+		std::exit(1);
 	}
 	indextoposition_slice(0, &pos, 4, 0, 3, 0);
 	value1 = db->lookup(db, &pos, BLACK, 0);
 	value2 = db->lookup(db, &pos, WHITE, 0);
 	if (value1 != EGDB_SUBDB_UNAVAILABLE || value2 != EGDB_SUBDB_UNAVAILABLE) {
 		std::printf("bad value returned from lookup() in options test.\n");
-		exit(1);
+		std::exit(1);
 	}
 
 	db->close(db);
@@ -541,7 +541,7 @@ void crc_verify_test(char const *dbpath)
 	db = egdb_open("maxpieces=6", 100, dbpath, print_msgs);
 	if (!db) {
 		std::printf("Cannot open db at %s\n", dbpath);
-		exit(1);
+		std::exit(1);
 	}
 	abort = 0;
 	db->verify(db, print_msgs, &abort, &verify_msgs);
@@ -569,7 +569,7 @@ void test_mutual_exclusion(char const *dbpath, LOCKT *lock)
 	db = egdb_open("maxpieces=6", 0, dbpath, print_msgs);
 	if (!db) {
 		std::printf("Cannot open db at %s\n", dbpath);
-		exit(1);
+		std::exit(1);
 	}
 	
 	value = EGDB_UNKNOWN;
@@ -579,13 +579,13 @@ void test_mutual_exclusion(char const *dbpath, LOCKT *lock)
 	std::this_thread::sleep_for(delay_time);
 	if (value != EGDB_UNKNOWN) {
 		printf("Lock did not enforce mutual exclusion.\n");
-		exit(1);
+		std::exit(1);
 	}
 	release_lock(*lock);
 	std::this_thread::sleep_for(delay_time);
 	if (value == EGDB_UNKNOWN) {
 		printf("Releasking lock did not disable mutual exclusion.\n");
-		exit(1);
+		std::exit(1);
 	}
 	threadobj.detach();
 	db->close(db);
