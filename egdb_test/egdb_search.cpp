@@ -6,7 +6,6 @@
 #include "engine/bool.h"
 #include "engine/fen.h"
 #include "engine/move_api.h"
-#include <io.h>
 #include <cassert>
 #include <climits>
 #include <csetjmp>
