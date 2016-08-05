@@ -1321,7 +1321,6 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 			size = count * CACHE_BLOCKSIZE * sizeof(unsigned char);
 			blockp = (unsigned char *)aligned_large_alloc(size);
 			if (blockp == NULL) {
-				i = GetLastError();
 				(*hdat->log_msg_fn)("aligned_large_alloc failure on cache buffers\n");
 				return(-1);
 			}
