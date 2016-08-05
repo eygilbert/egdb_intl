@@ -134,13 +134,13 @@
 		#include <malloc.h>
 
 		inline
-			void *aligned_large_alloc(size_t size)
+		void *aligned_large_alloc(size_t size)
 		{
-			return _aligned_malloc(size, get_allocation_granularity());
+			return _aligned_malloc(get_allocation_granularity(), size);
 		}
 
 		inline
-			void virtual_free(void *ptr)
+		void virtual_free(void *ptr)
 		{
 			_aligned_free(ptr);
 		}
@@ -243,7 +243,7 @@
 	#ifdef _MSC_VER
 		// On both 32-bit and 64-bit Windows, a <long> is 32-bit, not 64-bit
 
-		#include <studio.h>
+		#include <stdio.h>
 
 		inline
 		int64_t get_file_size(FILE_HANDLE stream)
