@@ -1,8 +1,6 @@
 #include "egdb/crc.h"
 #include <cstdio>
 
-#pragma warning(disable : 4996)
-
 /*
  * This is the official polynomial used by CRC-32 
  * in PKZip, WinZip and Ethernet:   0x04c11db7
@@ -115,6 +113,3 @@ int fname_crc_calc(char const *name, unsigned int *crc)
 	std::fclose(fp);
 	return(0);
 }
-
-
-
