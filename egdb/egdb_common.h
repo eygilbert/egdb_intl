@@ -186,7 +186,7 @@ template <class DBCRC_T> DBCRC_T *find_file_crc(char const *name, DBCRC_T *table
 	int i;
 
 	for (i = 0; i < size; ++i)
-		if (!_stricmp(name, table[i].filename))
+		if (!strcasecmp(name, table[i].filename))
 			return(table + i);
 
 	return(0);

@@ -416,3 +416,20 @@
 	#endif
 
 #endif
+
+// -------
+// Strings
+// -------
+
+#ifdef _MSC_VER
+
+	#include <string.h>
+	
+	inline 
+	int strcasecmp(char const *a, char const *b) { return _stricmp(a, b); }
+
+#else
+
+	#include<string.h>	// provides strcasecmp
+
+#endif
