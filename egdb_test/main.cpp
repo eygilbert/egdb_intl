@@ -139,7 +139,7 @@ void verify(DB_INFO *db1, DB_INFO *db2, SLICE *slice, int64_t max_lookups)
 	if (max_lookups < 1)
 		incr = 1;
 	else
-		incr = (std::max)(size / max_lookups, 1LL);
+		incr = (std::max)(size / max_lookups, (int64_t)1);
 
 	/* If npieces >= 7, some slices do not have positions for both colors. */
 	black_ok = true;
@@ -212,7 +212,7 @@ void self_verify(EGDB_INFO *db, SLICE *slice, int64_t max_lookups)
 	if (max_lookups < 1)
 		incr = 1;
 	else
-		incr = (std::max)(size / max_lookups, 1LL);
+		incr = (std::max)(size / max_lookups, (int64_t)1);
 
 	/* If npieces >= 7, some slices do not have positions for both colors. */
 	black_ok = true;
@@ -270,7 +270,7 @@ void verify_indexing(SLICE *slice, int64_t max_tests)
 	if (max_tests < 1)
 		incr = 1;
 	else
-		incr = (std::max)(size / max_tests, 1LL);
+		incr = (std::max)(size / max_tests, (int64_t)1);
 
 	for (index = 0; index < size; index += incr) {
 		indextoposition_slice(index, &pos, slice->getnbm(), slice->getnbk(), slice->getnwm(), slice->getnwk());
