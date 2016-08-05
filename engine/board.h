@@ -153,14 +153,13 @@ typedef struct {
 	union {
 		struct {
 			BITBOARD pieces[2];		/* Indexed by BLACK or WHITE. */
-			BITBOARD king;
 		};
 		struct {
 			BITBOARD black;
 			BITBOARD white;
-			BITBOARD king;
 		};
 	};
+	BITBOARD king;
 } BOARD;
 
 
