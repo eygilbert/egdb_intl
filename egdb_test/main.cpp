@@ -37,7 +37,7 @@
 #define DB_MTC		"C:/Program Files/Kingsrow International/mtc_database"	/* Need 8 pieces for test. */
 #endif
 
-#define TDIFF(start) (((double)(clock() + 1 - start)) / (double)CLOCKS_PER_SEC)
+#define TDIFF(start) (((double)(std::clock() + 1 - start)) / (double)CLOCKS_PER_SEC)
 
 typedef struct {
 	EGDB_DRIVER *handle;
@@ -625,7 +625,7 @@ int main(int argc, char* argv[])
 	}
 
 	/* Do a quick verification of the indexing functions. */
-	t0 = clock();
+	t0 = std::clock();
 	slice.reset();
 	std::printf("\nTesting indexing round trip\n");
 	while (1) {
@@ -636,7 +636,7 @@ int main(int argc, char* argv[])
 	std::printf("%.2fsec: index test completed\n", TDIFF(t0));
 
 	std::printf("\nVerifying WLD Tunstall v1 against Tunstall v2 (up to 7 pieces).\n");
-	t0 = clock();
+	t0 = std::clock();
 	slice.reset();
 	while (1) {
 		std::printf("%.2fsec: ", TDIFF(t0));
@@ -658,7 +658,7 @@ int main(int argc, char* argv[])
 		return(1);
 	}
 
-	t0 = clock();
+	t0 = std::clock();
 	slice.reset();
 	while (1) {
 		std::printf("%.2fsec: ", TDIFF(t0));
@@ -685,7 +685,7 @@ int main(int argc, char* argv[])
 	db.handle = db1.handle;
 	db.dbpieces_1side = 5;
 	db.egdb_excludes_some_nonside_caps = true;
-	t0 = clock();
+	t0 = std::clock();
 	slice.reset();
 	while (1) {
 		std::printf("%.2fsec: ", TDIFF(t0));
