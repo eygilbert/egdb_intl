@@ -109,7 +109,7 @@ typedef struct {
 } DBHANDLE;
 
 typedef struct {
-	char *filename;
+	char const* filename;
 	unsigned int crc;
 } DBCRC;
 
