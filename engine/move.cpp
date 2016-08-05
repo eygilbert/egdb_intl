@@ -47,7 +47,7 @@ extern int back_shift_counts[2];
 extern DIAGS diag_tbl[NUM_BITBOARD_BITS];
 
 
-static inline void assign_black_jump_path(BOARD *board, BITBOARD jumps, CAPTURE_INFO *cap,
+static void assign_black_jump_path(BOARD *board, BITBOARD jumps, CAPTURE_INFO *cap,
 							 int capture_count, int movecount)
 {
 	cap[movecount].path[capture_count] = *board;
@@ -56,7 +56,7 @@ static inline void assign_black_jump_path(BOARD *board, BITBOARD jumps, CAPTURE_
 }
 
 
-static inline void assign_white_jump_path(BOARD *board, BITBOARD jumps, CAPTURE_INFO *cap,
+static void assign_white_jump_path(BOARD *board, BITBOARD jumps, CAPTURE_INFO *cap,
 							 int capture_count, int movecount)
 {
 	cap[movecount].path[capture_count] = *board;
@@ -65,7 +65,7 @@ static inline void assign_white_jump_path(BOARD *board, BITBOARD jumps, CAPTURE_
 }
 
 
-static inline void copy_path(CAPTURE_INFO *cap, MOVELIST *movelist)
+static void copy_path(CAPTURE_INFO *cap, MOVELIST *movelist)
 {
 	/* Copy the path to the next potential jump move. */
 	std::memcpy(cap[movelist->count + 1].path, cap[movelist->count].path, sizeof(cap[0].path));

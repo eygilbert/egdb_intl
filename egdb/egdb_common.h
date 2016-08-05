@@ -65,7 +65,7 @@ inline int needs_reversal(int nbm, int nbk, int nwm, int nwk, int color)
 /*
  * Do a binary search to find the block number that contains the target index.
  */
-__forceinline int find_block(int first, int last, uint32_t block_starts[], uint32_t target)
+inline int find_block(int first, int last, uint32_t block_starts[], uint32_t target)
 {
 	int mid;
 
