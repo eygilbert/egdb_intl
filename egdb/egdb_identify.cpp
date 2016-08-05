@@ -54,7 +54,7 @@ int egdb_identify(char const *directory, EGDB_TYPE *egdb_type, int *max_pieces)
 	int i, len, pieces;
 	unsigned int crc;
 	FILE *fp;
-	char *sep;
+	char const *sep;
 	EGDB_FIND_INFO *tablep;
 	char name[MAXFILENAME];
 
