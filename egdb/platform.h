@@ -1,10 +1,16 @@
 #pragma once
 
-#define USE_WIN_API 
+// -------------------------------------------------------------
+// when using Visual C++, define this to rely on the Windows API
+// -------------------------------------------------------------
 
-// ------------------
-// System information
-// ------------------
+#ifdef _MSC_VER
+	#define USE_WIN_API 
+#endif
+
+// ------------
+// 32 vs 64 bit
+// ------------
 
 #ifdef _MSC_VER
 
@@ -23,6 +29,10 @@
 	#endif
 
 #endif
+
+// ------------------
+// System information
+// ------------------
 
 #ifdef _MSC_VER
 
@@ -99,20 +109,58 @@
 // Memory
 // ------
 
-#ifdef USE_WIN_API
+#ifdef _MSC_VER
 
-	#include <Windows.h>
+	#ifdef USE_WIN_API
+
+		#include <Windows.h>
+
+		inline
+		void *aligned_large_alloc(size_t size)
+		{
+			return VirtualAlloc(0, size, MEM_COMMIT, PAGE_READWRITE);
+		}
+
+		inline 
+		void virtual_free(void *ptr)
+		{
+			VirtualFree(ptr, 0, MEM_RELEASE);
+		}
+
+	#else
+
+		// Visual C++ does not support C11 yet
+
+		#include <malloc.h>
+
+		inline
+			void *aligned_large_alloc(size_t size)
+		{
+			return _aligned_malloc(size, get_allocation_granularity());
+		}
+
+		inline
+			void virtual_free(void *ptr)
+		{
+			_aligned_free(ptr);
+		}
+
+	#endif
+
+#else
+
+	#include <cstdlib>
 
 	inline
 	void *aligned_large_alloc(size_t size)
 	{
-		return VirtualAlloc(0, size, MEM_COMMIT, PAGE_READWRITE);
+		return std::aligned_alloc(size, get_allocation_granularity());
 	}
 
-	inline 
+	inline
 	void virtual_free(void *ptr)
 	{
-		VirtualFree(ptr, 0, MEM_RELEASE);
+		std::free(ptr);
 	}
 
 #endif
@@ -121,7 +169,7 @@
 // File I/O
 // --------
 
-#ifdef USE_WIN_API
+#if defined(_MSC_VER) && defined(USE_WIN_API)
 
 	#include <cassert>
 	#include <cstdint>
@@ -177,57 +225,7 @@
 		return CloseHandle(ptr);
 	}
 
-#endif
-
-// ------
-// Memory
-// ------
-
-#ifndef USE_WIN_API
-
-	#ifdef _MSC_VER
-
-		// Visual C++ does not support C11 yet
-
-		#include <malloc.h>
-
-		inline
-		void *aligned_large_alloc(size_t size)
-		{
-			return _aligned_malloc(size, get_allocation_granularity());	
-		}
-
-		inline
-		void virtual_free(void *ptr)
-		{
-			_aligned_free(ptr);	
-		}
-
-	#else
-
-		#include <cstdlib>
-
-		inline
-		void *aligned_large_alloc(size_t size)
-		{
-			return std::aligned_alloc(size, get_allocation_granularity());
-		}
-
-		inline
-		void virtual_free(void *ptr)
-		{
-			std::free(ptr);
-		}
-
-	#endif
-
-#endif
-
-// --------
-// File I/O
-// --------
-
-#ifndef USE_WIN_API
+#else
 
 	#include <cstdint>
 	#include <cstdio>
@@ -243,8 +241,9 @@
 	}
 
 	#ifdef _MSC_VER
-
 		// On both 32-bit and 64-bit Windows, a <long> is 32-bit, not 64-bit
+
+		#include <studio.h>
 
 		inline
 		int64_t get_file_size(FILE_HANDLE stream)
@@ -297,9 +296,9 @@
 
 #endif
 
-// ---------
-// Threading
-// ---------
+// -------
+// Locking
+// -------
 
 #include "engine/lock.h"
 
