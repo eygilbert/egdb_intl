@@ -562,27 +562,6 @@ static int dblookup(EGDB_DRIVER *handle, EGDB_POSITION *p, int color, int cl)
 	}
 }
 
-
-static void preload_subdb(DBHANDLE *hdat, CPRSUBDB *subdb, int *preloaded_cacheblocks)
-{
-	int i;
-	int first_blocknum;
-	int last_blocknum;
-
-	if (subdb->singlevalue != NOT_SINGLEVALUE)
-		return;
-
-	first_blocknum = subdb->first_idx_block / IDX_BLOCKS_PER_CACHE_BLOCK;
-	last_blocknum = (subdb->first_idx_block + subdb->num_idx_blocks - 1) / IDX_BLOCKS_PER_CACHE_BLOCK;
-	for (i = first_blocknum; i <= last_blocknum && *preloaded_cacheblocks < hdat->cacheblocks; ++i) {
-		if (subdb->file->cache_bufferi[i] == UNDEFINED_BLOCK_ID) {
-			load_blocknum<CCB>(hdat, subdb, i);
-			++(*preloaded_cacheblocks);
-		}
-	}
-}
-
-
 static int init_autoload_subindices(DBHANDLE *hdat, DBFILE *file, int *allocated_bytes)
 {
 	int i, k, m, size;
@@ -1390,13 +1369,11 @@ static void build_autoload_list(DBHANDLE *hdat)
 static int egdb_close(EGDB_DRIVER *handle)
 {
 	DBHANDLE *hdat = (DBHANDLE *)handle->internal_data;
-	int i, k, count, size;
+	int i, k;
 	DBP *p;
 
 	/* Free the cache buffers in groups of CACHE_ALLOC_COUNT at a time. */
 	for (i = 0; i < hdat->cacheblocks; i += CACHE_ALLOC_COUNT) {
-		count = (std::min)(CACHE_ALLOC_COUNT, hdat->cacheblocks - i);
-		size = count * CACHE_BLOCKSIZE * sizeof(unsigned char);
 		virtual_free(hdat->ccbs[i].data);
 	}
 

@@ -739,27 +739,6 @@ static int dblookup(EGDB_DRIVER *handle, EGDB_POSITION *p, int color, int cl)
 	return(returnvalue);
 }
 
-
-static void preload_subdb(DBHANDLE *hdat, CPRSUBDB *subdb, int *preloaded_cacheblocks)
-{
-	int i;
-	int first_blocknum;
-	int last_blocknum;
-
-	if (subdb->singlevalue != NOT_SINGLEVALUE)
-		return;
-
-	first_blocknum = subdb->first_idx_block;
-	last_blocknum = subdb->first_idx_block + subdb->num_idx_blocks - 1;
-	for (i = first_blocknum; i <= last_blocknum && *preloaded_cacheblocks < hdat->cacheblocks; ++i) {
-		if (subdb->file->cache_bufferi[i] == UNDEFINED_BLOCK_ID) {
-			load_blocknum<CCB>(hdat, subdb, i);
-			++(*preloaded_cacheblocks);
-		}
-	}
-}
-
-
 static int init_autoload_subindices(DBHANDLE *hdat, DBFILE *file, size_t *allocated_bytes)
 {
 	int i, k, m, size;

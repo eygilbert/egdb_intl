@@ -902,32 +902,6 @@ static int dblookup(EGDB_DRIVER *handle, EGDB_POSITION *p, int color, int cl)
 	return(returnvalue);
 }
 
-
-static void preload_subdb(DBHANDLE *hdat, CPRSUBDB *subdb, int *preloaded_cacheblocks)
-{
-	int i, filenum;
-	unsigned int hashindex;
-	int first_blocknum;
-	int last_blocknum;
-	CACHE_HASHTABLE_NODE *node;
-
-	if (subdb->singlevalue != NOT_SINGLEVALUE)
-		return;
-
-	first_blocknum = subdb->first_idx_block;
-	last_blocknum = subdb->first_idx_block + subdb->num_idx_blocks - 1;
-	for (i = first_blocknum; i <= last_blocknum && *preloaded_cacheblocks < hdat->cacheblocks; ++i) {
-		filenum = (int)(subdb->file - hdat->dbfiles);
-		hashindex = calc_cache_hashindex(hdat->cache_ht_size, filenum, i);
-		node = cache_ht_lookup(hdat, hashindex, filenum, i);
-		if (!node) {
-			load_blocknum_tun_v1(hdat, subdb, i, hashindex);
-			++(*preloaded_cacheblocks);
-		}
-	}
-}
-
-
 static int init_autoload_subindices(DBHANDLE *hdat, DBFILE *file, size_t *allocated_bytes)
 {
 	int i, k, m, size;

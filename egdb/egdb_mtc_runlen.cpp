@@ -873,13 +873,11 @@ static void build_file_table(DBHANDLE *hdat)
 static int egdb_close(EGDB_DRIVER *handle)
 {
 	DBHANDLE *hdat = (DBHANDLE *)handle->internal_data;
-	int i, k, count, size;
+	int i, k;
 	DBP *p;
 
 	/* Free the cache buffers in groups of CACHE_ALLOC_COUNT at a time. */
 	for (i = 0; i < hdat->cacheblocks; i += CACHE_ALLOC_COUNT) {
-		count = (std::min)(CACHE_ALLOC_COUNT, hdat->cacheblocks - i);
-		size = count * CACHE_BLOCKSIZE * sizeof(unsigned char);
 		virtual_free(hdat->ccbs[i].data);
 	}
 
