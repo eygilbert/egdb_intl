@@ -15,6 +15,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <ctime>
 #include <utility>
 
 #define USE_AUTOLOAD 1
@@ -1265,7 +1266,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 		/* Preload the cache blocks with data.
 		 * First do the slices from the preload table.
 		 */
-		t0 = GetTickCount();
+		t0 = std::clock();
 		count = 0;				/* keep count of cacheblocks that are preloaded. */
 
 		/* Now preload any of the files that we did not have space for 
@@ -1290,7 +1291,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 			if (count >= hdat->cacheblocks)
 				break;
 		}
-		t1 = GetTickCount();
+		t1 = std::clock();
 		std::sprintf(msg, "Read %d buffers in %d sec, %.3f msec/buffer\n", 
 					hdat->cacheblocks, (t1 - t0) / 1000, 
 					(double)(t1 - t0) / (double)hdat->cacheblocks);

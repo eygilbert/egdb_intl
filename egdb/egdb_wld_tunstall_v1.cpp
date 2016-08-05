@@ -17,6 +17,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <ctime>
 #include <utility>
 
 #define MAXPIECES 8
@@ -1089,7 +1090,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 	CPRSUBDB *subdb;
 	unsigned char *blockp;		/* Base address of an allocate group of cache buffers. */
 
-	t0 = GetTickCount();
+	t0 = std::clock();
 
 	/* Save off some global data. */
 	strcpy(hdat->db_filepath, filepath);
@@ -1153,7 +1154,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 	}
 
 	/* End of reading index files, start of autoload. */
-	t1 = GetTickCount();
+	t1 = std::clock();
 	std::sprintf(msg, "Reading index files took %d secs\n", (t1 - t0) / 1000);
 	(*hdat->log_msg_fn)(msg);
 
@@ -1254,7 +1255,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 	std::sprintf(msg, "Allocated %dkb for permanent slice caches\n", (int)(autoload_bytes / 1024));
 	(*hdat->log_msg_fn)(msg);
 
-	t2 = GetTickCount();
+	t2 = std::clock();
 	std::sprintf(msg, "Autoload took %d secs\n", (t2 - t1) / 1000);
 	(*hdat->log_msg_fn)(msg);
 
@@ -1396,7 +1397,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 			if (count >= hdat->cacheblocks)
 				break;
 		}
-		t3 = GetTickCount();
+		t3 = std::clock();
 		std::sprintf(msg, "Read %d buffers in %d sec, %.3f msec/buffer\n", 
 					hdat->cacheblocks, (t3 - t2) / 1000, 
 					(double)(t3 - t2) / (double)hdat->cacheblocks);
