@@ -9,11 +9,14 @@
 
 template <bool save_capture_info>
 static void black_man_jump(BOARD *board, BITBOARD all_jumped, MOVELIST *movelist, BITBOARD from, int num_jumps, int *largest_num_jumps, CAPTURE_INFO cap[]);
+
 template <bool save_capture_info>
 static void white_man_jump(BOARD *board, BITBOARD all_jumped, MOVELIST *movelist, BITBOARD from, int num_jumps, int *largest_num_jumps, CAPTURE_INFO cap[]);
+
 template <bool save_capture_info>
 static void black_king_jump(BOARD *board, BITBOARD all_jumped, MOVELIST *movelist, BITBOARD from, DIR dir,
 					 int num_jumps, int *largest_num_jumps, CAPTURE_INFO cap[]);
+
 template <bool save_capture_info>
 static void white_king_jump(BOARD *board, BITBOARD all_jumped, MOVELIST *movelist, BITBOARD from, DIR dir,
 					 int num_jumps, int *largest_num_jumps, CAPTURE_INFO cap[]);
@@ -1648,7 +1651,7 @@ static void black_king_jump(BOARD *board, BITBOARD all_jumped, MOVELIST *movelis
 
 
 template <bool save_capture_info>
-void white_king_jump(BOARD *board, BITBOARD all_jumped, MOVELIST *movelist, BITBOARD from,
+static void white_king_jump(BOARD *board, BITBOARD all_jumped, MOVELIST *movelist, BITBOARD from,
 					 DIR dir, int num_jumps, int *largest_num_jumps,
 					 CAPTURE_INFO cap[])
 {
@@ -1914,7 +1917,7 @@ void white_king_jump(BOARD *board, BITBOARD all_jumped, MOVELIST *movelist, BITB
  * If not, call again recursively.
  */
 template <bool save_capture_info>
-void black_man_jump(BOARD *board, BITBOARD all_jumped, MOVELIST *movelist, BITBOARD from,
+static void black_man_jump(BOARD *board, BITBOARD all_jumped, MOVELIST *movelist, BITBOARD from,
 						 int num_jumps, int *largest_num_jumps, CAPTURE_INFO cap[])
 {
 	BITBOARD jumps;
@@ -2002,7 +2005,7 @@ void black_man_jump(BOARD *board, BITBOARD all_jumped, MOVELIST *movelist, BITBO
  * If not, call again recursively.
  */
 template <bool save_capture_info>
-void white_man_jump(BOARD *board, BITBOARD all_jumped, MOVELIST *movelist, BITBOARD from,
+static void white_man_jump(BOARD *board, BITBOARD all_jumped, MOVELIST *movelist, BITBOARD from,
 						 int num_jumps, int *largest_num_jumps, CAPTURE_INFO cap[])
 {
 	BITBOARD jumps;
