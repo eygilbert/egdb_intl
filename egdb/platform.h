@@ -136,7 +136,9 @@
 		inline
 		void *aligned_large_alloc(size_t size)
 		{
-			return _aligned_malloc(get_allocation_granularity(), size);
+			// https://msdn.microsoft.com/en-us/library/8z34s9c6.aspx
+			// NOTE: order of arguments is (size, alignment)
+			return _aligned_malloc(size, get_allocation_granularity());
 		}
 
 		inline
@@ -154,7 +156,9 @@
 	inline
 	void *aligned_large_alloc(size_t size)
 	{
-		return aligned_alloc(size, get_allocation_granularity());
+		// http://en.cppreference.com/w/c/memory/aligned_alloc
+		// NOTE: order of arguments is (alignment, size)
+		return aligned_alloc(get_allocation_granularity(), size);
 	}
 
 	inline
