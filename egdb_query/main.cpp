@@ -69,7 +69,17 @@ bool is_lower(int left, int right)
 
 bool is_full_zugzwang(int left, int right)
 {
-	return left == EGDB_LOSS && right == EGDB_WIN;
+	return left == EGDB_LOSS && right == EGDB_LOSS;
+}
+
+bool is_minority_half_zugzwang(int left, int right)
+{
+	return left == EGDB_LOSS && right == EGDB_DRAW;
+}
+
+bool is_majority_half_zugzwang(int left, int right)
+{
+	return left == EGDB_DRAW && right == EGDB_LOSS;
 }
 
 char const *valuestr(int value)
@@ -85,6 +95,13 @@ char const *valuestr(int value)
 	return("unknown");
 }
 
+bool only_single_king_on_single_corner_diag(EGDB_POSITION const& pos)
+{
+	return
+			bitcount64(pos.king & SINGLE_CORNER_DIAG) == 1 &&
+			bitcount64((pos.black | pos.white) & ~pos.king & SINGLE_CORNER_DIAG) == 0
+	;
+}
 
 void query_zwugzwangs_slice(EGDB_DRIVER *handle, SLICE *slice)
 {
@@ -98,34 +115,29 @@ void query_zwugzwangs_slice(EGDB_DRIVER *handle, SLICE *slice)
 		indextoposition_slice(index, &pos, slice->getnbm(), slice->getnbk(), slice->getnwm(), slice->getnwk());
 
 		/* No captures or non-side captures. */
-		if (canjump((BOARD *)&pos, BLACK) || canjump((BOARD *)&pos, WHITE))
+		if (
+				canjump((BOARD *)&pos, BLACK) ||
+				canjump((BOARD *)&pos, WHITE) ||
+				!only_single_king_on_single_corner_diag(pos)
+		)
 			continue;
 
-		valb = EGDB_UNKNOWN;		/* So we can know if we already looked up the values. */
+		valb = handle->lookup(handle, &pos, EGDB_BLACK, 0);
+		valw = handle->lookup(handle, &pos, EGDB_WHITE, 0);
 
-		/* Do white-to-move zugzwangs. Requires black king on single corner diagonal. */
-		if (pos.black & pos.king & SINGLE_CORNER_DIAG) {
-			valb = handle->lookup(handle, &pos, EGDB_BLACK, 0);
-			valw = handle->lookup(handle, &pos, EGDB_WHITE, 0);
-			//if (is_lower(valw, valb)) {
-			if (is_full_zugzwang(valw, valb)) {
-				print_fen((BOARD *)&pos, EGDB_WHITE, fenbuf);
-				std::printf("%s\twhite %s, black %s\n", fenbuf, valuestr(valw), valuestr(valb));
-			}
+		if (is_full_zugzwang(valw, valb)) {
+			print_fen((BOARD *)&pos, EGDB_WHITE, fenbuf);
+			std::printf("%s\t full point zugzwang: wtm = black win, btw = white win\n", fenbuf);
+		}
+		if (is_minority_half_zugzwang(valw, valb)) {
+			print_fen((BOARD *)&pos, EGDB_WHITE, fenbuf);
+			std::printf("%s\t minority half point zugzwang: wtm = black win, btm = draw\n", fenbuf);
+		}
+		if (is_majority_half_zugzwang(valw, valb)) {
+			print_fen((BOARD *)&pos, EGDB_WHITE, fenbuf);
+			std::printf("%s\t majority half point zugzwang: wtm = draw, btm = white win\n", fenbuf);
 		}
 
-		/* Do black-to-move zugzwangs. Requires white king on single corner diagonal. */
-		if (pos.white & pos.king & SINGLE_CORNER_DIAG) {
-			if (valb == EGDB_UNKNOWN) {
-				valb = handle->lookup(handle, &pos, EGDB_BLACK, 0);
-				valw = handle->lookup(handle, &pos, EGDB_WHITE, 0);
-			}
-			//if (is_lower(valb, valw)) {
-			if (is_full_zugzwang(valb, valw)) {
-				print_fen((BOARD *)&pos, EGDB_BLACK, fenbuf);
-				std::printf("%s\tblack %s, white %s\n", fenbuf, valuestr(valb), valuestr(valw));
-			}
-		}
 	}
 }
 
@@ -150,7 +162,7 @@ void query_zugzwangs(EGDB_DRIVER *handle, int maxpieces)
 
 int main(int argc, char *argv[])
 {
-	const int maxpieces = 4;
+	const int maxpieces = 5;
 	char options[50];
 	EGDB_DRIVER *handle;
 
