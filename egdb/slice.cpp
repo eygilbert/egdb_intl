@@ -1,4 +1,4 @@
-#include "slice.h"
+#include "egdb/slice.h"
 #include <algorithm>
 
 void SLICE::reset(void)
