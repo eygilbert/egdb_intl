@@ -1163,7 +1163,7 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64_t *allocated_bytes)
 			/* Check for one or more info lines beginning with a '#'. */
 			while (1) {
 				stat = std::fgetc(fp);
-				if (stat == '\n')
+				if (std::isspace(stat))
 					continue;
 				if (stat == '#') {
 					char line[120];
