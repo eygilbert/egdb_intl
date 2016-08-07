@@ -419,7 +419,7 @@ void mtc_test()
 	int color, status, max_pieces, value, max_pieces_1side, max_9pc_kings, max_8pc_kings_1side;
 	FILE *fp;
 	EGDB_TYPE type;
-	const char *mtc_stats_filename = "10x10 HighMtc.txt";
+	char const *mtc_stats_filename = "../egdb_test/10x10 HighMtc.txt"; // consistent with out-of-tree CMake builds
 	char linebuf[120];
 	BOARD pos;
 	EGDB_INFO wld;

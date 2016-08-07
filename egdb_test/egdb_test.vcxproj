@@ -220,6 +220,7 @@
     <Text Include="..\egdb\tunstall_decompress_v1.txt" />
     <Text Include="..\egdb\tunstall_decompress_v2.txt" />
     <Text Include="..\Readme.md" />
+    <Text Include="10x10 HighMtc.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

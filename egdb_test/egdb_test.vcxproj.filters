@@ -140,5 +140,8 @@
     <Text Include="..\egdb\huffman_decompress.txt">
       <Filter>egdb</Filter>
     </Text>
+    <Text Include="10x10 HighMtc.txt">
+      <Filter>egdb_test</Filter>
+    </Text>
   </ItemGroup>
 </Project>
