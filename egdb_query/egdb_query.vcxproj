@@ -30,8 +30,7 @@
     <ClCompile Include="..\egdb\egdb_wld_runlen.cpp" />
     <ClCompile Include="..\egdb\egdb_wld_tunstall_v1.cpp" />
     <ClCompile Include="..\egdb\egdb_wld_tunstall_v2.cpp" />
-    <ClCompile Include="..\egdb_test\egdb_search.cpp" />
-    <ClCompile Include="..\egdb_test\slice.cpp" />
+    <ClCompile Include="..\egdb\slice.cpp" />
     <ClCompile Include="..\engine\bicoef.cpp" />
     <ClCompile Include="..\engine\bitcount.cpp" />
     <ClCompile Include="..\engine\board.cpp" />
@@ -48,8 +47,7 @@
     <ClInclude Include="..\egdb\egdb_common.h" />
     <ClInclude Include="..\egdb\egdb_intl.h" />
     <ClInclude Include="..\egdb\platform.h" />
-    <ClInclude Include="..\egdb_test\egdb_search.h" />
-    <ClInclude Include="..\egdb_test\slice.h" />
+    <ClInclude Include="..\egdb\slice.h" />
     <ClInclude Include="..\engine\bicoef.h" />
     <ClInclude Include="..\engine\bitcount.h" />
     <ClInclude Include="..\engine\board.h" />

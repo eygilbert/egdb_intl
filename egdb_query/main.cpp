@@ -1,6 +1,6 @@
 #include "builddb/indexing.h"
 #include "egdb/egdb_intl.h"
-#include "egdb_test/slice.h"
+#include "egdb/slice.h"
 #include "engine/board.h"
 #include "engine/fen.h"
 #include "engine/move_api.h"
@@ -11,12 +11,12 @@
 #include <ctime>
 
 
-#define EYG
+//#define EYG
 #ifdef EYG
 #define PATH_WLD "C:/db_intl/wld_v2"
 #endif
 
-//#define RH
+#define RH
 #ifdef RH
 	#ifdef _MSC_VER
 		// drive name where Kingsrow is installed under Windows
@@ -67,6 +67,10 @@ bool is_lower(int left, int right)
 	return(false);
 }
 
+bool is_full_zugzwang(int left, int right)
+{
+	return left == EGDB_LOSS && right == EGDB_WIN;
+}
 
 char const *valuestr(int value)
 {
@@ -103,7 +107,8 @@ void query_zwugzwangs_slice(EGDB_DRIVER *handle, SLICE *slice)
 		if (pos.black & pos.king & SINGLE_CORNER_DIAG) {
 			valb = handle->lookup(handle, &pos, EGDB_BLACK, 0);
 			valw = handle->lookup(handle, &pos, EGDB_WHITE, 0);
-			if (is_lower(valw, valb)) {
+			//if (is_lower(valw, valb)) {
+			if (is_full_zugzwang(valw, valb)) {
 				print_fen((BOARD *)&pos, EGDB_WHITE, fenbuf);
 				std::printf("%s\twhite %s, black %s\n", fenbuf, valuestr(valw), valuestr(valb));
 			}
@@ -115,7 +120,8 @@ void query_zwugzwangs_slice(EGDB_DRIVER *handle, SLICE *slice)
 				valb = handle->lookup(handle, &pos, EGDB_BLACK, 0);
 				valw = handle->lookup(handle, &pos, EGDB_WHITE, 0);
 			}
-			if (is_lower(valb, valw)) {
+			//if (is_lower(valb, valw)) {
+			if (is_full_zugzwang(valb, valw)) {
 				print_fen((BOARD *)&pos, EGDB_BLACK, fenbuf);
 				std::printf("%s\tblack %s, white %s\n", fenbuf, valuestr(valb), valuestr(valw));
 			}
@@ -144,7 +150,7 @@ void query_zugzwangs(EGDB_DRIVER *handle, int maxpieces)
 
 int main(int argc, char *argv[])
 {
-	const int maxpieces = 5;
+	const int maxpieces = 4;
 	char options[50];
 	EGDB_DRIVER *handle;
 

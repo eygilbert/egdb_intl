@@ -182,19 +182,19 @@
     <ClCompile Include="..\Egdb\egdb_identify.cpp" />
     <ClCompile Include="..\Egdb\egdb_mtc_runlen.cpp" />
     <ClCompile Include="..\Egdb\egdb_open.cpp" />
+    <ClCompile Include="..\egdb\egdb_search.cpp" />
     <ClCompile Include="..\Egdb\egdb_wld_huffman.cpp" />
     <ClCompile Include="..\Egdb\egdb_wld_runlen.cpp" />
     <ClCompile Include="..\Egdb\egdb_wld_tunstall_v1.cpp" />
     <ClCompile Include="..\Egdb\egdb_wld_tunstall_v2.cpp" />
+    <ClCompile Include="..\egdb\slice.cpp" />
     <ClCompile Include="..\Engine\bicoef.cpp" />
     <ClCompile Include="..\Engine\bitcount.cpp" />
     <ClCompile Include="..\Engine\board.cpp" />
     <ClCompile Include="..\Engine\fen.cpp" />
     <ClCompile Include="..\engine\move.cpp" />
     <ClCompile Include="..\Engine\reverse.cpp" />
-    <ClCompile Include="egdb_search.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="slice.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\builddb\compression_tables.h" />
@@ -203,7 +203,9 @@
     <ClInclude Include="..\Egdb\crc.h" />
     <ClInclude Include="..\Egdb\egdb_common.h" />
     <ClInclude Include="..\Egdb\egdb_intl.h" />
+    <ClInclude Include="..\egdb\egdb_search.h" />
     <ClInclude Include="..\egdb\platform.h" />
+    <ClInclude Include="..\egdb\slice.h" />
     <ClInclude Include="..\Engine\bicoef.h" />
     <ClInclude Include="..\Engine\bitcount.h" />
     <ClInclude Include="..\Engine\board.h" />
@@ -214,8 +216,6 @@
     <ClInclude Include="..\engine\move_api.h" />
     <ClInclude Include="..\Engine\project.h" />
     <ClInclude Include="..\Engine\reverse.h" />
-    <ClInclude Include="egdb_search.h" />
-    <ClInclude Include="slice.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\egdb\huffman_decompress.txt" />

@@ -1,4 +1,4 @@
-#include "egdb_test/egdb_search.h"
+#include "egdb/egdb_search.h"
 #include "egdb/egdb_intl.h"
 #include "engine/bicoef.h"
 #include "engine/bitcount.h"

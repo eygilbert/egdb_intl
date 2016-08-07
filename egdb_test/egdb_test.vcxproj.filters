@@ -45,9 +45,6 @@
     <ClCompile Include="..\Egdb\egdb_common.cpp">
       <Filter>egdb</Filter>
     </ClCompile>
-    <ClCompile Include="egdb_search.cpp">
-      <Filter>egdb_test</Filter>
-    </ClCompile>
     <ClCompile Include="..\Engine\fen.cpp">
       <Filter>engine</Filter>
     </ClCompile>
@@ -72,8 +69,11 @@
     <ClCompile Include="..\builddb\compression_tables.cpp">
       <Filter>builddb</Filter>
     </ClCompile>
-    <ClCompile Include="slice.cpp">
-      <Filter>egdb_test</Filter>
+    <ClCompile Include="..\egdb\egdb_search.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\egdb\slice.cpp">
+      <Filter>egdb</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -107,9 +107,6 @@
     <ClInclude Include="..\Egdb\egdb_common.h">
       <Filter>egdb</Filter>
     </ClInclude>
-    <ClInclude Include="egdb_search.h">
-      <Filter>egdb_test</Filter>
-    </ClInclude>
     <ClInclude Include="..\Engine\fen.h">
       <Filter>engine</Filter>
     </ClInclude>
@@ -131,8 +128,11 @@
     <ClInclude Include="..\egdb\platform.h">
       <Filter>egdb</Filter>
     </ClInclude>
-    <ClInclude Include="slice.h">
-      <Filter>egdb_test</Filter>
+    <ClInclude Include="..\egdb\egdb_search.h">
+      <Filter>egdb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\egdb\slice.h">
+      <Filter>egdb</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

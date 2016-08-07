@@ -13,9 +13,6 @@
     <Filter Include="egdb">
       <UniqueIdentifier>{72c58257-8791-4824-8061-c67f089ec0f4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="egdb_test">
-      <UniqueIdentifier>{22f8850a-b491-4105-acbd-6d688341a083}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\builddb\compression_tables.cpp">
@@ -72,11 +69,8 @@
     <ClCompile Include="..\egdb\egdb_wld_tunstall_v2.cpp">
       <Filter>egdb</Filter>
     </ClCompile>
-    <ClCompile Include="..\egdb_test\egdb_search.cpp">
-      <Filter>egdb_test</Filter>
-    </ClCompile>
-    <ClCompile Include="..\egdb_test\slice.cpp">
-      <Filter>egdb_query</Filter>
+    <ClCompile Include="..\egdb\slice.cpp">
+      <Filter>egdb</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -131,11 +125,8 @@
     <ClInclude Include="..\egdb\platform.h">
       <Filter>egdb</Filter>
     </ClInclude>
-    <ClInclude Include="..\egdb_test\egdb_search.h">
-      <Filter>egdb_test</Filter>
-    </ClInclude>
-    <ClInclude Include="..\egdb_test\slice.h">
-      <Filter>egdb_query</Filter>
+    <ClInclude Include="..\egdb\slice.h">
+      <Filter>egdb</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
