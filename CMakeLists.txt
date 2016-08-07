@@ -21,5 +21,6 @@ include_directories(${PROJECT_SOURCE_DIR})
 # COMPONENTS
 ###############################################################
 
+add_subdirectory(egdb_query)
 add_subdirectory(egdb_test)
 #add_subdirectory(example)
