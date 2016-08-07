@@ -1,6 +1,8 @@
 #pragma once
 #include "egdb/egdb_intl.h"
 #include "egdb/platform.h"
+#include <ctime>
+
 
 #define MAXMSG 256
 #define ONE_MB 1048576
@@ -33,18 +35,22 @@
 #define DBSIZE ((MAXPIECE + 1) * (MAXPIECE + 1) * (MAXPIECE + 1) * \
 			(MAXPIECE + 1) * NUMBEROFCOLORS)
 
-typedef uint32_t INDEX;
-
-
-
 /* Round a value 'a' up to the next integer multiple of blocksize 's'. */
 #define ROUND_UP(a, s) (((a) % (s)) ? ((1 + (a) / (s)) * (s)) : (a))
 
 #define LOWORD32(x) (uint32_t)((x) & 0xffffffff)
 
+typedef uint32_t INDEX;
 
 extern int get_num_subslices(int nbm, int nbk, int nwm, int nwk);
 int read_file(FILE_HANDLE fp, unsigned char *buf, size_t size, int pagesize);
+
+
+inline double tdiff_secs(clock_t end, clock_t start)
+{
+	return((double)(end - start) / (double)CLOCKS_PER_SEC);
+}
+
 
 inline int needs_reversal(int nbm, int nbk, int nwm, int nwk, int color)
 {

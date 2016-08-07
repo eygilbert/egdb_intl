@@ -1122,7 +1122,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 
 	/* End of reading index files, start of autoload. */
 	t1 = std::clock();
-	std::sprintf(msg, "Reading index files took %d secs\n", (t1 - t0) / 1000);
+	std::sprintf(msg, "Reading index files took %.0f secs\n", tdiff_secs(t1, t0));
 	(*hdat->log_msg_fn)(msg);
 
 	/* Find the total size of all the files that will be used. */
@@ -1223,7 +1223,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 	(*hdat->log_msg_fn)(msg);
 
 	t2 = std::clock();
-	std::sprintf(msg, "Autoload took %d secs\n", (t2 - t1) / 1000);
+	std::sprintf(msg, "Autoload took %.0f secs\n", tdiff_secs(t2, t1));
 	(*hdat->log_msg_fn)(msg);
 
 	/* Figure out how much ram is left for lru cache buffers.
@@ -1364,11 +1364,11 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 				break;
 		}
 		t3 = std::clock();
-		std::sprintf(msg, "Read %d buffers in %d sec, %.3f msec/buffer\n", 
-					hdat->cacheblocks, (t3 - t2) / 1000, 
+		std::sprintf(msg, "Read %d buffers in %.0f sec, %.3f msec/buffer\n", 
+					hdat->cacheblocks, tdiff_secs(t3, t2), 
 					(double)(t3 - t2) / (double)hdat->cacheblocks);
 		(*hdat->log_msg_fn)(msg);
-		std::sprintf(msg, "Egdb init took %d sec total\n", (t3 - t0) / 1000);
+		std::sprintf(msg, "Egdb init took %.0f sec total\n", tdiff_secs(t3, t0));
 		(*hdat->log_msg_fn)(msg);
 	}
 	else
