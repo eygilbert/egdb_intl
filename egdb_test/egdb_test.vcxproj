@@ -194,6 +194,7 @@
     <ClCompile Include="..\Engine\reverse.cpp" />
     <ClCompile Include="egdb_search.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="slice.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\builddb\compression_tables.h" />
@@ -214,6 +215,7 @@
     <ClInclude Include="..\Engine\project.h" />
     <ClInclude Include="..\Engine\reverse.h" />
     <ClInclude Include="egdb_search.h" />
+    <ClInclude Include="slice.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\egdb\huffman_decompress.txt" />

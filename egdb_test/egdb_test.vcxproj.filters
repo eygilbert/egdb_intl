@@ -72,6 +72,9 @@
     <ClCompile Include="..\builddb\compression_tables.cpp">
       <Filter>builddb</Filter>
     </ClCompile>
+    <ClCompile Include="slice.cpp">
+      <Filter>egdb_test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Egdb\crc.h">
@@ -127,6 +130,9 @@
     </ClInclude>
     <ClInclude Include="..\egdb\platform.h">
       <Filter>egdb</Filter>
+    </ClInclude>
+    <ClInclude Include="slice.h">
+      <Filter>egdb_test</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,6 +1,7 @@
 #include "builddb/indexing.h"
 #include "egdb/egdb_intl.h"
 #include "egdb_test/egdb_search.h"
+#include "egdb_test/slice.h"
 #include "engine/bicoef.h"
 #include "engine/bitcount.h"
 #include "engine/board.h"
@@ -60,79 +61,6 @@ typedef struct {
 	bool excludes_some_nonside_captures;	/* If more than 6 pieces. */
 	bool excludes_some_sidetomove_colors;	/* If more than 6 pieces. */
 } DB_INFO;
-
-
-class SLICE {
-public:
-	void reset(void);
-	int advance(void);
-	int getnbm(void) {return(nbm);}
-	int getnbk(void) {return(nbk);}
-	int getnwm(void) {return(nwm);}
-	int getnwk(void) {return(nwk);}
-	int getnpieces(void) {return(npieces);}
-
-private:
-	const int maxpiece = 5;
-	int nbm;
-	int nbk;
-	int nwm;
-	int nwk;
-	int nb;
-	int nw;
-	int npieces;
-};
-
-
-void SLICE::reset(void)
-{
-	npieces = 2;
-	nb = 1;
-	nw = 1;
-	nbm = 0;
-	nbk = 1;
-	nwm = 0;
-	nwk = 1;
-}
-
-
-int SLICE::advance(void)
-{
-	if (nwk > 0) {
-		--nwk;
-		++nwm;
-	}
-	else if (nbk > 0) {
-		--nbk;
-		++nbm;
-		if (nb == nw) {
-			nwm = nbm;
-			nwk = nbk;
-		}
-		else {
-			nwk = nw;
-			nwm = 0;
-		}
-	}
-	else if (nb < (std::min)(maxpiece, npieces - 1)) {
-		++nb;
-		--nw;
-		nbm = 0;
-		nbk = nb;
-		nwm = 0;
-		nwk = npieces - nb;
-	}
-	else {
-		++npieces;
-		nb = (npieces + 1) / 2;
-		nw = npieces - nb;
-		nbm = 0;
-		nbk = nb;
-		nwm = 0;
-		nwk = nw;
-	}
-	return(npieces);
-}
 
 
 void print_msgs(char const *msg)
@@ -605,7 +533,7 @@ void test_mutual_exclusion(char const *dbpath, LOCKT *lock)
 }
 
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
 	DB_INFO db1, db2;
 	clock_t t0;
