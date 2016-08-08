@@ -7,5 +7,13 @@ namespace egdb_interface {
 
 extern unsigned int bicoef[MAXSQUARE_BICOEF + 1][MAXPIECES_BICOEF + 1];
 
+/*
+ * Return the number of ways to choose k objects from a set of n objects.
+ */
+inline unsigned int choose(int n, int k)
+{
+	return(bicoef[n][k]);
+}
+
 void initbicoef(void);
 }	// namespace egdb_interface

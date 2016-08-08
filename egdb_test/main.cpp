@@ -26,15 +26,16 @@ using namespace egdb_interface;
 
 #define FAST_TEST_MULT 1		/* Set to 5 to speed up the tests. */
 
-//#define EYG
+#define EYG
 #ifdef EYG
 #define DB_RUNLEN "C:/db_intl/wld_runlen"	/* Need 6 pieces for test. */
 #define DB_TUN_V1 "E:/db_intl/wld_v1"		/* Need 7 pieces for test. */
 #define DB_TUN_V2 "C:/db_intl/wld_v2"		/* Need 8 pieces for test. */
 #define DB_MTC "E:/db_intl/slice32_mtc"		/* Need 8 pieces for test. */
+const int maxpieces = 7;
 #endif
 
-#define RH
+//#define RH
 #ifdef RH
 	#ifdef _MSC_VER
 		// drive name where Kingsrow is installed under Windows
@@ -52,6 +53,7 @@ using namespace egdb_interface;
 	#define DB_TUN_V1	DRIVE_MAPPING KINGSROW_PATH "wld_tun_v1"	/* Need 7 pieces for test. */
 	#define DB_TUN_V2	DRIVE_MAPPING KINGSROW_PATH "wld_database"	/* Need 8 pieces for test. */
 	#define DB_MTC		DRIVE_MAPPING KINGSROW_PATH "mtc_database"	/* Need 8 pieces for test. */
+	const int maxpieces = 7;
 #endif
 
 #define TDIFF(start) (((double)(std::clock() + 1 - start)) / (double)CLOCKS_PER_SEC)
@@ -554,11 +556,6 @@ int main(int argc, char *argv[])
 		return(1);
 
 	/* Open the endgame db drivers. */
-#ifdef RH
-	const int maxpieces = 7;
-#else
-	const int maxpieces = 8;
-#endif
 	char opt[50];
 	sprintf(opt, "maxpieces=%d", maxpieces);
 	db1.handle = egdb_open(opt, 2000, DB_TUN_V2, print_msgs);

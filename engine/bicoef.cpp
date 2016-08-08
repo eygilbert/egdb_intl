@@ -9,7 +9,10 @@ namespace egdb_interface {
 unsigned int bicoef[MAXSQUARE_BICOEF + 1][MAXPIECES_BICOEF + 1];
 
 
-static unsigned int choose(int n, int k)
+/*
+ * Return the number of ways to choose k objects from a set of n objects.
+ */
+static unsigned int binomial_coefficient(int n, int k)
 {
 	int64_t result = 1;
 	int i;
@@ -31,8 +34,7 @@ static unsigned int choose(int n, int k)
 
 
 /*
- * Initialize binomial coefficients
- * bicoef[n][k] is supposed to be the number of ways you can choose k from n.
+ * Initialize binomial coefficients table.
  */
 void initbicoef(void)
 {
@@ -42,7 +44,7 @@ void initbicoef(void)
 		for (j = 1; j <= (std::min)(MAXPIECES_BICOEF, i); j++) {
 
 			// choose j from i:
-			bicoef[i][j] = choose(i, j);
+			bicoef[i][j] = binomial_coefficient(i, j);
 		}
 		// define choosing 0 for simplicity 
 		bicoef[i][0] = 1;

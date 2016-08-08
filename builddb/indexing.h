@@ -41,7 +41,7 @@ inline uint32_t index_pieces_1_type(BITBOARD bb, int offset)
 		bb = clear_lsb(bb);
 
 		/* Add to his index. */
-		index += bicoef[bitnum_to_square0(bitnum) - offset][piece];
+		index += choose(bitnum_to_square0(bitnum) - offset, piece);
 	}
 	return(index);
 }
@@ -65,7 +65,7 @@ inline uint32_t index_pieces_1_type(BITBOARD bb, BITBOARD interfering)
 		square0 -= bitcount64((interfering) & (((BITBOARD)1 << bitnum) - 1)); 
 
 		/* Add to his index. */
-		index += bicoef[square0][piece];
+		index += choose(square0, piece);
 	}
 	return(index);
 }
@@ -91,7 +91,7 @@ inline uint32_t index_pieces_1_type_reverse(BITBOARD bb, BITBOARD interfering)
 		square0 -= bitcount64(interfering & ~(((BITBOARD)1 << bitnum) - 1));
 
 		/* Add to his index. */
-		index += bicoef[square0][piece];
+		index += choose(square0, piece);
 	}
 	return(index);
 }

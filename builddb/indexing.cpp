@@ -85,9 +85,9 @@ BITBOARD place_pieces_fwd_no_interferences(unsigned int index, int num_squares, 
 	logical_square = num_squares - 1;
 	bitboard = 0;
 	for (piece = num_pieces; piece > 0; --piece) {
-		while (bicoef[logical_square][piece] > index)
+		while (choose(logical_square, piece) > index)
 			logical_square--;
-		index -= bicoef[logical_square][piece];
+		index -= choose(logical_square, piece);
 		bitboard |= square0_to_bitboard(logical_square + first_square);
 	}
 	return(bitboard);
@@ -103,9 +103,9 @@ BITBOARD index2bitboard_fwd(unsigned int index, int num_squares, int num_pieces,
 	logical_square = num_squares - 1;
 	bitboard = 0;
 	for (piece = num_pieces; piece > 0; --piece) {
-		while (bicoef[logical_square][piece] > index)
+		while (choose(logical_square, piece) > index)
 			logical_square--;
-		index -= bicoef[logical_square][piece];
+		index -= choose(logical_square, piece);
 		bitboard |= free_square_bitmask_fwd(logical_square, occupied);
 	}
 	return(bitboard);
@@ -121,9 +121,9 @@ BITBOARD index2bitboard_rev(unsigned int index, int num_squares, int num_pieces,
 	logical_square = num_squares - 1;
 	bitboard = 0;
 	for (piece = num_pieces; piece > 0; --piece) {
-		while (bicoef[logical_square][piece] > index)
+		while (choose(logical_square, piece) > index)
 			logical_square--;
-		index -= bicoef[logical_square][piece];
+		index -= choose(logical_square, piece);
 		bitboard |= free_square_bitmask_rev(logical_square, occupied);
 	}
 	return(bitboard);
@@ -177,10 +177,10 @@ int64_t position_to_index_slice(EGDB_POSITION *p, int bm, int bk, int wm, int wk
 	wkmask = p->white & p->king;
 	wkindex = index_pieces_1_type(wkmask, bmmask | wmmask | bkmask);
 
-	bmrange = bicoef[40][bm - bm0];
-	bm0range = bicoef[5][bm0];
-	bkrange = bicoef[MAXSQUARE - bm - wm][bk];
-	wkrange = bicoef[MAXSQUARE - bm - wm - bk][wk];
+	bmrange = choose(40, bm - bm0);
+	bm0range = choose(5, bm0);
+	bkrange = choose(MAXSQUARE - bm - wm, bk);
+	wkrange = choose(MAXSQUARE - bm - wm - bk, wk);
 
 	/* Calculate the checker (man) index. */
 	checker_index = bm0index + checker_index_base +
@@ -208,8 +208,8 @@ void indextoposition_slice(int64_t index, EGDB_POSITION *p, int bm, int bk, int 
 	wmmask = 0;
 	wkmask = 0;
 
-	bkrange = bicoef[MAXSQUARE - bm - wm][bk];
-	wkrange = bicoef[MAXSQUARE - bm - wm - bk][wk];
+	bkrange = choose(MAXSQUARE - bm - wm, bk);
+	wkrange = choose(MAXSQUARE - bm - wm - bk, wk);
 
 	/* Indices in this subdb are assigned with index 0 having the highest
 	* number of black men on rank0, ...  Find the number of black men on rank0.
@@ -226,8 +226,8 @@ void indextoposition_slice(int64_t index, EGDB_POSITION *p, int bm, int bk, int 
 	checker_index -= man_index_base[bm][wm][bm0];
 
 	/* Compute the range of indices for each piece type. */
-	bmrange = bicoef[40][bm - bm0];
-	bm0range = bicoef[5][bm0];
+	bmrange = choose(40, bm - bm0);
+	bm0range = choose(5, bm0);
 
 	/* Extract the wmindex, bmindex, and bm0index. */
 	multiplier = bmrange * bm0range;
@@ -278,10 +278,10 @@ void build_man_index_base()
 				man_index_base[bm][wm][bm0] = base;
 
 				/* First the number of men configurations excluding black's backrank. */
-				partial = (int64_t)bicoef[40][bm - bm0] * (int64_t)bicoef[45 - bm + bm0][wm];
+				partial = (int64_t)choose(40, bm - bm0) * (int64_t)choose(45 - bm + bm0, wm);
 
 				/* Add the contribution from black's kingrow. */
-				partial *= bicoef[5][bm0];
+				partial *= choose(5, bm0);
 				base += partial;
 			}
 		}
@@ -290,7 +290,7 @@ void build_man_index_base()
 
 
 /* return the number of database indices for this subdb.
- * needs binomial coefficients in the array bicoef[][] = choose from n, k
+ * needs choose from n, k
  */
 int64_t getdatabasesize_slice(int bm, int bk, int wm, int wk)
 {
@@ -305,20 +305,20 @@ int64_t getdatabasesize_slice(int bm, int bk, int wm, int wk)
 	for (black_men_backrank = 0; black_men_backrank <= (std::min)(bm, 5); ++black_men_backrank) {
 
 		/* First the number of men configurations excluding black's backrank. */
-		partial = (int64_t)bicoef[40][bm - black_men_backrank] * (int64_t)bicoef[45 - bm + black_men_backrank][wm];
+		partial = (int64_t)choose(40, bm - black_men_backrank) * (int64_t)choose(45 - bm + black_men_backrank, wm);
 
 		/* Add the contribution from black's kingrow. */
 		if (black_men_backrank)
-			partial *= bicoef[5][black_men_backrank];
+			partial *= choose(5, black_men_backrank);
 
 		size += partial;
 	}
 
 	/* Add the black kings. */
-	size *= bicoef[50 - bm - wm][bk];
+	size *= choose(50 - bm - wm, bk);
 
 	/* Add the white kings. */
-	size *= bicoef[50 - bm - wm - bk][wk];
+	size *= choose(50 - bm - wm - bk, wk);
 
 	return(size);
 }
