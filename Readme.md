@@ -39,9 +39,19 @@ Example program
 ---------------
 The driver sources include an example program in the directory `example`. It opens a database, reads some positions from a table, calls `lookup()` to get the database value of each position, and compares it to the known value that is also in the table. You can use this to verify that basic functions of the driver are working on your system.
 
-The example includes a project file for MS Developer Studio 2015, and a CMake script and makefile for Linux builds. To run the example, edit the macro `DB_PATH` near the top of `example\main.cpp` to point it to the location of your db files, then compile and run without arguments.
+The example includes a project file for Microsoft Visual Studio 2015 (for which there is a free Community Edition), and a CMake script that will generate a Linux Makefile. To run the example, edit the macro `DB_PATH` near the top of `example\main.cpp` to point it to the location of your db files, then compile and run without arguments.
 
-To compile on Linux, make a directory named `build` under `egdb_intl`. `cd` to that directory, and type `CMake ..` to create a makefile. Then type `make`, and when the build finishes you can run `example.main` in `egdb_intl/build/example`.
+To compile on Linux, do the usual CMake incantations for an out-of-tree build:
+
+    cd egdbl_intl
+    mkdir build
+    cd build
+    cmake ..
+    make
+
+When the build finishes, you can run `example.main` from the `build` directory by calling
+
+    ./example/example.main
 
 Excluded Positions
 ------------------
