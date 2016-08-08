@@ -1,6 +1,10 @@
 License
 -------
-egdb_intl Copyright (C) 2016 Ed Gilbert.
+````
+egdb_intl
+Original work Copyright (C) 2007-2016 Ed Gilbert
+Linux port Copyright (C) 2016 Rein Halbersma and Ed Gilbert
+````
 This software is distributed under the Boost Software License version 1.0.
 See license.txt for more details.
 
