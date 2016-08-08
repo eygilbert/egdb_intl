@@ -609,7 +609,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int cache_mb, char const *fi
 		t1 = std::clock();
 		std::sprintf(msg, "Read %d buffers in %.0f sec, %.3f msec/buffer\n", 
 					hdat->cacheblocks, tdiff_secs(t1, t0), 
-					1000 * tdiff_secs(t1, t0) / hdat->cacheblocks);
+					1000.0 * tdiff_secs(t1, t0) / hdat->cacheblocks);
 		(*hdat->log_msg_fn)(msg);
 	}
 

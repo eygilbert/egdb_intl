@@ -1182,7 +1182,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 		t3 = std::clock();
 		std::sprintf(msg, "Read %d buffers in %.0f sec, %.3f msec/buffer\n", 
 					hdat->cacheblocks, tdiff_secs(t3, t2), 
-					(double)(t3 - t2) / (double)hdat->cacheblocks);
+					1000.0 * tdiff_secs(t3, t2) / (double)hdat->cacheblocks);
 		(*hdat->log_msg_fn)(msg);
 		std::sprintf(msg, "Egdb init took %.0f sec total\n", tdiff_secs(t3, t0));
 		(*hdat->log_msg_fn)(msg);
