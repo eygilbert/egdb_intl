@@ -21,24 +21,27 @@ Obtaining the databases
 -----------------------
 The databases can be downloaded using the links at this web page: http://edgilbert.org/InternationalDraughts/endgame_database_downloads.htm
 
-
-Compiling
----------
-
-
-
 Using the drivers
 -----------------
-The primary functions for using the databases are open, lookup, and close. The public interface to the databases are contained in egdb_intl.h. Include this file in any source file that needs to interface with the dbs.
+The primary functions for using the databases are `open`, `lookup`, and `close`. The public interface to the databases are defined in `egdb_intl.h`. Include this file in any source file that needs to interface with the dbs. 
 
-To access a db for probing, it needs to be opened using the function egdb_open. This returns a driver handle that contains function pointers for subsequent queries into the db.
+To avoid name collisions with user's public names, all declarations in `egdb_intl.h` are wrapped in a namespace named `"egdb_interface"`. You'll need to either include a `using namespace egdb_interface;` statement in your source files, or prefix any use of the driver interface names with the namespace name, e.g. `egdb_interface::egdb_open`. If you find the long namespace name annoying to type, you can define a short alias using something like `namespace dbi=egdb_interface;` and then use the alias instead of the full name.
 
-Values in the db can be queried by calling through the lookup function pointer in the driver handle. Note that in general the databases do not have a value for every position with N pieces. Some positions are excluded to make the compression more effective, and you cannot always tell this from the value returned by lookup, so you need to be aware of which positions are excluded and test for them before probing. See more below in the section "Excluded positions".
+To access a db for probing, it needs to be opened using the function `egdb_open`. This returns a driver handle that contains function pointers for subsequent queries into the db.
+
+Values in the db can be queried by calling through the `lookup` function pointer in the driver handle. Note that in general the databases do not have a value for every position with N pieces. Some positions are excluded to make the compression more effective, and you cannot always tell this from the value returned by `lookup`, so you need to be aware of which positions are excluded and test for them before probing. See more below in the section "Excluded positions".
 
 An opened driver can also be queried for several attributes of the database, such as the maximum number of draughts pieces it has data for. Another function does a crc verification of all the db files.
 
-When a user is finished with the driver, it can be closed to free up resources. The close function is accessed through another function pointer in the driver handle.
+When a user is finished with the driver, it can be closed to free up resources. The `close` function is accessed through another function pointer in the driver handle.
 
+Example program
+---------------
+The driver sources include an example program in the directory `example`. It opens a database, reads some positions from a table, calls `lookup()` to get the database value of each position, and compares it to the known value that is also in the table. You can use this to verify that basic functions of the driver are working on your system.
+
+The example includes a project file for MS Developer Studio 2015, and a CMake script and makefile for Linux builds. To run the example, edit the macro `DB_PATH` near the top of `example\main.cpp` to point it to the location of your db files, then compile and run without arguments.
+
+To compile on Linux, make a directory named `build` under `egdb_intl`. `cd` to that directory, and type `CMake ..` to create a makefile. Then type `make`, and when the build finishes you can run `example.main` in `egdb_intl/build/example`.
 
 Excluded Positions
 ------------------
@@ -63,7 +66,8 @@ Opening a db takes some time. It allocates memory for caching db values, and rea
 
     "maxkings_1side_8pcs" restricts the set of 8-piece positions for which the driver will lookup values. This saves time and memory during initialization.
 
-`"cache_mb"` is the number of megabytes (2^20 bytes) of heap memory that the driver will use. Some of it is used for indexing data, and the rest is used to dynamically cache database data to minimize disk access during lookups. The more memory you give the driver, the faster it works on average during an engine search. On a machine with at least 8gb of ram, setting the cache_mb to something like 3000mb less than the total PC memory gives good driver performance and still leaves some memory for Windows drivers and a few other smaller programs to run. On machines with less memory you'll have to make the margin smaller and manage the memory usage more carefully. My experience is that the driver actually works surprisingly well in a kingsrow search with the 8pc db and a very small setting like 1500mb, but of course more memory is better.  
+`"cache_mb"` is the number of megabytes (2^20 bytes) of heap memory that the driver will use. Some of it is used for indexing data, and the rest is used to dynamically cache database data to minimize disk access during lookups. The more memory you give the driver, the faster it works on average during an engine search. On a machine with at least 8gb of ram, setting the cache_mb to something like 3000mb less than the total PC memory gives good driver performance and still leaves some memory for Windows drivers and a few other smaller programs to run. On machines with less memory you'll have to make the margin smaller and manage the memory usage more carefully. My experience is that the driver actually works surprisingly well in a kingsrow search with the 8pc db and a very small setting like 1500mb, but of course more memory is better.
+
 If you are opening the MTC db, give it a cache_mb value of 0. It will then use a relatively small amount of memory, approximately 25mb, which is all it needs. Unlike the WLD db, the MTC db is not used during a search. It is probed before a search, and if a move can be obtained from the MTC db then a search is not necessary. To obtain a move from the MTC db it is only necessary to probe the MTC values of the immediate successors to the root position and pick a successor with the best MTC value -- the lowest value for a won position, or the highest value for a lost position.
 
 `"directory"` is the path to the location of the database files.
