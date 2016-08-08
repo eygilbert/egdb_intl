@@ -22,6 +22,8 @@
 #include <ctime>
 #include <thread>
 
+using namespace egdb_interface;
+
 #define FAST_TEST_MULT 1		/* Set to 5 to speed up the tests. */
 
 //#define EYG
@@ -62,11 +64,17 @@ typedef struct {
 	bool excludes_some_sidetomove_colors;	/* If more than 6 pieces. */
 } DB_INFO;
 
+namespace egdb_interface {
+	extern LOCKT *get_tun_v1_lock();
+	extern LOCKT *get_tun_v2_lock();
+}
+
 
 void print_msgs(char const *msg)
 {
 	std::printf("%s", msg);
 }
+
 
 void verify(DB_INFO *db1, DB_INFO *db2, SLICE *slice, int64_t max_lookups)
 {
@@ -261,7 +269,6 @@ bool is_conversion_move(BOARD *from, BOARD *to, int color)
 		return(false);
 	else
 		return(true);
-
 }
 
 
@@ -641,8 +648,6 @@ int main(int argc, char *argv[])
 	crc_verify_test(DB_TUN_V1);
 	crc_verify_test(DB_TUN_V2);
 
-	extern LOCKT *get_tun_v1_lock();
-	extern LOCKT *get_tun_v2_lock();
 	test_mutual_exclusion(DB_TUN_V1, get_tun_v1_lock());
 	test_mutual_exclusion(DB_TUN_V2, get_tun_v2_lock());
 

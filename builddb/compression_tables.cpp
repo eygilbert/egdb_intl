@@ -1,6 +1,8 @@
 #include "builddb/compression_tables.h"
 #include "egdb/egdb_intl.h"
 
+namespace egdb_interface {
+
 /*
  * skip numbers range from 5...MAXSKIP defined above, there are SKIPS of them.
  */
@@ -108,4 +110,5 @@ void init_compression_tables()
 	init_runlengths_inc();
 }
 
+}	// namespace egdb_interface
 

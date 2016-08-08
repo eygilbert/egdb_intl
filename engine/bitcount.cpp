@@ -3,6 +3,8 @@
 #include "engine/bool.h"
 #include "engine/project.h"	// ARRAY_SIZE
 
+namespace egdb_interface {
+
 bool cpu_has_popcount; 
 char bitcount_table[0x10000];
 
@@ -36,4 +38,4 @@ void init_bitcount()
 		bitcount_table[i] = iterativebitcount(i);
 }
 
-
+}	// namespace egdb_interface

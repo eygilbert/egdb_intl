@@ -6,6 +6,8 @@
 #include <cstdlib>
 #include <cstring>
 
+namespace egdb_interface {
+
 typedef struct {
 	EGDB_TYPE egdb_type;
 	char const *name;
@@ -88,4 +90,5 @@ int egdb_identify(char const *directory, EGDB_TYPE *egdb_type, int *max_pieces)
 	return(1);
 }
 
+}	// namespace egdb_interface
 

@@ -2,6 +2,8 @@
 #include "egdb/platform.h"
 #include <cstdint>
 
+namespace egdb_interface {
+
 #define hiword(x) (((x) & 0xFFFF0000) >> 16)
 #define loword(x) ((x) & 0xFFFF)
 
@@ -99,4 +101,5 @@ inline unsigned int rows89(uint64_t *bb)
 	return((((BITBOARD_SPLIT_VIEW *)bb)->high32 >> 12) & (0x3ff));
 }
 
+}	// namespace egdb_interface
 

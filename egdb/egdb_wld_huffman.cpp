@@ -18,6 +18,8 @@
 #include <ctime>
 #include <utility>
 
+namespace egdb_interface {
+
 #define USE_AUTOLOAD 1
 
 #define MAX_HUFFCODE_BITS 14
@@ -1900,5 +1902,4 @@ EGDB_DRIVER *egdb_open_wld_huff(int pieces, int kings_1side_8pcs,
 	return(handle);
 }
 
-
-
+}	// namespace egdb_interface

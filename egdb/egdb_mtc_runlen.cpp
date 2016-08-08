@@ -19,6 +19,8 @@
 #include <ctime>
 #include <utility>
 
+namespace egdb_interface {
+
 #define MAXPIECES 8
 #define MAXPIECE 5
 
@@ -1072,5 +1074,4 @@ EGDB_DRIVER *egdb_open_mtc_runlen(int pieces, int kings_1side_8pcs,
 	return(handle);
 }
 
-
-
+}	// namespace egdb_interface

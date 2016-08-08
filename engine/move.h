@@ -1,6 +1,8 @@
 #pragma once
 #include "engine/board.h"
 
+using namespace egdb_interface;
+
 typedef enum {
 	DIR_LFRB, DIR_RFLB
 } DIR;

@@ -1,6 +1,8 @@
 #pragma once
 #include <cstdint>
 
+namespace egdb_interface {
+
 typedef uint64_t BITBOARD;
 typedef int64_t SIGNED_BITBOARD;
 
@@ -200,4 +202,5 @@ inline int rank_to_rank0_shift(int rank)
 	return(rank_to_rank0_shift_table[rank]);
 }
 
+}	// namespace egdb_interface
 

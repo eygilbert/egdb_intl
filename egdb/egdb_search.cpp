@@ -14,6 +14,8 @@
 #include <cstring>
 #include <ctime>
 
+namespace egdb_interface {
+
 bool EGDB_INFO::requires_nonside_capture_test(BOARD *p)
 {
 	int npieces, nkings;
@@ -406,3 +408,4 @@ void EGDB_INFO::log_tree(int value, int depth, int color)
 #endif
 }
 
+}	// namespace

@@ -4,6 +4,8 @@
 #include <cstdio>
 #include <cstdlib>
 
+namespace egdb_interface {
+
 unsigned int bicoef[MAXSQUARE_BICOEF + 1][MAXPIECES_BICOEF + 1];
 
 
@@ -51,4 +53,5 @@ void initbicoef(void)
 		bicoef[0][i] = 0;
 }
 
+}	// namespace egdb_interface
 

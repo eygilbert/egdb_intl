@@ -1,5 +1,7 @@
 #pragma once
 
+namespace egdb_interface {
+
 #define SKIPS 58        /* the number of skips, for fully resolved dbs. */
 #define MAXSKIP 10000   /* the largest skip value, for fully resolved dbs. */
 
@@ -32,3 +34,4 @@ extern int compressed_value[256];			/* the db value for every byte. */
 extern int compressed_value_inc[256];		/* the db value for every byte (for incomplete dbs). */
 extern int runlength_mtc[256];
 extern unsigned int *runlength16_mtc;
+}	// namespace egdb_interface

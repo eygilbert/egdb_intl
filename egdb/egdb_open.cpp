@@ -6,6 +6,8 @@
 #include <cstdlib>
 #include <cstring>
 
+namespace egdb_interface {
+
 EGDB_DRIVER *egdb_open_wld_runlen(int pieces, int kings_1side_8pcs, int cache_mb, char const *directory, void (*msg_fn)(char const*), EGDB_TYPE db_type);
 EGDB_DRIVER *egdb_open_mtc_runlen(int pieces, int kings_1side_8pcs, int cache_mb, char const *directory, void (*msg_fn)(char const*), EGDB_TYPE db_type);
 EGDB_DRIVER *egdb_open_wld_huff  (int pieces, int kings_1side_8pcs, int cache_mb, char const *directory, void (*msg_fn)(char const*), EGDB_TYPE db_type);
@@ -95,4 +97,5 @@ EGDB_DRIVER *egdb_open(char const *options,
 	return(handle);
 }
 
+}	// namespace egdb_interface
 

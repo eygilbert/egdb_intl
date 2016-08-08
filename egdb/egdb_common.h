@@ -3,6 +3,7 @@
 #include "egdb/platform.h"
 #include <ctime>
 
+namespace egdb_interface {
 
 #define MAXMSG 256
 #define ONE_MB 1048576
@@ -198,4 +199,5 @@ template <class DBCRC_T> DBCRC_T *find_file_crc(char const *name, DBCRC_T *table
 	return(0);
 }
 
+}	// namespace egdb_interface
 

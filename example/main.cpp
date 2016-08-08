@@ -2,6 +2,8 @@
 #include <cstdio>
 #include <cstdlib>
 
+using namespace egdb_interface;
+
 #define DB_PATH "C:/db_intl/wld_v2"
 
 typedef struct {

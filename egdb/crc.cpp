@@ -6,6 +6,7 @@
  * in PKZip, WinZip and Ethernet:   0x04c11db7
  */
 
+namespace egdb_interface {
 
 #define CRCSEED 0xffffffff
 #define XOROT 0xffffffff
@@ -113,3 +114,5 @@ int fname_crc_calc(char const *name, unsigned int *crc)
 	std::fclose(fp);
 	return(0);
 }
+
+}	// namespace egdb_interface

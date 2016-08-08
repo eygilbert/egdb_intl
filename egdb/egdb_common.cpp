@@ -7,6 +7,8 @@
 #include "engine/board.h"
 #include "engine/bool.h"
 
+namespace egdb_interface {
+
 int get_num_subslices(int nbm, int nbk, int nwm, int nwk)
 {
 	int64_t size, last;
@@ -54,3 +56,5 @@ int read_file(FILE_HANDLE fp, unsigned char *buf, size_t size, int pagesize)
 	}
 	return(1);
 }
+
+}	// namespace egdb_interface

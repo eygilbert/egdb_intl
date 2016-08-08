@@ -20,6 +20,8 @@
 #include <ctime>
 #include <utility>
 
+namespace egdb_interface {
+
 #define MAXPIECES 8
 
 #define LOG_HITS 0
@@ -2005,6 +2007,8 @@ LOCKT *get_tun_v1_lock(void)
 {
 	return(&egdb_lock);
 }
+
+}	// namespace egdb_interface
 
 
 

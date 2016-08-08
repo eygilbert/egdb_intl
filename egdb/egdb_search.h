@@ -4,6 +4,8 @@
 #include <csetjmp>
 #include <cstdint>
 
+namespace egdb_interface {
+
 #define MAXREPDEPTH 64
 
 typedef struct {
@@ -65,3 +67,5 @@ private:
 };
 
 bool is_repetition(BOARD *history, BOARD *p, int depth);
+
+}	// namespace

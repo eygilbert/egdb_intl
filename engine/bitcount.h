@@ -2,6 +2,8 @@
 #include "egdb/platform.h"
 #include <cstdint>
 
+namespace egdb_interface {
+
 extern bool cpu_has_popcount;
 extern char bitcount_table[0x10000];
 
@@ -61,3 +63,4 @@ inline int bitcount64(uint64_t n)
 
 #endif
 
+}	// namespace egdb_interface

@@ -10,6 +10,7 @@
 #include <cstdio>
 #include <ctime>
 
+using namespace egdb_interface;
 
 //#define EYG
 #ifdef EYG

@@ -19,6 +19,8 @@
 #include <ctime>
 #include <utility>
 
+namespace egdb_interface {
+
 #define MAXPIECES 9
 
 #define LOG_HITS 0
@@ -1602,5 +1604,4 @@ EGDB_DRIVER *egdb_open_wld_runlen(int pieces, int kings_1side_8pcs,
 	return(handle);
 }
 
-
-
+}	// namespace egdb_interface

@@ -8,6 +8,8 @@
 #include <cstdio>
 #include <cstdlib>
 
+namespace egdb_interface {
+
 BITBOARD free_square_bitmask_fwd(int logical_square, BITBOARD occupied)
 {
 	int skipcount;
@@ -321,4 +323,5 @@ int64_t getdatabasesize_slice(int bm, int bk, int wm, int wk)
 	return(size);
 }
 
+}	// namespace egdb_interface {
 

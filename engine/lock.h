@@ -19,10 +19,12 @@
 
 		#include <intrin.h> 
 
-		typedef volatile CACHE_ALIGN long LOCKT[L1_CACHE_SIZE / sizeof(long)]; 
-		typedef volatile long *const LOCKT_PTR; 
-		#pragma intrinsic (_InterlockedExchange) 
-		#define interlocked_exchange(target, value) _InterlockedExchange(target, value) 
+namespace egdb_interface {
+
+typedef volatile CACHE_ALIGN long LOCKT[L1_CACHE_SIZE / sizeof(long)]; 
+typedef volatile long *const LOCKT_PTR; 
+#pragma intrinsic (_InterlockedExchange) 
+#define interlocked_exchange(target, value) _InterlockedExchange(target, value) 
 
 		#define is_locked(lock) ((lock)[0])
 		#define set_lock_state(lock, state) ((lock)[0] = (state))
@@ -31,12 +33,16 @@
 		static inline void volatile take_lock(LOCKT_PTR lock) { while (is_locked(lock) || interlocked_exchange(lock, 1)); }
 		static inline void volatile release_lock(LOCKT_PTR lock) {set_lock_state(lock, 0);}
 
+}	// namespace
+
 	#endif
 
 #else
 
 	#include <atomic>
 
+	namespace egdb_interface {
+	
 	typedef std::atomic_flag LOCKT;
 
 	#define STATIC_DEFINE_LOCK(lock) static LOCKT lock = ATOMIC_FLAG_INIT
@@ -44,4 +50,6 @@
 	static inline void take_lock(LOCKT& lock) { while (lock.test_and_set(std::memory_order_acquire)) { ; } }
 	static inline void release_lock(LOCKT& lock) { lock.clear(std::memory_order_release); }
 
+	}	// namespace
+	
 #endif

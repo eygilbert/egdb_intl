@@ -5,6 +5,8 @@
 #include "engine/bool.h"
 #include <cstdint>
 
+namespace egdb_interface {
+
 unsigned char ReverseByte[256];
 
 
@@ -57,3 +59,4 @@ uint64_t reverse_board50(uint64_t image)
 	return(rev);
 }
 
+}	// namespace egdb_interface

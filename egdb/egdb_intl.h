@@ -1,6 +1,8 @@
 #pragma once
 #include <cstdint>
 
+namespace egdb_interface {
+
 /* Color definitions. */
 #define EGDB_BLACK 0
 #define EGDB_WHITE 1
@@ -89,4 +91,6 @@ EGDB_DRIVER *egdb_open(char const *options,
 
 /* Identify a db, get its size and type. */
 int egdb_identify(char const *directory, EGDB_TYPE *egdb_type, int *max_pieces);
+
+}	// namespace egdb_interface
 

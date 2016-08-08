@@ -5,6 +5,8 @@
 #include "engine/board.h"
 #include "engine/bool.h"
 
+namespace egdb_interface {
+
 #define MAXSQUARE NUMSQUARES
 #define MAXPIECE 5
 #define RANK0MAX ROWSIZE
@@ -94,5 +96,5 @@ inline uint32_t index_pieces_1_type_reverse(BITBOARD bb, BITBOARD interfering)
 	return(index);
 }
 
-
+}	// namespace
 
