@@ -28,10 +28,19 @@ using namespace egdb_interface;
 
 #define EYG
 #ifdef EYG
-#define DB_RUNLEN "C:/db_intl/wld_runlen"	/* Need 6 pieces for test. */
-#define DB_TUN_V1 "E:/db_intl/wld_v1"		/* Need 7 pieces for test. */
-#define DB_TUN_V2 "C:/db_intl/wld_v2"		/* Need 8 pieces for test. */
-#define DB_MTC "E:/db_intl/slice32_mtc"		/* Need 8 pieces for test. */
+	#ifdef _MSC_VER
+		// drive name where Kingsrow is installed under Windows
+		#define C_DRIVE "C:/"
+		#define E_DRIVE "E:/"
+	#else
+		// VirtualBox virtual drive mapping
+		#define C_DRIVE "/media/sf_C_DRIVE/"
+		#define E_DRIVE "/media/sf_E_DRIVE/"
+	#endif
+#define DB_RUNLEN C_DRIVE "db_intl/wld_runlen"	/* Need 6 pieces for test. */
+#define DB_TUN_V1 E_DRIVE "db_intl/wld_v1"		/* Need 7 pieces for test. */
+#define DB_TUN_V2 C_DRIVE "db_intl/wld_v2"		/* Need 8 pieces for test. */
+#define DB_MTC E_DRIVE "db_intl/slice32_mtc"	/* Need 8 pieces for test. */
 const int maxpieces = 7;
 #endif
 
