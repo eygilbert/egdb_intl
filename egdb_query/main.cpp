@@ -1,6 +1,7 @@
 #include "builddb/indexing.h"
 #include "egdb/egdb_intl.h"
 #include "egdb/slice.h"
+#include "egdb/slice_v2.h"
 #include "engine/board.h"
 #include "engine/fen.h"
 #include "engine/move_api.h"
@@ -135,12 +136,12 @@ void query_zugzwangs(EGDB_DRIVER *handle, int maxpieces)
 
 
 int main(int argc, char *argv[])
-{
+{/*
 	const int maxpieces = 6;
 	char options[50];
 	EGDB_DRIVER *handle;
 
-	init_move_tables();		/* Needed to use the kingsrow move generator. */
+	init_move_tables();		// Needed to use the kingsrow move generator.
 
 	sprintf(options, "maxpieces=%d", maxpieces);
 	handle = egdb_open(options, 2000, PATH_WLD, print_msgs);
@@ -150,8 +151,15 @@ int main(int argc, char *argv[])
 	}
 
 	query_zugzwangs(handle, maxpieces);
-	handle->close(handle);
+	handle->close(handle);*/
 
-	return 0;
+	// iterate over arbitrary range of consecutive slices
+	// can construct dctl::slice from <npieces>, <nb, nw> or <nbm, nbk, nwm, nwk>
+	SLICE s1; s1.reset();
+	std::for_each(dctl::slice(2), dctl::slice(9), [&](dctl::slice const& s2) {
+		std::cout << s1 << " == " << s2 << "(" << (s1 == s2) << ")" << '\n'; // print if old slice and new slice are equal
+		s1.advance();
+	});
+
 }
 
