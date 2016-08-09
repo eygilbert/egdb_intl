@@ -1,7 +1,7 @@
 License
 -------
 ````
-egdb_intl
+Egdb_intl
 Original work Copyright (C) 2007-2016 Ed Gilbert
 Linux port Copyright (C) 2016 Rein Halbersma and Ed Gilbert
 ````
@@ -10,13 +10,15 @@ See license.txt for more details.
 
 Description
 -----------
-Egdb_intl is a set of C++ source files with functions to access the kingsrow international draughts endgame databases. The code can be used to access 2 versions of the win, loss, draw (WLD) db, and the moves-to-conversion (MTC) db. These databases have information for positions with up to 8 pieces and with up to 5 pieces on one side. The source files are identical to those used in the kingsrow draughts program.
-
-From 2010 to 2014 I distributed version 1 of the databases on a portable external hard drive. This db is 407gb of data, which includes a small subset of 9-piece positions, 5 men vs. 4 men (I disabled the 9-piece functionality in this driver because I found through testing that on average it was less effective than not using it). In 2014 I created version 2 by re-compressing the db using better compression techniques, and excluding more positions to make the compression work better. Version 2 is 56gb of data, and is available for download from a file server. See link below.
+Egdb_intl is a set of C++ source files with functions to access the kingsrow international draughts endgame databases. This package has been designed so that it can be easily integrated into existing C++ draughts programs. The source files are identical to those in the kingsrow draughts program. 
 
 The source code can be compiled for Windows using Microsoft Visual Studio 2015, and for Linux. Rein Halbersma ported the code to Linux and improved it in other ways also. Thanks Rein!
 
 The function to lookup the value of a position in the database is thread-safe and can be used in a multi-threaded search engine.
+
+The code can be used to access 2 versions of the win, loss, draw (WLD) db, and the moves-to-conversion (MTC) db. These databases have information for positions with up to 8 pieces and with up to 5 pieces on one side.
+
+From 2010 to 2014 I distributed version 1 of the databases on a portable external hard drive. This db is 407gb of data, which includes a small subset of 9-piece positions, 5 men vs. 4 men (I disabled the 9-piece functionality in this driver because I found through testing that on average it was less effective than not using it). In 2014 I created version 2 by re-compressing the db using better compression techniques, and excluding more positions to make the compression work better. Version 2 is 56gb of data, and is available for download from a file server. See link below.
 
 You can contact me at eygilbert@gmail.com if you have questions or comments about these drivers.
 
