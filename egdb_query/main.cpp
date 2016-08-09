@@ -42,32 +42,6 @@ void print_msgs(char const *msg)
 	std::printf("%s", msg);
 }
 
-
-/*
- * Return true if left is lower than right.
- */
-bool is_lower(int left, int right)
-{
-	if (left == EGDB_UNKNOWN || right == EGDB_UNKNOWN)
-		return(false);
-
-	if (left == EGDB_WIN)
-		return(false);
-	if (left == EGDB_DRAW) {
-		if (right == EGDB_WIN)
-			return(true);
-		else
-			return(false);
-	}
-	if (left == EGDB_LOSS) {
-		if (right == EGDB_LOSS)
-			return(false);
-		else
-			return(true);
-	}
-	return(false);
-}
-
 bool is_full_zugzwang(int left, int right)
 {
 	return left == EGDB_LOSS && right == EGDB_LOSS;
@@ -118,8 +92,7 @@ void query_zwugzwangs_slice(EGDB_DRIVER *handle, SLICE *slice)
 		/* No captures or non-side captures. */
 		if (
 				canjump((BOARD *)&pos, BLACK) ||
-				canjump((BOARD *)&pos, WHITE) ||
-				!only_single_king_on_single_corner_diag(pos)
+				canjump((BOARD *)&pos, WHITE)
 		)
 			continue;
 
@@ -163,7 +136,7 @@ void query_zugzwangs(EGDB_DRIVER *handle, int maxpieces)
 
 int main(int argc, char *argv[])
 {
-	const int maxpieces = 5;
+	const int maxpieces = 6;
 	char options[50];
 	EGDB_DRIVER *handle;
 
