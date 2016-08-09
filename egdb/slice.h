@@ -1,3 +1,6 @@
+#pragma once
+#include <algorithm>
+
 class SLICE {
 public:
 	void reset(void);
@@ -18,3 +21,5 @@ private:
 	int nw;
 	int npieces;
 };
+
+
