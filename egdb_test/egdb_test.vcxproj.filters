@@ -72,9 +72,6 @@
     <ClCompile Include="..\egdb\egdb_search.cpp">
       <Filter>egdb</Filter>
     </ClCompile>
-    <ClCompile Include="..\egdb\slice.cpp">
-      <Filter>egdb</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Egdb\crc.h">

@@ -30,7 +30,6 @@
     <ClCompile Include="..\egdb\egdb_wld_runlen.cpp" />
     <ClCompile Include="..\egdb\egdb_wld_tunstall_v1.cpp" />
     <ClCompile Include="..\egdb\egdb_wld_tunstall_v2.cpp" />
-    <ClCompile Include="..\egdb\slice.cpp" />
     <ClCompile Include="..\engine\bicoef.cpp" />
     <ClCompile Include="..\engine\bitcount.cpp" />
     <ClCompile Include="..\engine\board.cpp" />

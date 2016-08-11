@@ -69,9 +69,6 @@
     <ClCompile Include="..\egdb\egdb_wld_tunstall_v2.cpp">
       <Filter>egdb</Filter>
     </ClCompile>
-    <ClCompile Include="..\egdb\slice.cpp">
-      <Filter>egdb</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\builddb\compression_tables.h">
