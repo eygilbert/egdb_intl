@@ -638,6 +638,7 @@ int main(int argc, char *argv[])
 	db.dbpieces = db1.max_pieces;
 	db.handle = db1.handle;
 	db.dbpieces_1side = 5;
+	db.db8_kings_1side = 5;
 	db.egdb_excludes_some_nonside_caps = true;
 	t0 = std::clock();
 	slice.reset();
