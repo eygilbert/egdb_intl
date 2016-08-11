@@ -1,7 +1,6 @@
 #include "builddb/indexing.h"
 #include "egdb/egdb_intl.h"
 #include "egdb/slice.h"
-#include "egdb/slice_v2.h"
 #include "engine/board.h"
 #include "engine/fen.h"
 #include "engine/move_api.h"
@@ -58,37 +57,14 @@ bool is_majority_half_zugzwang(int left, int right)
 	return left == EGDB_DRAW && right == EGDB_LOSS;
 }
 
-char const *valuestr(int value)
+void query_zwugzwangs_slice(EGDB_DRIVER *handle, Slice const& slice)
 {
-	switch (value) {
-	case EGDB_WIN:
-		return("win");
-	case EGDB_DRAW:
-		return("draw");
-	case EGDB_LOSS:
-		return("loss");
-	}
-	return("unknown");
-}
-
-bool only_single_king_on_single_corner_diag(EGDB_POSITION const& pos)
-{
-	return
-			bitcount64(pos.king & SINGLE_CORNER_DIAG) == 1 &&
-			bitcount64((pos.black | pos.white) & ~pos.king & SINGLE_CORNER_DIAG) == 0
-	;
-}
-
-void query_zwugzwangs_slice(EGDB_DRIVER *handle, SLICE *slice)
-{
-	int64_t size, index;
-	int valb, valw;
 	EGDB_POSITION pos;
 	char fenbuf[150];
 
-	size = getdatabasesize_slice(slice->getnbm(), slice->getnbk(), slice->getnwm(), slice->getnwk());
-	for (index = 0; index < size; ++index) {
-		indextoposition_slice(index, &pos, slice->getnbm(), slice->getnbk(), slice->getnwm(), slice->getnwk());
+	int64_t const size = getdatabasesize_slice(slice.nbm(), slice.nbk(), slice.nwm(), slice.nwk());
+	for (int64_t index = 0; index < size; ++index) {
+		indextoposition_slice(index, &pos, slice.nbm(), slice.nbk(), slice.nwm(), slice.nwk());
 
 		/* No captures or non-side captures. */
 		if (
@@ -97,8 +73,8 @@ void query_zwugzwangs_slice(EGDB_DRIVER *handle, SLICE *slice)
 		)
 			continue;
 
-		valb = handle->lookup(handle, &pos, EGDB_BLACK, 0);
-		valw = handle->lookup(handle, &pos, EGDB_WHITE, 0);
+		int valb = handle->lookup(handle, &pos, EGDB_BLACK, 0);
+		int valw = handle->lookup(handle, &pos, EGDB_WHITE, 0);
 
 		if (is_full_zugzwang(valw, valb)) {
 			print_fen((BOARD *)&pos, EGDB_WHITE, fenbuf);
@@ -119,47 +95,34 @@ void query_zwugzwangs_slice(EGDB_DRIVER *handle, SLICE *slice)
 
 void query_zugzwangs(EGDB_DRIVER *handle, int maxpieces)
 {
-	SLICE slice;
-	std::clock_t t0;
-
-	t0 = std::clock();
-	for (slice.reset(); slice.getnpieces() <= maxpieces; slice.advance()) {
-
+	std::clock_t const t0 = std::clock();
+	std::for_each(Slice(2), Slice(maxpieces + 1), [&](Slice const& slice){
 		/* Both sides must have at least 1 man and 1 king. */
-		if (!slice.getnbm() || !slice.getnbk() || !slice.getnwm() || !slice.getnwk())
-			continue;
+		if (!slice.nbm() || !slice.nbk() || !slice.nwm() || !slice.nwk())
+			return;
 
-		std::printf("\n%.2fsec: db%d-%d%d%d%d\n", TDIFF(t0), slice.getnpieces(), slice.getnbm(), slice.getnbk(), slice.getnwm(), slice.getnwk());
-		query_zwugzwangs_slice(handle, &slice);
-	}
+		std::printf("\n%.2fsec: ", TDIFF(t0));
+		std::cout << slice << '\n';
+		query_zwugzwangs_slice(handle, slice);
+	});
 }
 
 
-int main(int argc, char *argv[])
-{/*
-	const int maxpieces = 6;
+int main()
+{
+	const int maxpieces = 4;
 	char options[50];
-	EGDB_DRIVER *handle;
 
 	init_move_tables();		// Needed to use the kingsrow move generator.
 
-	sprintf(options, "maxpieces=%d", maxpieces);
-	handle = egdb_open(options, 2000, PATH_WLD, print_msgs);
+	std::sprintf(options, "maxpieces=%d", maxpieces);
+	EGDB_DRIVER *handle = egdb_open(options, 2000, PATH_WLD, print_msgs);
 	if (!handle) {
 		std::printf("Cannot open db at %s\n", PATH_WLD);
 		return(1);
 	}
 
 	query_zugzwangs(handle, maxpieces);
-	handle->close(handle);*/
-
-	// iterate over arbitrary range of consecutive slices
-	// can construct dctl::slice from <npieces>, <nb, nw> or <nbm, nbk, nwm, nwk>
-	SLICE s1; s1.reset();
-	std::for_each(dctl::slice(2), dctl::slice(9), [&](dctl::slice const& s2) {
-		std::cout << s1 << " == " << s2 << "(" << (s1 == s2) << ")" << '\n'; // print if old slice and new slice are equal
-		s1.advance();
-	});
-
+	handle->close(handle);
 }
 

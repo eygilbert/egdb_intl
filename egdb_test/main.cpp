@@ -26,7 +26,7 @@ using namespace egdb_interface;
 
 #define FAST_TEST_MULT 1		/* Set to 5 to speed up the tests. */
 
-#define EYG
+//#define EYG
 #ifdef EYG
 	#ifdef _MSC_VER
 		// drive name where Kingsrow is installed under Windows
@@ -44,7 +44,7 @@ using namespace egdb_interface;
 const int maxpieces = 7;
 #endif
 
-//#define RH
+#define RH
 #ifdef RH
 	#ifdef _MSC_VER
 		// drive name where Kingsrow is installed under Windows
@@ -87,15 +87,15 @@ void print_msgs(char const *msg)
 }
 
 
-void verify(DB_INFO *db1, DB_INFO *db2, SLICE *slice, int64_t max_lookups)
+void verify(DB_INFO *db1, DB_INFO *db2, Slice const& slice, int64_t max_lookups)
 {
 	int64_t size, index, incr;
 	int value1, value2;
 	bool black_ok, white_ok;
 	EGDB_POSITION pos;
 
-	std::printf("Verifying db%d%d%d%d\n", slice->getnbm(), slice->getnbk(), slice->getnwm(), slice->getnwk());
-	size = getdatabasesize_slice(slice->getnbm(), slice->getnbk(), slice->getnwm(), slice->getnwk());
+	std::printf("Verifying db%d%d%d%d\n", slice.nbm(), slice.nbk(), slice.nwm(), slice.nwk());
+	size = getdatabasesize_slice(slice.nbm(), slice.nbk(), slice.nwm(), slice.nwk());
 	if (max_lookups < 1)
 		incr = 1;
 	else
@@ -105,9 +105,9 @@ void verify(DB_INFO *db1, DB_INFO *db2, SLICE *slice, int64_t max_lookups)
 	black_ok = true;
 	white_ok = true;
 
-	if (slice->getnpieces() >= 7) {
+	if (slice.npieces() >= 7) {
 		if (db1->excludes_some_sidetomove_colors) {
-			indextoposition_slice(0, &pos, slice->getnbm(), slice->getnbk(), slice->getnwm(), slice->getnwk());
+			indextoposition_slice(0, &pos, slice.nbm(), slice.nbk(), slice.nwm(), slice.nwk());
 			value1 = db1->handle->lookup(db1->handle, &pos, BLACK, 0);
 			if (value1 == EGDB_UNKNOWN)
 				black_ok = false;
@@ -116,7 +116,7 @@ void verify(DB_INFO *db1, DB_INFO *db2, SLICE *slice, int64_t max_lookups)
 				white_ok = false;
 		}
 		if (db2->excludes_some_sidetomove_colors) {
-			indextoposition_slice(0, &pos, slice->getnbm(), slice->getnbk(), slice->getnwm(), slice->getnwk());
+			indextoposition_slice(0, &pos, slice.nbm(), slice.nbk(), slice.nwm(), slice.nwk());
 			value2 = db2->handle->lookup(db2->handle, &pos, BLACK, 0);
 			if (value2 == EGDB_UNKNOWN)
 				black_ok = false;
@@ -131,8 +131,8 @@ void verify(DB_INFO *db1, DB_INFO *db2, SLICE *slice, int64_t max_lookups)
 	}
 
 	for (index = 0; index < size; index += incr) {
-		indextoposition_slice(index, &pos, slice->getnbm(), slice->getnbk(), slice->getnwm(), slice->getnwk());
-		if (slice->getnpieces() >= 7) {
+		indextoposition_slice(index, &pos, slice.nbm(), slice.nbk(), slice.nwm(), slice.nwk());
+		if (slice.npieces() >= 7) {
 			if (db1->excludes_some_nonside_captures || db2->excludes_some_nonside_captures) {
 				if (canjump((BOARD *)&pos, BLACK))
 					continue;
@@ -160,15 +160,15 @@ void verify(DB_INFO *db1, DB_INFO *db2, SLICE *slice, int64_t max_lookups)
 }
 
 
-void self_verify(EGDB_INFO *db, SLICE *slice, int64_t max_lookups)
+void self_verify(EGDB_INFO *db, Slice const& slice, int64_t max_lookups)
 {
 	int64_t size, index, incr;
 	int value1, value2;
 	bool black_ok, white_ok;
 	EGDB_POSITION pos;
 
-	std::printf("self verifying db%d%d%d%d\n", slice->getnbm(), slice->getnbk(), slice->getnwm(), slice->getnwk());
-	size = getdatabasesize_slice(slice->getnbm(), slice->getnbk(), slice->getnwm(), slice->getnwk());
+	std::printf("self verifying db%d%d%d%d\n", slice.nbm(), slice.nbk(), slice.nwm(), slice.nwk());
+	size = getdatabasesize_slice(slice.nbm(), slice.nbk(), slice.nwm(), slice.nwk());
 	if (max_lookups < 1)
 		incr = 1;
 	else
@@ -177,9 +177,9 @@ void self_verify(EGDB_INFO *db, SLICE *slice, int64_t max_lookups)
 	/* If npieces >= 7, some slices do not have positions for both colors. */
 	black_ok = true;
 	white_ok = true;
-	if (slice->getnpieces() >= 7) {
+	if (slice.npieces() >= 7) {
 		if (db->egdb_excludes_some_nonside_caps) {
-			indextoposition_slice(0, &pos, slice->getnbm(), slice->getnbk(), slice->getnwm(), slice->getnwk());
+			indextoposition_slice(0, &pos, slice.nbm(), slice.nbk(), slice.nwm(), slice.nwk());
 			value1 = db->handle->lookup(db->handle, &pos, BLACK, 0);
 			if (value1 == EGDB_UNKNOWN)
 				black_ok = false;
@@ -194,7 +194,7 @@ void self_verify(EGDB_INFO *db, SLICE *slice, int64_t max_lookups)
 	}
 
 	for (index = 0; index < size; index += incr) {
-		indextoposition_slice(index, &pos, slice->getnbm(), slice->getnbk(), slice->getnwm(), slice->getnwk());
+		indextoposition_slice(index, &pos, slice.nbm(), slice.nbk(), slice.nwm(), slice.nwk());
 		if (db->requires_nonside_capture_test((BOARD *)&pos)) {
 			if (canjump((BOARD *)&pos, BLACK))
 				continue;
@@ -221,20 +221,20 @@ void self_verify(EGDB_INFO *db, SLICE *slice, int64_t max_lookups)
 }
 
 
-void verify_indexing(SLICE *slice, int64_t max_tests)
+void verify_indexing(Slice const& slice, int64_t max_tests)
 {
 	int64_t size, index, return_index, incr;
 	EGDB_POSITION pos;
 
-	size = getdatabasesize_slice(slice->getnbm(), slice->getnbk(), slice->getnwm(), slice->getnwk());
+	size = getdatabasesize_slice(slice.nbm(), slice.nbk(), slice.nwm(), slice.nwk());
 	if (max_tests < 1)
 		incr = 1;
 	else
 		incr = (std::max)(size / max_tests, (int64_t)1);
 
 	for (index = 0; index < size; index += incr) {
-		indextoposition_slice(index, &pos, slice->getnbm(), slice->getnbk(), slice->getnwm(), slice->getnwk());
-		return_index = position_to_index_slice(&pos, slice->getnbm(), slice->getnbk(), slice->getnwm(), slice->getnwk());
+		indextoposition_slice(index, &pos, slice.nbm(), slice.nbk(), slice.nwm(), slice.nwk());
+		return_index = position_to_index_slice(&pos, slice.nbm(), slice.nbk(), slice.nwm(), slice.nwk());
 		if (return_index != index) {
 			std::printf("index verify error%" PRId64 "return index%" PRId64 "\n", index, return_index);
 			std::exit(1);
@@ -555,7 +555,6 @@ int main(int argc, char *argv[])
 {
 	DB_INFO db1, db2;
 	clock_t t0;
-	SLICE slice;
 
 	init_move_tables();
 
@@ -566,7 +565,7 @@ int main(int argc, char *argv[])
 
 	/* Open the endgame db drivers. */
 	char opt[50];
-	sprintf(opt, "maxpieces=%d", maxpieces);
+	std::sprintf(opt, "maxpieces=%d", maxpieces);
 	db1.handle = egdb_open(opt, 2000, DB_TUN_V2, print_msgs);
 	if (!db1.handle) {
 		std::printf("Cannot open tun v2 db\n");
@@ -580,24 +579,18 @@ int main(int argc, char *argv[])
 
 	/* Do a quick verification of the indexing functions. */
 	t0 = std::clock();
-	slice.reset();
 	std::printf("\nTesting indexing round trip\n");
-	while (1) {
-		verify_indexing(&slice, 100000);
-		if (slice.advance() > 9)
-			break;
-	}
+	std::for_each(Slice(2), Slice(10), [&](Slice const& slice) {
+		verify_indexing(slice, 100000);
+	});
 	std::printf("%.2fsec: index test completed\n", TDIFF(t0));
 
 	std::printf("\nVerifying WLD Tunstall v1 against Tunstall v2 (up to 7 pieces).\n");
 	t0 = std::clock();
-	slice.reset();
-	while (1) {
+	std::for_each(Slice(2), Slice(maxpieces + 1), [&](Slice const& slice) {
 		std::printf("%.2fsec: ", TDIFF(t0));
-		verify(&db1, &db2, &slice, 50000 / FAST_TEST_MULT);
-		if (slice.advance() > maxpieces)
-			break;
-	}
+		verify(&db1, &db2, slice, 50000 / FAST_TEST_MULT);
+	});
 
 	/* Close db2, leave db1 open for the next test. */
 	db2.handle->close(db2.handle);
@@ -613,13 +606,10 @@ int main(int argc, char *argv[])
 	}
 
 	t0 = std::clock();
-	slice.reset();
-	while (1) {
+	std::for_each(Slice(2), Slice(7), [&](Slice const& slice) {
 		std::printf("%.2fsec: ", TDIFF(t0));
-		verify(&db1, &db2, &slice, 50000 / FAST_TEST_MULT);
-		if (slice.advance() > 6)
-			break;
-	}
+		verify(&db1, &db2, slice, 50000 / FAST_TEST_MULT);
+	});
 
 	db1.handle->close(db1.handle);
 	db2.handle->close(db2.handle);
@@ -641,13 +631,10 @@ int main(int argc, char *argv[])
 	db.db8_kings_1side = 5;
 	db.egdb_excludes_some_nonside_caps = true;
 	t0 = std::clock();
-	slice.reset();
-	while (1) {
+	std::for_each(Slice(2), Slice(9), [&](Slice const& slice) {
 		std::printf("%.2fsec: ", TDIFF(t0));
-		self_verify(&db, &slice, 10000 / FAST_TEST_MULT);
-		if (slice.advance() > 8)
-			break;
-	}
+		self_verify(&db, slice, 10000 / FAST_TEST_MULT);
+	});
 	db.handle->close(db.handle);
 	mtc_test();
 	open_options_test();

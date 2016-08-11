@@ -182,7 +182,7 @@ POS_VALUE positions[] = {
 
 void print_msgs(char const *msg)
 {
-	std::printf(msg);
+	std::printf("%s", msg);
 }
 
 
