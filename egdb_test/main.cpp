@@ -26,7 +26,7 @@ using namespace egdb_interface;
 
 #define FAST_TEST_MULT 1		/* Set to 5 to speed up the tests. */
 
-//#define EYG
+#define EYG
 #ifdef EYG
 	#ifdef _MSC_VER
 		// drive name where Kingsrow is installed under Windows
@@ -41,10 +41,10 @@ using namespace egdb_interface;
 #define DB_TUN_V1 E_DRIVE "db_intl/wld_v1"		/* Need 7 pieces for test. */
 #define DB_TUN_V2 C_DRIVE "db_intl/wld_v2"		/* Need 8 pieces for test. */
 #define DB_MTC E_DRIVE "db_intl/slice32_mtc"	/* Need 8 pieces for test. */
-const int maxpieces = 7;
+const int maxpieces = 8;
 #endif
 
-#define RH
+//#define RH
 #ifdef RH
 	#ifdef _MSC_VER
 		// drive name where Kingsrow is installed under Windows
@@ -395,6 +395,7 @@ void mtc_test()
 	wld.handle->get_pieces(wld.handle, &max_pieces, &max_pieces_1side, &max_9pc_kings, &max_8pc_kings_1side);
 	wld.dbpieces = max_pieces;
 	wld.dbpieces_1side = max_pieces_1side;
+	wld.db8_kings_1side = max_8pc_kings_1side;
 	wld.egdb_excludes_some_nonside_caps = true;
 
 	mtc = egdb_open("maxpieces=8", 100, DB_MTC, print_msgs);

@@ -19,7 +19,7 @@ class Slice
 	int nwm_;
 	int nwk_;
 
-	bool assert_invariants() const
+	void assert_invariants() const
 	{
 		assert(nbm() + nbk() == nb());
 		assert(nwm() + nwk() == nw());
