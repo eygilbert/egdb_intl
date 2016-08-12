@@ -197,7 +197,7 @@ public:
 	class slice_iterator;
 
 	template<bool Dummy = IsConst, typename std::enable_if<Dummy>::type* = nullptr>
-	explicit slice_iterator(slice_iterator<false> it)
+	explicit slice_iterator(slice_iterator<!Dummy> it)
 	:
 		slice_{it.slice_}
 	{}
