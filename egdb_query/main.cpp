@@ -59,13 +59,10 @@ bool is_majority_half_zugzwang(int left, int right)
 
 void query_zwugzwangs_slice(EGDB_DRIVER *handle, Slice const& slice)
 {
-	EGDB_POSITION pos;
-	char fenbuf[150];
-
-	int64_t const size = getdatabasesize_slice(slice.nbm(), slice.nbk(), slice.nwm(), slice.nwk());
-	for (int64_t index = 0; index < size; ++index) {
-		indextoposition_slice(index, &pos, slice.nbm(), slice.nbk(), slice.nwm(), slice.nwk());
-
+    char fenbuf[150];
+    
+    // need EGDB_POSITION& instead of EGDB_POSITION const& because none of the lookup functions are const-correct
+    for (EGDB_POSITION& pos : position_range_slice{slice}) {
 		/* No captures or non-side captures. */
 		if (
 				canjump((BOARD *)&pos, BLACK) ||
@@ -88,7 +85,6 @@ void query_zwugzwangs_slice(EGDB_DRIVER *handle, Slice const& slice)
 			print_fen((BOARD *)&pos, EGDB_WHITE, fenbuf);
 			std::printf("%s\t majority half point zugzwang: wtm = draw, btm = white win\n", fenbuf);
 		}
-
 	}
 }
 

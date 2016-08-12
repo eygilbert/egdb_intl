@@ -1,12 +1,13 @@
 #pragma once
+#include <builddb/indexing.h>
+#include <egdb/egdb_intl.h>
 #include <algorithm>    // min
 #include <cassert>      // assert
+#include <cstdint>      // int64_t
 #include <cstddef>      // ptrdiff_t
 #include <iostream>     // ostream
-#include <iterator>     // orward_iterator_tag, iterator_category, iterator_traits
-#include <type_traits>  // is_same
+#include <iterator>     // distance, forward_iterator_tag, iterator_category
 #include <tuple>        // make_tuple
-#include <utility>      // forward
 
 /*
 // Iteration over all slices with 2 through N (exclusive) pieces
@@ -244,3 +245,76 @@ public:
     std::ptrdiff_t size()  const { return std::distance(begin(), end()); }
 };
 
+class position_iterator_slice
+{
+    egdb_interface::EGDB_POSITION pos_;
+    Slice const& slice_;
+    int64_t idx_;
+public:
+    // typedefs for std::iterator_traits
+    using iterator_category = std::forward_iterator_tag;    // TODO strengthen to std::random_access_iterator_tag
+    using value_type        = egdb_interface::EGDB_POSITION;
+    using difference_type   = std::ptrdiff_t;
+    using pointer           = value_type*;
+    using reference         = value_type&;
+
+    position_iterator_slice() = default;
+
+    position_iterator_slice(Slice const& s, int64_t i)
+    :
+        slice_{s},
+        idx_{i}
+    {}
+
+    position_iterator_slice& operator++()    {                   ++idx_; return *this; }
+    position_iterator_slice  operator++(int) { auto tmp = *this; ++idx_; return tmp;   }
+
+    // TODO: operators +=, -=, +, -
+
+    friend
+    bool operator==(position_iterator_slice const& lhs, position_iterator_slice const& rhs)
+    {
+        auto const tied = [](position_iterator_slice it) { return std::make_tuple(it.slice_, it.idx_); };
+        return tied(lhs) == tied(rhs);
+    }
+
+    friend
+    bool operator!=(position_iterator_slice const& lhs, position_iterator_slice const& rhs)
+    {
+        return !(lhs == rhs);
+    }
+    
+    reference operator*() 
+    { 
+        egdb_interface::indextoposition_slice(idx_, &pos_, slice_.nbm(), slice_.nbk(), slice_.nwm(), slice_.nwk());
+        return pos_;  
+    }
+};
+
+class position_range_slice
+{
+    position_iterator_slice first_;
+    position_iterator_slice last_;
+public:
+    position_range_slice() = default;
+
+    position_range_slice(position_iterator_slice b, position_iterator_slice e)
+    :
+        first_{ b },
+        last_{ e }
+    {}
+
+    position_range_slice(Slice const& s)
+    :
+        position_range_slice{
+            position_iterator_slice{s, 0},
+            position_iterator_slice{s, egdb_interface::getdatabasesize_slice(s.nbm(), s.nbk(), s.nwm(), s.nwk()) }
+        }
+    {}
+
+    position_iterator_slice begin()       { return first_; }
+    position_iterator_slice begin() const { return first_; }
+    position_iterator_slice end()         { return last_; }
+    position_iterator_slice end()   const { return last_; }
+             std::ptrdiff_t size()  const { return std::distance(begin(), end()); }
+};
