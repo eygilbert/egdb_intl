@@ -159,20 +159,16 @@ for (slice_iterator first(2), last(N); first != last; ++first) {
 
 */
 
-namespace detail {
-
-// semantically equivalent to boost::counting_iterator<Slice>
-template<bool IsConst>
 class slice_iterator
 {
 	Slice slice_;
 public:
 	// typedefs for std::iterator_traits
 	using iterator_category = std::forward_iterator_tag;
-	using value_type 		= Slice;
-	using difference_type 	= std::ptrdiff_t;
-	using pointer			= typename std::conditional<IsConst, Slice const*, Slice*>::type;
-	using reference			= typename std::conditional<IsConst, Slice const&, Slice&>::type;
+	using value_type        = Slice;
+	using difference_type   = std::ptrdiff_t;
+    using pointer           = value_type*;
+	using reference	        = value_type&;
 
 	slice_iterator() = default;
 
@@ -191,17 +187,6 @@ public:
 		slice_(nbm, nbk, nwm, nwk)
 	{}
 
-	// allow conversions of iterator to const_iterator
-	template<bool>
-	friend
-	class slice_iterator;
-
-	template<bool Dummy = IsConst, typename std::enable_if<Dummy>::type* = nullptr>
-	explicit slice_iterator(slice_iterator<!Dummy> it)
-	:
-		slice_{it.slice_}
-	{}
-
 	slice_iterator& operator++()    {                   slice_.advance(); return *this; }
 	slice_iterator  operator++(int) { auto tmp = *this; slice_.advance(); return tmp;   }
 
@@ -217,17 +202,8 @@ public:
 		return !(lhs == rhs);
 	}
 
-	template<bool Dummy = IsConst, typename std::enable_if<!Dummy>::type* = nullptr>
 	reference operator*() { return slice_; }
-
-	template<bool Dummy = IsConst, typename std::enable_if<Dummy>::type* = nullptr>
-	reference operator*() const { return slice_; }
 };
-
-}	// namespace detail
-
-using slice_iterator = detail::slice_iterator<false>;
-using const_slice_iterator = detail::slice_iterator<true>;
 
 /*
 // Iteration over all slices with 2 through N (exclusive) pieces
@@ -242,8 +218,8 @@ for (Slice const& slice : slice_range(2, N)) {
 // semantically equivalent to boost::counting_range<slice_iterator>
 class slice_range
 {
-	slice_iterator first_;
-	slice_iterator last_;
+    slice_iterator first_;
+    slice_iterator last_;
 public:
 	slice_range() = default;
 
@@ -255,13 +231,16 @@ public:
 
 	slice_range(int b, int e)
 	:
-		slice_range{slice_iterator{b}, slice_iterator{e}}
+		slice_range{
+            slice_iterator{b}, 
+            slice_iterator{e}
+        }
 	{}
 
-	      slice_iterator begin()       { return first_; }
-	const_slice_iterator begin() const { return const_slice_iterator{first_}; }
-	      slice_iterator end()         { return last_; }
-	const_slice_iterator end()   const { return const_slice_iterator{last_}; }
-	std::ptrdiff_t size()  const { return std::distance(begin(), end()); }
+	slice_iterator begin()       { return first_; }
+	slice_iterator begin() const { return first_; }
+	slice_iterator end()         { return last_;  }
+	slice_iterator end()   const { return last_;  }
+    std::ptrdiff_t size()  const { return std::distance(begin(), end()); }
 };
 
