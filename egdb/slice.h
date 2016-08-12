@@ -1,12 +1,12 @@
 #pragma once
-#include <algorithm>	// min
-#include <cassert>		// assert
-#include <cstddef>		// ptrdiff_t
-#include <iostream>		// ostream
-#include <iterator>		// orward_iterator_tag, iterator_category, iterator_traits
-#include <type_traits>	// is_same
-#include <tuple>		// make_tuple
-#include <utility>		// forward
+#include <algorithm>    // min
+#include <cassert>      // assert
+#include <cstddef>      // ptrdiff_t
+#include <iostream>     // ostream
+#include <iterator>     // orward_iterator_tag, iterator_category, iterator_traits
+#include <type_traits>  // is_same
+#include <tuple>        // make_tuple
+#include <utility>      // forward
 
 /*
 // Iteration over all slices with 2 through N (exclusive) pieces
@@ -164,11 +164,11 @@ class slice_iterator
 	Slice slice_;
 public:
 	// typedefs for std::iterator_traits
-	using iterator_category = std::forward_iterator_tag;
-	using value_type        = Slice;
-	using difference_type   = std::ptrdiff_t;
+    using iterator_category = std::forward_iterator_tag;
+    using value_type        = Slice;
+    using difference_type   = std::ptrdiff_t;
     using pointer           = value_type*;
-	using reference	        = value_type&;
+    using reference	        = value_type&;
 
 	slice_iterator() = default;
 
@@ -221,26 +221,26 @@ class slice_range
     slice_iterator first_;
     slice_iterator last_;
 public:
-	slice_range() = default;
+    slice_range() = default;
 
-	slice_range(slice_iterator b, slice_iterator e)
-	:
-		first_{b},
-		last_{e}
-	{}
+    slice_range(slice_iterator b, slice_iterator e)
+    :
+	    first_{b},
+	    last_{e}
+    {}
 
-	slice_range(int b, int e)
-	:
-		slice_range{
+    slice_range(int b, int e)
+    :
+	    slice_range{
             slice_iterator{b}, 
             slice_iterator{e}
         }
-	{}
+    {}
 
-	slice_iterator begin()       { return first_; }
-	slice_iterator begin() const { return first_; }
-	slice_iterator end()         { return last_;  }
-	slice_iterator end()   const { return last_;  }
+    slice_iterator begin()       { return first_; }
+    slice_iterator begin() const { return first_; }
+    slice_iterator end()         { return last_;  }
+    slice_iterator end()   const { return last_;  }
     std::ptrdiff_t size()  const { return std::distance(begin(), end()); }
 };
 
