@@ -96,15 +96,17 @@ void query_zwugzwangs_slice(EGDB_DRIVER *handle, Slice const& slice)
 void query_zugzwangs(EGDB_DRIVER *handle, int maxpieces)
 {
 	std::clock_t const t0 = std::clock();
-	std::for_each(Slice(2), Slice(maxpieces + 1), [&](Slice const& slice){
+	auto const slices = slice_range(2, maxpieces + 1);
+	std::cout << "Checking " << slices.size() << " slices\n";
+	for (Slice const& slice : slices) {
 		/* Both sides must have at least 1 man and 1 king. */
 		if (!slice.nbm() || !slice.nbk() || !slice.nwm() || !slice.nwk())
-			return;
+			continue;
 
 		std::printf("\n%.2fsec: ", TDIFF(t0));
 		std::cout << slice << '\n';
 		query_zwugzwangs_slice(handle, slice);
-	});
+	}
 }
 
 

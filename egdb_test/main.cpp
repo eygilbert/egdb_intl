@@ -581,17 +581,17 @@ int main(int argc, char *argv[])
 	/* Do a quick verification of the indexing functions. */
 	t0 = std::clock();
 	std::printf("\nTesting indexing round trip\n");
-	std::for_each(Slice(2), Slice(10), [&](Slice const& slice) {
+	for (Slice const& slice : slice_range(2, 10)) {
 		verify_indexing(slice, 100000);
-	});
+	}
 	std::printf("%.2fsec: index test completed\n", TDIFF(t0));
 
 	std::printf("\nVerifying WLD Tunstall v1 against Tunstall v2 (up to 7 pieces).\n");
 	t0 = std::clock();
-	std::for_each(Slice(2), Slice(maxpieces + 1), [&](Slice const& slice) {
+	for (Slice const& slice : slice_range(2, maxpieces + 1)) {
 		std::printf("%.2fsec: ", TDIFF(t0));
 		verify(&db1, &db2, slice, 50000 / FAST_TEST_MULT);
-	});
+	}
 
 	/* Close db2, leave db1 open for the next test. */
 	db2.handle->close(db2.handle);
@@ -607,10 +607,10 @@ int main(int argc, char *argv[])
 	}
 
 	t0 = std::clock();
-	std::for_each(Slice(2), Slice(7), [&](Slice const& slice) {
+	for (Slice const& slice : slice_range(2, 7)) {
 		std::printf("%.2fsec: ", TDIFF(t0));
 		verify(&db1, &db2, slice, 50000 / FAST_TEST_MULT);
-	});
+	}
 
 	db1.handle->close(db1.handle);
 	db2.handle->close(db2.handle);
@@ -632,10 +632,10 @@ int main(int argc, char *argv[])
 	db.db8_kings_1side = 5;
 	db.egdb_excludes_some_nonside_caps = true;
 	t0 = std::clock();
-	std::for_each(Slice(2), Slice(9), [&](Slice const& slice) {
+	for (Slice const& slice : slice_range(2, 9)) {
 		std::printf("%.2fsec: ", TDIFF(t0));
 		self_verify(&db, slice, 10000 / FAST_TEST_MULT);
-	});
+	}
 	db.handle->close(db.handle);
 	mtc_test();
 	open_options_test();
