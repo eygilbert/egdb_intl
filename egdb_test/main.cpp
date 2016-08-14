@@ -1,20 +1,16 @@
 #include "builddb/indexing.h"
 #include "egdb/egdb_intl.h"
+#include "egdb/egdb_intl_ext.h"
 #include "egdb/egdb_search.h"
-#include "egdb/slice.h"
-#include "engine/bicoef.h"
 #include "engine/bitcount.h"
 #include "engine/board.h"
-#include "engine/bool.h"
 #include "engine/fen.h"
 #include "engine/lock.h"
 #include "engine/move_api.h"
 #include "engine/project.h"	// ARRAY_SIZE
-#include "engine/reverse.h"
 #include <algorithm>
 #include <cctype>
 #include <cinttypes>
-#include <cmath>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
@@ -645,8 +641,6 @@ int main(int argc, char *argv[])
 
 	test_mutual_exclusion(DB_TUN_V1, get_tun_v1_lock());
 	test_mutual_exclusion(DB_TUN_V2, get_tun_v2_lock());
-
-	return 0;
 }
 
 

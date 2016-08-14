@@ -69,6 +69,12 @@
     <ClCompile Include="..\egdb\egdb_wld_tunstall_v2.cpp">
       <Filter>egdb</Filter>
     </ClCompile>
+    <ClCompile Include="..\egdb\slice.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\egdb\egdb_intl_ext.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\builddb\compression_tables.h">
@@ -123,6 +129,9 @@
       <Filter>egdb</Filter>
     </ClInclude>
     <ClInclude Include="..\egdb\slice.h">
+      <Filter>egdb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\egdb\egdb_intl_ext.h">
       <Filter>egdb</Filter>
     </ClInclude>
   </ItemGroup>

@@ -180,6 +180,7 @@
     <ClCompile Include="..\Egdb\crc.cpp" />
     <ClCompile Include="..\Egdb\egdb_common.cpp" />
     <ClCompile Include="..\Egdb\egdb_identify.cpp" />
+    <ClCompile Include="..\egdb\egdb_intl_ext.cpp" />
     <ClCompile Include="..\Egdb\egdb_mtc_runlen.cpp" />
     <ClCompile Include="..\Egdb\egdb_open.cpp" />
     <ClCompile Include="..\egdb\egdb_search.cpp" />
@@ -187,6 +188,7 @@
     <ClCompile Include="..\Egdb\egdb_wld_runlen.cpp" />
     <ClCompile Include="..\Egdb\egdb_wld_tunstall_v1.cpp" />
     <ClCompile Include="..\Egdb\egdb_wld_tunstall_v2.cpp" />
+    <ClCompile Include="..\egdb\slice.cpp" />
     <ClCompile Include="..\Engine\bicoef.cpp" />
     <ClCompile Include="..\Engine\bitcount.cpp" />
     <ClCompile Include="..\Engine\board.cpp" />
@@ -202,6 +204,7 @@
     <ClInclude Include="..\Egdb\crc.h" />
     <ClInclude Include="..\Egdb\egdb_common.h" />
     <ClInclude Include="..\Egdb\egdb_intl.h" />
+    <ClInclude Include="..\egdb\egdb_intl_ext.h" />
     <ClInclude Include="..\egdb\egdb_search.h" />
     <ClInclude Include="..\egdb\platform.h" />
     <ClInclude Include="..\egdb\slice.h" />

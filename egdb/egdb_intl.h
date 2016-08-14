@@ -1,5 +1,5 @@
 #pragma once
-#include <cstdint>
+#include <cstdint>  // uint64_t
 
 namespace egdb_interface {
 

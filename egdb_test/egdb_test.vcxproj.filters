@@ -72,6 +72,12 @@
     <ClCompile Include="..\egdb\egdb_search.cpp">
       <Filter>egdb</Filter>
     </ClCompile>
+    <ClCompile Include="..\egdb\egdb_intl_ext.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\egdb\slice.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Egdb\crc.h">
@@ -129,6 +135,9 @@
       <Filter>egdb</Filter>
     </ClInclude>
     <ClInclude Include="..\egdb\slice.h">
+      <Filter>egdb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\egdb\egdb_intl_ext.h">
       <Filter>egdb</Filter>
     </ClInclude>
   </ItemGroup>

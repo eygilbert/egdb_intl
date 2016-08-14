@@ -5,6 +5,7 @@
 #include "engine/board.h"
 #include "engine/bool.h"
 #include <algorithm>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 

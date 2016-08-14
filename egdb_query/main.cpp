@@ -1,14 +1,12 @@
-#include "builddb/indexing.h"
-#include "egdb/egdb_intl.h"
-#include "egdb/slice.h"
-#include "engine/board.h"
-#include "engine/fen.h"
-#include "engine/move_api.h"
-#include "engine/reverse.h"
-#include <algorithm>
+#include "egdb/egdb_intl.h"         // EGDB_DRIVER, EGDB_POSITION
+#include "egdb/egdb_intl_ext.h"     // Slice, slice_range, position_range_slice
+#include "engine/board.h"           // BOARD
+#include "engine/fen.h"             // print_fen
+#include "engine/move_api.h"        // init_move_tables, canjump
 #include <cctype>
 #include <cstdio>
 #include <ctime>
+#include <iostream>
 
 using namespace egdb_interface;
 
@@ -57,70 +55,69 @@ bool is_majority_half_zugzwang(int left, int right)
 	return left == EGDB_DRAW && right == EGDB_LOSS;
 }
 
-void query_zwugzwangs_slice(EGDB_DRIVER *handle, Slice const& slice)
+void query_zugzwangs(EGDB_DRIVER *handle, int maxpieces)
 {
     char fenbuf[150];
     
-    // need EGDB_POSITION& instead of EGDB_POSITION const& because none of the lookup functions are const-correct
-    for (EGDB_POSITION& pos : position_range_slice{slice}) {
-		/* No captures or non-side captures. */
-		if (
-				canjump((BOARD *)&pos, BLACK) ||
-				canjump((BOARD *)&pos, WHITE)
-		)
-			continue;
-
-		int valb = handle->lookup(handle, &pos, EGDB_BLACK, 0);
-		int valw = handle->lookup(handle, &pos, EGDB_WHITE, 0);
-
-		if (is_full_zugzwang(valw, valb)) {
-			print_fen((BOARD *)&pos, EGDB_WHITE, fenbuf);
-			std::printf("%s\t full point zugzwang: wtm = black win, btw = white win\n", fenbuf);
-		}
-		if (is_minority_half_zugzwang(valw, valb)) {
-			print_fen((BOARD *)&pos, EGDB_WHITE, fenbuf);
-			std::printf("%s\t minority half point zugzwang: wtm = black win, btm = draw\n", fenbuf);
-		}
-		if (is_majority_half_zugzwang(valw, valb)) {
-			print_fen((BOARD *)&pos, EGDB_WHITE, fenbuf);
-			std::printf("%s\t majority half point zugzwang: wtm = draw, btm = white win\n", fenbuf);
-		}
-	}
-}
-
-
-void query_zugzwangs(EGDB_DRIVER *handle, int maxpieces)
-{
-	std::clock_t const t0 = std::clock();
+    std::clock_t const t0 = std::clock();
 	auto const slices = slice_range(2, maxpieces + 1);
-	std::cout << "Checking " << slices.size() << " slices\n";
+	std::cout << "Iterating over " << slices.size() << " slices\n";
+
 	for (Slice const& slice : slices) {
-		/* Both sides must have at least 1 man and 1 king. */
-		if (!slice.nbm() || !slice.nbk() || !slice.nwm() || !slice.nwk())
+
+		// filter on slice: both sides must have at least 1 man and 1 king
+        // with Boost, use instead: for (auto const& slice : slice | boost::adaptors::filtered(slice_condition)) { /* bla */ }
+		if (!(slice.nbm() >= 1 && slice.nbk() >= 1 && slice.nwm() >= 1 && slice.nwk() >= 1))
 			continue;
 
 		std::printf("\n%.2fsec: ", TDIFF(t0));
 		std::cout << slice << '\n';
-		query_zwugzwangs_slice(handle, slice);
-	}
+
+        // need EGDB_POSITION& instead of EGDB_POSITION const& because none of the lookup functions are const-correct
+        for (EGDB_POSITION& pos : position_range_slice{ slice }) {
+
+            // filter on position: no pending captures or threatening captures
+            // with Boost, use instead: for (auto const& pos : position_range_slice{slice} | boost::adaptors::filtered(position_condition)) { /* bla */ }
+            if (canjump((BOARD *)&pos, BLACK) || canjump((BOARD *)&pos, WHITE))
+                continue;
+
+            int valb = handle->lookup(handle, &pos, EGDB_BLACK, 0);
+            int valw = handle->lookup(handle, &pos, EGDB_WHITE, 0);
+
+            if (is_full_zugzwang(valw, valb)) {
+                print_fen((BOARD *)&pos, EGDB_WHITE, fenbuf);
+                std::printf("%s\t full point zugzwang: wtm = black win, btw = white win\n", fenbuf);
+            }
+            if (is_minority_half_zugzwang(valw, valb)) {
+                print_fen((BOARD *)&pos, EGDB_WHITE, fenbuf);
+                std::printf("%s\t minority half point zugzwang: wtm = black win, btm = draw\n", fenbuf);
+            }
+            if (is_majority_half_zugzwang(valw, valb)) {
+                print_fen((BOARD *)&pos, EGDB_WHITE, fenbuf);
+                std::printf("%s\t majority half point zugzwang: wtm = draw, btm = white win\n", fenbuf);
+            }
+        }
+    }
 }
 
 
 int main()
 {
-	const int maxpieces = 4;
-	char options[50];
+    init_move_tables(); // Needed to use the Kingsrow move generator
 
-	init_move_tables();		// Needed to use the kingsrow move generator.
+    const int maxpieces = 4;
+    char options[50];
+    std::sprintf(options, "maxpieces=%d", maxpieces);
 
-	std::sprintf(options, "maxpieces=%d", maxpieces);
 	EGDB_DRIVER *handle = egdb_open(options, 2000, PATH_WLD, print_msgs);
 	if (!handle) {
 		std::printf("Cannot open db at %s\n", PATH_WLD);
 		return(1);
 	}
 
+    // find all positions where the side to move can gain 1 or 2 points by not having the move
 	query_zugzwangs(handle, maxpieces);
-	handle->close(handle);
+	
+    handle->close(handle);
 }
 
