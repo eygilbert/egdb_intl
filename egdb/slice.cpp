@@ -15,7 +15,7 @@ namespace egdb_interface {
         assert(min_ncolor <= nw()); assert(nw() <= max_ncolor);
     }
 
-    void Slice::advance()
+    void Slice::increment()
     {
         if (nwk() > 0) {
             ++nwm_;

@@ -22,8 +22,8 @@ namespace egdb_interface {
     */
 
     // for combatibility with Boost.Iterator (the operator++ overloads make Slice model Incrementable)
-    inline Slice& operator++(Slice& s)      {               s.advance(); return s;   }
-    inline Slice  operator++(Slice& s, int) { auto tmp = s; s.advance(); return tmp; }
+    inline Slice& operator++(Slice& s)      {               s.increment(); return s;   }
+    inline Slice  operator++(Slice& s, int) { auto tmp = s; s.increment(); return tmp; }
 
     // alternative: using slice_iterator = boost::counting_iterator<Slice, std::forward_iterator_tag>
     class slice_iterator

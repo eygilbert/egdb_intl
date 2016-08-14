@@ -7,7 +7,7 @@ namespace egdb_interface {
     // Iteration over all slices with 2 through N (exclusive) pieces
     // This corresponds to the half-open range [2, N), not to [2, N] (inclusive)
 
-    for (Slice slice(2), last(N); slice != last; slice.advance()) {
+    for (Slice slice(2), last(N); slice != last; slice.increment()) {
         // any code
     }
 
@@ -63,7 +63,7 @@ namespace egdb_interface {
             assert_invariants();
         }
 
-        void advance();
+        void increment();
 
         int npieces() const { return npieces_; }
         int nb()      const { return nb_; }
