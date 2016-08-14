@@ -1,23 +1,25 @@
 #pragma once
 #include "engine/bool.h"
 
+namespace egdb_interface {
+
 #define SINGLE_CORNER_DIAG (S5 | S10 | S14 | S19 | S23 | S28 | S32 | S37 | S41 | S46)
 
 
 typedef struct {
-	int count;					/* The number of moves in this list. */
-	BOARD board[MAXMOVES];		/* How the board looks after each move. */
+    int count;					/* The number of moves in this list. */
+    BOARD board[MAXMOVES];		/* How the board looks after each move. */
 } MOVELIST;
 
 typedef struct {
-	char capture_count;
-	BOARD path[MAXPIECES_JUMPED];
+    char capture_count;
+    BOARD path[MAXPIECES_JUMPED];
 } CAPTURE_INFO;
 
 typedef struct {
-	int is_fen;
-	int color;
-	BOARD board;
+    int is_fen;
+    int color;
+    BOARD board;
 } GAMEPOS;
 
 
@@ -40,7 +42,7 @@ void get_jumped_square(int jumpi, int movei, int color, CAPTURE_INFO cap[], BITB
 int has_jumped_square(int jumpcount, int movei, int color, CAPTURE_INFO cap[], BITBOARD jumped);
 int has_landed_square(int jumpcount, int movei, int color, CAPTURE_INFO *cap, int square);
 void get_from_to(int jumpcount, int movei, int color, BOARD *board, MOVELIST *movelist,
-				 CAPTURE_INFO cap[], BITBOARD *from, BITBOARD *to);
+    CAPTURE_INFO cap[], BITBOARD *from, BITBOARD *to);
 
 void get_fromto(BITBOARD fromboard, BITBOARD toboard, int *fromsq, int *tosq);
 void get_fromto(BOARD *fromboard, BOARD *toboard, int color, int *fromsq, int *tosq);
@@ -49,23 +51,23 @@ int match_jumpto_square(CAPTURE_INFO *cap, int jumpindex, int color, int jumpto_
 
 inline void get_fromto_bitnums(BITBOARD fromboard, BITBOARD toboard, int *frombitnum, int *tobitnum)
 {
-	BITBOARD from, to;
+    BITBOARD from, to;
 
-	from = fromboard & ~toboard;
-	*frombitnum = LSB64(from);
-	to = ~fromboard & toboard;
-	*tobitnum = LSB64(to);
+    from = fromboard & ~toboard;
+    *frombitnum = LSB64(from);
+    to = ~fromboard & toboard;
+    *tobitnum = LSB64(to);
 }
 
 
 inline void get_fromto_bitnums(BOARD *fromboard, BOARD *toboard, int color, int *frombitnum, int *tobitnum)
 {
-	BITBOARD from, to;
+    BITBOARD from, to;
 
-	from = fromboard->pieces[color] & ~toboard->pieces[color];
-	*frombitnum = LSB64(from);
-	to = ~fromboard->pieces[color] & toboard->pieces[color];
-	*tobitnum = LSB64(to);
+    from = fromboard->pieces[color] & ~toboard->pieces[color];
+    *frombitnum = LSB64(from);
+    to = ~fromboard->pieces[color] & toboard->pieces[color];
+    *tobitnum = LSB64(to);
 }
 
-
+}   // namespace egdb_interface

@@ -7,6 +7,8 @@
 #include <cstdio>
 #include <cstring>
 
+namespace egdb_interface {
+
 template <bool save_capture_info>
 static void black_man_jump(BOARD *board, BITBOARD all_jumped, MOVELIST *movelist, BITBOARD from, int num_jumps, int *largest_num_jumps, CAPTURE_INFO cap[]);
 
@@ -2417,4 +2419,4 @@ void get_fromto(BOARD *fromboard, BOARD *toboard, int color, int *fromsq, int *t
 	get_fromto(fromboard->pieces[color], toboard->pieces[color] , fromsq, tosq);
 }
 
-
+}   // namespace egdb_interface
