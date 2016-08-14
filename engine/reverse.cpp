@@ -53,8 +53,8 @@ uint64_t reverse_board50(uint64_t image)
 	rev = 0;
 	while (image) {
 		bit = LSB64(image);
-		image = image & (image - 1);
-		rev |= ((uint64_t)1 << (NUM_BITBOARD_BITS - 1 - bit));
+		image = clear_lsb(image);
+		rev |= ((uint64_t)1 << mirrored(bit));
 	}
 	return(rev);
 }
