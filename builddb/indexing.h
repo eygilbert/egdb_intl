@@ -2,8 +2,9 @@
 #include "egdb/egdb_intl.h"
 #include "engine/bicoef.h"
 #include "engine/bitcount.h"
-#include "engine/board.h"
+#include "engine/board.h"       // BITBOARD
 #include "engine/bool.h"
+#include <cstdint>              // uint32_t
 
 namespace egdb_interface {
 
