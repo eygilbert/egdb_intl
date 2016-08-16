@@ -167,70 +167,39 @@ int canjump(BOARD *board, int color)
 {
 	BITBOARD free;
 	BITBOARD mask;
-	BITBOARD bk, wk, bm, wm;
+	BITBOARD man, king, opponent;
 
 	free = ~(board->black | board->white) & ALL_SQUARES;
-	if (color == BLACK) {
-		bm = board->black & ~board->king;
+	man = board->pieces[color] & ~board->king;
+	opponent = board->pieces[OTHER_COLOR(color)];
 
-		/* Jumps forward to the left. */
-		mask = (((bm << LEFT_FWD_SHIFT) & board->white) << LEFT_FWD_SHIFT);
+	/* Test for man captures. */
+	/* Jumps forward to the left. */
+	mask = (((man << LEFT_FWD_SHIFT) & opponent) << LEFT_FWD_SHIFT);
 
-		/* Jumps forward to the right. */
-		mask |= (((bm << RIGHT_FWD_SHIFT) & board->white) << RIGHT_FWD_SHIFT);
+	/* Jumps forward to the right. */
+	mask |= (((man << RIGHT_FWD_SHIFT) & opponent) << RIGHT_FWD_SHIFT);
 
-		/* Jumps back to the left. */
-		mask |= (((bm >> LEFT_BACK_SHIFT) & board->white) >> LEFT_BACK_SHIFT);
+	/* Jumps back to the left. */
+	mask |= (((man >> LEFT_BACK_SHIFT) & opponent) >> LEFT_BACK_SHIFT);
 
-		/* Jumps back to the right. */
-		mask |= (((bm >> RIGHT_BACK_SHIFT) & board->white) >> RIGHT_BACK_SHIFT);
+	/* Jumps back to the right. */
+	mask |= (((man >> RIGHT_BACK_SHIFT) & opponent) >> RIGHT_BACK_SHIFT);
 
-		if (mask & free)
+	if (mask & free)
+		return(1);
+
+	/* Test for king captures. */
+	king = board->pieces[color] & board->king;
+	if (king) {
+		if (has_king_jumps_fwd(king, free, opponent, LEFT_FWD_SHIFT))
 			return(1);
-
-		bk = board->black & board->king;
-		if (bk) {
-			if (has_king_jumps_fwd(bk, free, board->white, LEFT_FWD_SHIFT))
-				return(1);
-			if (has_king_jumps_fwd(bk, free, board->white, RIGHT_FWD_SHIFT))
-				return(1);
-			if (has_king_jumps_back(bk, free, board->white, LEFT_BACK_SHIFT))
-				return(1);
-			if (has_king_jumps_back(bk, free, board->white, RIGHT_BACK_SHIFT))
-				return(1);
-		}
-		return(0);
-	}
-	else {
-		wm = board->white & ~board->king;
-
-		/* Jumps forward to the left. */
-		mask = (((wm << LEFT_FWD_SHIFT) & board->black) << LEFT_FWD_SHIFT);
-
-		/* Jumps forward to the right. */
-		mask |= (((wm << RIGHT_FWD_SHIFT) & board->black) << RIGHT_FWD_SHIFT);
-
-		/* Jumps back to the left. */
-		mask |= (((wm >> LEFT_BACK_SHIFT) & board->black) >> LEFT_BACK_SHIFT);
-
-		/* Jumps back to the right. */
-		mask |= (((wm >> RIGHT_BACK_SHIFT) & board->black) >> RIGHT_BACK_SHIFT);
-
-		if (mask & free)
+		if (has_king_jumps_fwd(king, free, opponent, RIGHT_FWD_SHIFT))
 			return(1);
-
-		wk = board->white & board->king;
-		if (wk) {
-			if (has_king_jumps_fwd(wk, free, board->black, LEFT_FWD_SHIFT))
-				return(1);
-			if (has_king_jumps_fwd(wk, free, board->black, RIGHT_FWD_SHIFT))
-				return(1);
-			if (has_king_jumps_back(wk, free, board->black, LEFT_BACK_SHIFT))
-				return(1);
-			if (has_king_jumps_back(wk, free, board->black, RIGHT_BACK_SHIFT))
-				return(1);
-		}
-		return(0);
+		if (has_king_jumps_back(king, free, opponent, LEFT_BACK_SHIFT))
+			return(1);
+		if (has_king_jumps_back(king, free, opponent, RIGHT_BACK_SHIFT))
+			return(1);
 	}
 	return(0);
 }
@@ -261,82 +230,43 @@ int canjump(BOARD *board, int color)
 	int bitnum;
 	BITBOARD free;
 	BITBOARD mask;
-	BITBOARD bk, wk, bm, wm;
+	BITBOARD man, king, opponent;
 
 	free = ~(board->black | board->white) & ALL_SQUARES;
-	if (color == BLACK) {
-		bm = board->black & ~board->king;
+	man = board->pieces[color] & ~board->king;
+	opponent = board->pieces[OTHER_COLOR(color)];
 
-		/* Jumps forward to the left. */
-		mask = (((bm << LEFT_FWD_SHIFT) & board->white) << LEFT_FWD_SHIFT);
+	/* Jumps forward to the left. */
+	mask = (((man << LEFT_FWD_SHIFT) & opponent) << LEFT_FWD_SHIFT);
 
-		/* Jumps forward to the right. */
-		mask |= (((bm << RIGHT_FWD_SHIFT) & board->white) << RIGHT_FWD_SHIFT);
+	/* Jumps forward to the right. */
+	mask |= (((man << RIGHT_FWD_SHIFT) & opponent) << RIGHT_FWD_SHIFT);
 
-		/* Jumps back to the left. */
-		mask |= (((bm >> LEFT_BACK_SHIFT) & board->white) >> LEFT_BACK_SHIFT);
+	/* Jumps back to the left. */
+	mask |= (((man >> LEFT_BACK_SHIFT) & opponent) >> LEFT_BACK_SHIFT);
 
-		/* Jumps back to the right. */
-		mask |= (((bm >> RIGHT_BACK_SHIFT) & board->white) >> RIGHT_BACK_SHIFT);
+	/* Jumps back to the right. */
+	mask |= (((man >> RIGHT_BACK_SHIFT) & opponent) >> RIGHT_BACK_SHIFT);
 
-		if (mask & free)
+	if (mask & free)
+		return(1);
+
+	king = board->pieces[color] & board->king;
+	while (king) {
+
+		/* Strip off the next king. */
+		mask = king & -(SIGNED_BITBOARD)king;
+		king &= ~mask;
+		bitnum = LSB64(mask);
+
+		if (has_king_jumps(diag_tbl[bitnum].lf, free, opponent, diag_tbl[bitnum].lflen))
 			return(1);
-
-		bk = board->black & board->king;
-		while (bk) {
-
-			/* Strip off the next black king. */
-			mask = bk & -(SIGNED_BITBOARD)bk;
-			bk &= ~mask;
-			bitnum = LSB64(mask);
-
-			if (has_king_jumps(diag_tbl[bitnum].lf, free, board->white, diag_tbl[bitnum].lflen))
-				return(1);
-			if (has_king_jumps(diag_tbl[bitnum].rf, free, board->white, diag_tbl[bitnum].rflen))
-				return(1);
-			if (has_king_jumps(diag_tbl[bitnum].lb, free, board->white, diag_tbl[bitnum].lblen))
-				return(1);
-			if (has_king_jumps(diag_tbl[bitnum].rb, free, board->white, diag_tbl[bitnum].rblen))
-				return(1);
-		}
-		return(0);
-	}
-	else {
-		wm = board->white & ~board->king;
-
-		/* Jumps forward to the left. */
-		mask = (((wm << LEFT_FWD_SHIFT) & board->black) << LEFT_FWD_SHIFT);
-
-		/* Jumps forward to the right. */
-		mask |= (((wm << RIGHT_FWD_SHIFT) & board->black) << RIGHT_FWD_SHIFT);
-
-		/* Jumps back to the left. */
-		mask |= (((wm >> LEFT_BACK_SHIFT) & board->black) >> LEFT_BACK_SHIFT);
-
-		/* Jumps back to the right. */
-		mask |= (((wm >> RIGHT_BACK_SHIFT) & board->black) >> RIGHT_BACK_SHIFT);
-
-		if (mask & free)
+		if (has_king_jumps(diag_tbl[bitnum].rf, free, opponent, diag_tbl[bitnum].rflen))
 			return(1);
-
-		wk = board->white & board->king;
-		while (wk) {
-
-			/* Strip off the next white king. */
-			mask = wk & -(SIGNED_BITBOARD)wk;
-			wk &= ~mask;
-			bitnum = LSB64(mask);
-
-			if (has_king_jumps(diag_tbl[bitnum].lf, free, board->black, diag_tbl[bitnum].lflen))
-				return(1);
-			if (has_king_jumps(diag_tbl[bitnum].rf, free, board->black, diag_tbl[bitnum].rflen))
-				return(1);
-			if (has_king_jumps(diag_tbl[bitnum].lb, free, board->black, diag_tbl[bitnum].lblen))
-				return(1);
-			if (has_king_jumps(diag_tbl[bitnum].rb, free, board->black, diag_tbl[bitnum].rblen))
-				return(1);
-		}
-		return(0);
+		if (has_king_jumps(diag_tbl[bitnum].lb, free, opponent, diag_tbl[bitnum].lblen))
+			return(1);
+		if (has_king_jumps(diag_tbl[bitnum].rb, free, opponent, diag_tbl[bitnum].rblen))
+			return(1);
 	}
 	return(0);
 }
@@ -704,156 +634,84 @@ int build_man_nonjump_list(BOARD *board, MOVELIST *movelist, int color)
  */
 int build_king_nonjump_list(BOARD *board, MOVELIST *movelist, int color)
 {
-	int bitnum, i, len;
+	int bitnum, i, len, opp_color;
 	BITBOARD free;
-	BITBOARD bk, wk;
+	BITBOARD king, opponent;
 	BITBOARD from;
 	BITBOARD *pdiag;
 	BOARD *mlp;
 
 	movelist->count = 0;
 	free = ~(board->black | board->white);
-	if (color == BLACK) {
+	king = board->pieces[color] & board->king;
+	opp_color = OTHER_COLOR(color);
+	opponent = board->pieces[opp_color];
 
-		bk = board->black & board->king;
-		while (bk) {
+	while (king) {
 
-			/* Strip off the next black king. */
-			from = bk & -(SIGNED_BITBOARD)bk;
-			bk &= ~from;
-			bitnum = LSB64(from);
+		/* Strip off the next black king. */
+		from = king & -(SIGNED_BITBOARD)king;
+		king &= ~from;
+		bitnum = LSB64(from);
 
-			pdiag = diag_tbl[bitnum].lf;
-			len = diag_tbl[bitnum].lflen;
-			for (i = 0; i < len; ++i) {
-				if (pdiag[i] & free) {
-					mlp = movelist->board + movelist->count++;
-					mlp->white = board->white;
-					mlp->black = board->black & ~from;
-					mlp->black |= pdiag[i];
-					mlp->king = board->king & ~from;
-					mlp->king |= pdiag[i];
-				}
-				else
-					break;
+		pdiag = diag_tbl[bitnum].lf;
+		len = diag_tbl[bitnum].lflen;
+		for (i = 0; i < len; ++i) {
+			if (pdiag[i] & free) {
+				mlp = movelist->board + movelist->count++;
+				mlp->pieces[opp_color] = board->pieces[opp_color];
+				mlp->pieces[color] = board->pieces[color] & ~from;
+				mlp->pieces[color] |= pdiag[i];
+				mlp->king = board->king & ~from;
+				mlp->king |= pdiag[i];
 			}
-
-			pdiag = diag_tbl[bitnum].rf;
-			len = diag_tbl[bitnum].rflen;
-			for (i = 0; i < len; ++i) {
-				if (pdiag[i] & free) {
-					mlp = movelist->board + movelist->count++;
-					mlp->white = board->white;
-					mlp->black = board->black & ~from;
-					mlp->black |= pdiag[i];
-					mlp->king = board->king & ~from;
-					mlp->king |= pdiag[i];
-				}
-				else
-					break;
-			}
-
-			pdiag = diag_tbl[bitnum].lb;
-			len = diag_tbl[bitnum].lblen;
-			for (i = 0; i < len; ++i) {
-				if (pdiag[i] & free) {
-					mlp = movelist->board + movelist->count++;
-					mlp->white = board->white;
-					mlp->black = board->black & ~from;
-					mlp->black |= pdiag[i];
-					mlp->king = board->king & ~from;
-					mlp->king |= pdiag[i];
-				}
-				else
-					break;
-			}
-
-			pdiag = diag_tbl[bitnum].rb;
-			len = diag_tbl[bitnum].rblen;
-			for (i = 0; i < len; ++i) {
-				if (pdiag[i] & free) {
-					mlp = movelist->board + movelist->count++;
-					mlp->white = board->white;
-					mlp->black = board->black & ~from;
-					mlp->black |= pdiag[i];
-					mlp->king = board->king & ~from;
-					mlp->king |= pdiag[i];
-				}
-				else
-					break;
-			}
+			else
+				break;
 		}
-	}
-	else {
 
-		wk = board->white & board->king;
-		while (wk) {
-
-			/* Strip off the next black king. */
-			from = wk & -(SIGNED_BITBOARD)wk;
-			wk &= ~from;
-			bitnum = LSB64(from);
-
-			pdiag = diag_tbl[bitnum].lf;
-			len = diag_tbl[bitnum].lflen;
-			for (i = 0; i < len; ++i) {
-				if (pdiag[i] & free) {
-					mlp = movelist->board + movelist->count++;
-					mlp->black = board->black;
-					mlp->white = board->white & ~from;
-					mlp->white |= pdiag[i];
-					mlp->king = board->king & ~from;
-					mlp->king |= pdiag[i];
-				}
-				else
-					break;
+		pdiag = diag_tbl[bitnum].rf;
+		len = diag_tbl[bitnum].rflen;
+		for (i = 0; i < len; ++i) {
+			if (pdiag[i] & free) {
+				mlp = movelist->board + movelist->count++;
+				mlp->pieces[opp_color] = board->pieces[opp_color];
+				mlp->pieces[color] = board->pieces[color] & ~from;
+				mlp->pieces[color] |= pdiag[i];
+				mlp->king = board->king & ~from;
+				mlp->king |= pdiag[i];
 			}
+			else
+				break;
+		}
 
-			pdiag = diag_tbl[bitnum].rf;
-			len = diag_tbl[bitnum].rflen;
-			for (i = 0; i < len; ++i) {
-				if (pdiag[i] & free) {
-					mlp = movelist->board + movelist->count++;
-					mlp->black = board->black;
-					mlp->white = board->white & ~from;
-					mlp->white |= pdiag[i];
-					mlp->king = board->king & ~from;
-					mlp->king |= pdiag[i];
-				}
-				else
-					break;
+		pdiag = diag_tbl[bitnum].lb;
+		len = diag_tbl[bitnum].lblen;
+		for (i = 0; i < len; ++i) {
+			if (pdiag[i] & free) {
+				mlp = movelist->board + movelist->count++;
+				mlp->pieces[opp_color] = board->pieces[opp_color];
+				mlp->pieces[color] = board->pieces[color] & ~from;
+				mlp->pieces[color] |= pdiag[i];
+				mlp->king = board->king & ~from;
+				mlp->king |= pdiag[i];
 			}
+			else
+				break;
+		}
 
-			pdiag = diag_tbl[bitnum].lb;
-			len = diag_tbl[bitnum].lblen;
-			for (i = 0; i < len; ++i) {
-				if (pdiag[i] & free) {
-					mlp = movelist->board + movelist->count++;
-					mlp->black = board->black;
-					mlp->white = board->white & ~from;
-					mlp->white |= pdiag[i];
-					mlp->king = board->king & ~from;
-					mlp->king |= pdiag[i];
-				}
-				else
-					break;
+		pdiag = diag_tbl[bitnum].rb;
+		len = diag_tbl[bitnum].rblen;
+		for (i = 0; i < len; ++i) {
+			if (pdiag[i] & free) {
+				mlp = movelist->board + movelist->count++;
+				mlp->pieces[opp_color] = board->pieces[opp_color];
+				mlp->pieces[color] = board->pieces[color] & ~from;
+				mlp->pieces[color] |= pdiag[i];
+				mlp->king = board->king & ~from;
+				mlp->king |= pdiag[i];
 			}
-
-			pdiag = diag_tbl[bitnum].rb;
-			len = diag_tbl[bitnum].rblen;
-			for (i = 0; i < len; ++i) {
-				if (pdiag[i] & free) {
-					mlp = movelist->board + movelist->count++;
-					mlp->black = board->black;
-					mlp->white = board->white & ~from;
-					mlp->white |= pdiag[i];
-					mlp->king = board->king & ~from;
-					mlp->king |= pdiag[i];
-				}
-				else
-					break;
-			}
-
+			else
+				break;
 		}
 	}
 	return(movelist->count);
