@@ -142,6 +142,7 @@ void verify(DB_INFO *db1, DB_INFO *db2, Slice const& slice, int64_t max_lookups)
 			value2 = db2->handle->lookup(db2->handle, &pos, BLACK, 0);
 			if (value1 != value2) {
 				std::printf("Verify error..%" PRId64 "color BLACK, v1 %d, v2 %d\n", index, value1, value2);
+				std::exit(1);
 			}
 		}
 
@@ -150,6 +151,7 @@ void verify(DB_INFO *db1, DB_INFO *db2, Slice const& slice, int64_t max_lookups)
 			value2 = db2->handle->lookup(db2->handle, &pos, WHITE, 0);
 			if (value1 != value2) {
 				std::printf("Verify error.%" PRId64 "color WHITE, v1 %d, v2 %d\n", index, value1, value2);
+				std::exit(1);
 			}
 		}
 	}
@@ -203,6 +205,7 @@ void self_verify(EGDB_INFO *db, Slice const& slice, int64_t max_lookups)
 			value2 = db->lookup_with_search((BOARD *)&pos, BLACK, 64, true);
 			if (value1 != value2 && value2 != EGDB_UNKNOWN) {
 				std::printf("Verify error.%" PRId64 "color BLACK, v1 %d, v2 %d\n", index, value1, value2);
+				std::exit(1);
 			}
 		}
 
@@ -211,6 +214,7 @@ void self_verify(EGDB_INFO *db, Slice const& slice, int64_t max_lookups)
 			value2 = db->lookup_with_search((BOARD *)&pos, WHITE, 64, true);
 			if (value1 != value2 && value2 != EGDB_UNKNOWN) {
 				std::printf("Verify error.%" PRId64 "color WHITE, v1 %d, v2 %d\n", index, value1, value2);
+				std::exit(1);
 			}
 		}
 	}
@@ -342,7 +346,7 @@ void test_best_mtc_successor(EGDB_INFO *wld, EGDB_DRIVER *mtc, BOARD *pos, int c
 			print_fen(movelist.board + best_movei, OTHER_COLOR(color), fenbuf);
 			std::printf("move %d-%d, parent mtc value %d, best successor mtc value %d\n",
 					1 + fromsq, 1 + tosq, parent_mtc_value, best_mtc_value);
-			return;
+			std::exit(1);
 		}
 	}
 }
@@ -633,6 +637,7 @@ int main(int argc, char *argv[])
 		self_verify(&db, slice, 10000 / FAST_TEST_MULT);
 	}
 	db.handle->close(db.handle);
+
 	mtc_test();
 	open_options_test();
 
