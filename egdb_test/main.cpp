@@ -22,7 +22,7 @@ using namespace egdb_interface;
 
 #define FAST_TEST_MULT 1		/* Set to 5 to speed up the tests. */
 
-//#define EYG
+#define EYG
 #ifdef EYG
 	#ifdef _MSC_VER
 		// drive name where Kingsrow is installed under Windows
@@ -40,7 +40,7 @@ using namespace egdb_interface;
 const int maxpieces = 8;
 #endif
 
-#define RH
+//#define RH
 #ifdef RH
 	#ifdef _MSC_VER
 		// drive name where Kingsrow is installed under Windows
@@ -306,8 +306,15 @@ void test_best_mtc_successor(EGDB_INFO *wld, EGDB_DRIVER *mtc, BOARD *pos, int c
 	build_movelist(pos, color, &movelist);
 	best_movei = 0;
 	for (i = 0; i < movelist.count; ++i) {
-		if (is_conversion_move(pos, movelist.board + i, color)) {
-			continue;
+
+		/* We're not going to take a conversion move if in a loss, because that's a terrible
+		 * move. We already know that the parent position is at least 10 ply from a conversion by some path,
+		 * and being in a loss we want to delay a conversion as long as possible,
+		 * so there is a better choice than a conversion move.
+		 */
+		if (parent_value == EGDB_LOSS) {
+			if (is_conversion_move(pos, movelist.board + i, color))
+				continue;
 		}
 		value = wld->lookup_with_search((movelist.board + i), OTHER_COLOR(color), MAXREPDEPTH, false);
 		if (value == EGDB_UNKNOWN)
