@@ -6,6 +6,9 @@
 
 namespace egdb_interface {
 
+const int Slice::min_ncolor;
+const int Slice::max_ncolor;
+
     void Slice::assert_invariants() const
     {
         assert(nbm() + nbk() == nb());

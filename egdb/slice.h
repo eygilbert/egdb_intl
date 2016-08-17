@@ -74,9 +74,6 @@ namespace egdb_interface {
         int nwk()     const { return nwk_; }
     };
 
-    const int Slice::min_ncolor;
-    const int Slice::max_ncolor;
-
     bool operator==(Slice const& lhs, Slice const& rhs);
 
     inline
