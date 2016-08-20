@@ -23,7 +23,7 @@ namespace egdb_interface {
 
     // for combatibility with Boost.Iterator (the operator++ overloads make Slice model Incrementable)
     inline Slice& operator++(Slice& s)      {               s.increment(); return s;   }
-    inline Slice  operator++(Slice& s, int) { auto tmp = s; s.increment(); return tmp; }
+    inline Slice  operator++(Slice& s, int) { auto tmp = s; ++s;           return tmp; }
 
     // alternative: using slice_iterator = boost::counting_iterator<Slice, std::forward_iterator_tag>
     class slice_iterator
@@ -55,7 +55,7 @@ namespace egdb_interface {
         {}
 
         slice_iterator& operator++()    {                   ++slice_; return *this; }
-        slice_iterator  operator++(int) { auto tmp = *this; ++slice_; return tmp;   }
+        slice_iterator  operator++(int) { auto tmp = *this; ++*this;  return tmp;   }
 
         friend
         bool operator==(slice_iterator const& lhs, slice_iterator const& rhs)
@@ -131,11 +131,11 @@ namespace egdb_interface {
             slice_{ s }, idx_{ i }
         {}
 
-        position_iterator_slice& operator++()    {                   ++idx_; return *this; }
-        position_iterator_slice  operator++(int) { auto tmp = *this; ++idx_; return tmp;   }
+        position_iterator_slice& operator++()    {                   ++idx_;  return *this; }
+        position_iterator_slice  operator++(int) { auto tmp = *this; ++*this; return tmp;   }
 
-        position_iterator_slice& operator--()    {                   --idx_; return *this; }
-        position_iterator_slice  operator--(int) { auto tmp = *this; --idx_; return tmp;   }
+        position_iterator_slice& operator--()    {                   --idx_;  return *this; }
+        position_iterator_slice  operator--(int) { auto tmp = *this; --*this; return tmp;   }
 
         position_iterator_slice& operator+=(size_t n) { idx_ += n; return *this; }
         position_iterator_slice& operator-=(size_t n) { idx_ -= n; return *this; }
