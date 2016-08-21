@@ -1,5 +1,5 @@
-#include "egdb/egdb_intl.h"         // EGDB_DRIVER, EGDB_POSITION
-#include "egdb/egdb_intl_ext.h"     // Slice, slice_range, position_range_slice
+#include "egdb/egdb_intl.h"         // EGDB_POSITION
+#include "egdb/egdb_intl_ext.h"     // EGDB_DRIVER_V2, Slice, slice_range, position_range_slice
 #include "engine/board.h"           // BOARD
 #include "engine/fen.h"             // print_fen
 #include "engine/move_api.h"        // init_move_tables, canjump
@@ -40,22 +40,22 @@ void print_msgs(char const *msg)
 	std::printf("%s", msg);
 }
 
-bool is_full_zugzwang(int left, int right)
+bool is_full_zugzwang(int score_to_move, int score_not_tomove)
 {
-	return left == EGDB_LOSS && right == EGDB_LOSS;
+	return score_to_move == EGDB_LOSS && score_not_tomove == EGDB_LOSS;
 }
 
-bool is_minority_half_zugzwang(int left, int right)
+bool is_minority_half_zugzwang(int score_to_move, int score_not_tomove)
 {
-	return left == EGDB_LOSS && right == EGDB_DRAW;
+	return score_to_move == EGDB_LOSS && score_not_tomove == EGDB_DRAW;
 }
 
-bool is_majority_half_zugzwang(int left, int right)
+bool is_majority_half_zugzwang(int score_to_move, int score_not_tomove)
 {
-	return left == EGDB_DRAW && right == EGDB_LOSS;
+	return score_to_move == EGDB_DRAW && score_not_tomove == EGDB_LOSS;
 }
 
-void query_zugzwangs(EGDB_DRIVER *handle, int maxpieces)
+void query_zugzwangs(EGDB_DRIVER_V2 *handle, int maxpieces)
 {
     char fenbuf[150];
     
@@ -81,20 +81,21 @@ void query_zugzwangs(EGDB_DRIVER *handle, int maxpieces)
             if (canjump((BOARD *)&pos, BLACK) || canjump((BOARD *)&pos, WHITE))
                 continue;
 
-            int valb = handle->lookup(handle, &pos, EGDB_BLACK, 0);
-            int valw = handle->lookup(handle, &pos, EGDB_WHITE, 0);
+            int valb = handle->lookup(&pos, EGDB_BLACK, 0);
+            int valw = handle->lookup(&pos, EGDB_WHITE, 0);
 
-            if (is_full_zugzwang(valw, valb)) {
-                print_fen((BOARD *)&pos, EGDB_WHITE, fenbuf);
-                std::printf("%s\t full point zugzwang: wtm = black win, btw = white win\n", fenbuf);
+            // zugzwangs from the perspective of black to move
+            if (is_full_zugzwang(valb, valw)) {
+                print_fen((BOARD *)&pos, EGDB_BLACK, fenbuf);
+                std::printf("%s\t full point zugzwang: btm = white win, wtw = black win\n", fenbuf);
             }
-            if (is_minority_half_zugzwang(valw, valb)) {
-                print_fen((BOARD *)&pos, EGDB_WHITE, fenbuf);
-                std::printf("%s\t minority half point zugzwang: wtm = black win, btm = draw\n", fenbuf);
+            if (is_minority_half_zugzwang(valb, valw)) {
+                print_fen((BOARD *)&pos, EGDB_BLACK, fenbuf);
+                std::printf("%s\t minority half point zugzwang: btm = white win, wtm = draw\n", fenbuf);
             }
-            if (is_majority_half_zugzwang(valw, valb)) {
-                print_fen((BOARD *)&pos, EGDB_WHITE, fenbuf);
-                std::printf("%s\t majority half point zugzwang: wtm = draw, btm = white win\n", fenbuf);
+            if (is_majority_half_zugzwang(valb, valw)) {
+                print_fen((BOARD *)&pos, EGDB_BLACK, fenbuf);
+                std::printf("%s\t majority half point zugzwang: btm = draw, wtm = black win\n", fenbuf);
             }
         }
     }
@@ -109,15 +110,13 @@ int main()
     char options[50];
     std::sprintf(options, "maxpieces=%d", maxpieces);
 
-	EGDB_DRIVER *handle = egdb_open(options, 2000, PATH_WLD, print_msgs);
-	if (!handle) {
-		std::printf("Cannot open db at %s\n", PATH_WLD);
+	EGDB_DRIVER_V2 db(options, 2000, PATH_WLD, print_msgs);
+	if (!db.is_open()) {
+		std::printf("Could not open db at %s\n", PATH_WLD);
 		return(1);
 	}
 
     // find all positions where the side to move can gain 1 or 2 points by not having the move
-	query_zugzwangs(handle, maxpieces);
-	
-    handle->close(handle);
+	query_zugzwangs(&db, maxpieces);
 }
 

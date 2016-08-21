@@ -7,6 +7,92 @@
 
 namespace egdb_interface {
 
+inline
+int egdb_lookup(EGDB_DRIVER *handle, EGDB_POSITION *position, int color, int cl)
+{
+	return handle->lookup(handle, position, color, cl);
+}
+
+inline
+void egdb_reset_stats(EGDB_DRIVER *handle)
+{
+	handle->reset_stats(handle);
+}
+
+inline
+EGDB_STATS *egdb_get_stats(EGDB_DRIVER *handle)
+{
+	return handle->get_stats(handle);
+}
+
+inline
+int egdb_verify(EGDB_DRIVER *handle, void (*msg_fn)(char const *msg), int *abort, EGDB_VERIFY_MSGS *msgs)
+{
+	return handle->verify(handle, msg_fn, abort, msgs);
+}
+
+inline
+int egdb_close(EGDB_DRIVER *handle)
+{
+	return handle->close(handle);
+}
+
+inline
+int egdb_get_pieces(EGDB_DRIVER *handle, int *max_pieces, int *max_pieces_1side, int *max_9pc_kings, int *max_8pc_kings_1side)
+{
+	return handle->get_pieces(handle, max_pieces, max_pieces_1side, max_9pc_kings, max_8pc_kings_1side);
+}
+
+class EGDB_DRIVER_V2
+{
+	EGDB_DRIVER* handle_ = nullptr;
+
+public:
+	EGDB_DRIVER_V2() = default;
+
+	EGDB_DRIVER_V2(char const *options, int cache_mb, char const *directory, void (*msg_fn)(char const *msg))
+	:
+		handle_{egdb_open(options, cache_mb, directory, msg_fn)}
+	{}
+
+	~EGDB_DRIVER_V2()
+	{
+		if (is_open()) {
+			egdb_close(handle_);
+		}
+	}
+
+	bool is_open() const
+	{
+		return handle_ != nullptr;
+	}
+
+	int lookup(EGDB_POSITION *position, int color, int cl)
+	{
+		return egdb_lookup(handle_, position, color, cl);
+	}
+
+	void reset_stats()
+	{
+		return egdb_reset_stats(handle_);
+	}
+
+	EGDB_STATS *get_stats()
+	{
+		return egdb_get_stats(handle_);
+	}
+
+	int verify(void (*msg_fn)(char const *msg), int *abort, EGDB_VERIFY_MSGS *msgs)
+	{
+		return egdb_verify(handle_, msg_fn, abort, msgs);
+	}
+
+	int get_pieces(int *max_pieces, int *max_pieces_1side, int *max_9pc_kings, int *max_8pc_kings_1side)
+	{
+		return egdb_get_pieces(handle_, max_pieces, max_pieces_1side, max_9pc_kings, max_8pc_kings_1side);
+	}
+};
+
     /*
     // Iteration over all slices with 2 through N (exclusive) pieces
     // This corresponds to the half-open range [2, N), not to [2, N] (inclusive)
