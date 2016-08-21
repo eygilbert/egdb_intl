@@ -1,7 +1,7 @@
 License
 -------
 ````
-egdb_intl
+Egdb_intl
 Original work Copyright (C) 2007-2016 Ed Gilbert
 Linux port Copyright (C) 2016 Rein Halbersma and Ed Gilbert
 ````
@@ -10,13 +10,15 @@ See license.txt for more details.
 
 Description
 -----------
-Egdb_intl is a set of C++ source files with functions to access the kingsrow international draughts endgame databases. The code can be used to access 2 versions of the win, loss, draw (WLD) db, and the moves-to-conversion (MTC) db. These databases have information for positions with up to 8 pieces and with up to 5 pieces on one side. The source files are identical to those used in the kingsrow draughts program.
-
-From 2010 to 2014 I distributed version 1 of the databases on a portable external hard drive. This db is 407gb of data, which includes a small subset of 9-piece positions, 5 men vs. 4 men (I disabled the 9-piece functionality in this driver because I found through testing that on average it was less effective than not using it). In 2014 I created version 2 by re-compressing the db using better compression techniques, and excluding more positions to make the compression work better. Version 2 is 56gb of data, and is available for download from a file server. See link below.
+Egdb_intl is a set of C++ source files with functions to access the kingsrow international draughts endgame databases. This package has been designed so that it can be easily integrated into existing C++ draughts programs. The source files are identical to those in the kingsrow draughts program. 
 
 The source code can be compiled for Windows using Microsoft Visual Studio 2015, and for Linux. Rein Halbersma ported the code to Linux and improved it in other ways also. Thanks Rein!
 
 The function to lookup the value of a position in the database is thread-safe and can be used in a multi-threaded search engine.
+
+The code can be used to access 2 versions of the win, loss, draw (WLD) db, and the moves-to-conversion (MTC) db. These databases have information for positions with up to 8 pieces and with up to 5 pieces on one side.
+
+From 2010 to 2014 I distributed version 1 of the databases on a portable external hard drive. This db is 407gb of data, which includes a small subset of 9-piece positions, 5 men vs. 4 men (I disabled the 9-piece functionality in this driver because I found through testing that on average it was less effective than not using it). In 2014 I created version 2 by re-compressing the db using better compression techniques, and excluding more positions to make the compression work better. Version 2 is 56gb of data, and is available for download from a file server. See link below.
 
 You can contact me at eygilbert@gmail.com if you have questions or comments about these drivers.
 
@@ -59,9 +61,9 @@ When the build finishes, you can run `example.main` from the `build` directory b
 
 Excluded positions
 ------------------
-Version 1 of the WLD db is identified as type EGDB_WLD_TUN_V1. Version 1 filenames have suffixes ".cpr" and ".idx". This db does not have valid data for any position that is a capture for the side-to-move. There is no way to know this from the lookup return value, which will typically be one of the win, loss, or draw values. Before calling lookup, you should first test that the position is not a capture.
+Version 1 of the WLD db is identified as type EGDB_WLD_TUN_V1. Version 1 filenames have suffixes ".cpr" and ".idx". This db does not have valid data for any position that is a capture for the side-to-move. There is no way to know this from the lookup return value. It will be a win, loss, or draw value, but it will not be the correct value except by random luck. It will be whatever makes the compression work best. Before calling lookup, you should first test that the position is not a capture.
 
-Version 2 of the WLD db is identified as type EGDB_WLD_TUN_V2. Version 2 filenames have suffixes ".cpr1" and ".idx1". Like version 1, it does not have valid data for positions that are a capture for the side-to-move. Additionally, for positions with 7 and 8 pieces that have more than 1 king present, it does not have valid data for positions that would be captures for the opposite of the side-to-move (non-side captures), and it only has data for one side. Which side is excluded varies with position. It's not always black or always white, although it is consistent within each slice. It's whatever makes the compression more effective. If you call lookup and the data for that side is not present, you get the return EGDB_UNKNOWN. 
+Version 2 of the WLD db is identified as type EGDB_WLD_TUN_V2. Version 2 filenames have suffixes ".cpr1" and ".idx1". Like version 1, it does not have valid data for positions that are a capture for the side-to-move. Additionally, for positions with 7 and 8 pieces that have more than 1 king present, it does not have valid data for positions that would be captures for the opposite of the side-to-move (non-side captures), and it only has data for one side. Which side is excluded varies with position. It's not always black or always white, although it is consistent within each slice. It's whatever makes the compression more effective. If you call lookup and the data for that side is not present, you get the return EGDB_UNKNOWN. If you call lookup for a position that is excluded because of a capture or non-side capture, you will get a WLD value, but it will not be the correct value except by random luck. The value will be whatever makes the compression work best.
 
 The MTC db is identified as type EGDB_MTC_RUNLEN. It has filenames with suffixes ".cpr_mtc" and ".idx_mtc". This db has data for both side-to-move colors, and for positions with non-side captures. To make the db considerably smaller, it does not have data for positions where the distance to a conversion move is less than 10 plies. The return from lookup for such positions is MTC_LESS_THAN_THRESHOLD. Draughts engines typically do not need databases for such positions because a search can usually provide a good move. The db only has valid data for positions that are a win or loss. You cannot tell this from the return value of a lookup in the MTC db, so before querying an MTC value you should use a WLD db to determine that the position is a win or a loss. 
 
@@ -82,7 +84,7 @@ Opening a db takes some time. It allocates memory for caching db values, and rea
 
 `"cache_mb"` is the number of megabytes (2^20 bytes) of heap memory that the driver will use. Some of it is used for indexing data, and the rest is used to dynamically cache database data to minimize disk access during lookups. The more memory you give the driver, the faster it works on average during an engine search. On a machine with at least 8gb of ram, setting the cache_mb to something like 3000mb less than the total PC memory gives good driver performance and still leaves some memory for Windows drivers and a few other smaller programs to run. On machines with less memory you'll have to make the margin smaller and manage the memory usage more carefully. My experience is that the driver actually works surprisingly well in a kingsrow search with the 8pc db and a very small setting like 1500mb, but of course more memory is better.
 
-If you are opening the MTC db, give it a cache_mb value of 0. It will then use a relatively small amount of memory, approximately 25mb, which is all it needs. Unlike the WLD db, the MTC db is not used during a search. It is probed before a search, and if a move can be obtained from the MTC db then a search is not necessary. To obtain a move from the MTC db it is only necessary to probe the MTC values of the immediate successors of the target position and pick a successor with the best MTC value -- the lowest value for a won position, or the highest value for a lost position.
+If you are opening the MTC db, give it a cache_mb value of 0. It will then use a relatively small amount of memory, approximately 25mb, which is all it needs. Unlike the WLD db, the MTC db is not used during a search. It is probed before a search, and if a move can be obtained from the MTC db then a search is not necessary. To obtain a move from the MTC db it is only necessary to probe the MTC values of the immediate successors of the target position and pick a successor with the best MTC value -- the lowest value for a won position, or the highest value for a lost position. When probing successor values, it is necessary to skip probing of successors that were conversion moves from the target position. A conversion move is a capture or a man move.
 
 `"directory"` is the path to the location of the database files.
 
@@ -90,7 +92,7 @@ If you are opening the MTC db, give it a cache_mb value of 0. It will then use a
 ```
 void msg_fn(char const *msg)
 {
-	printf(msg);
+        printf(msg);
 }
 ```
 In kingsrow I save driver messages to a log file. It can be useful when diagnosing an unexpected problem.
@@ -100,16 +102,16 @@ EGDB_DRIVER
 ```
 /* The driver handle type */
 typedef struct egdb_driver {
-	int (*lookup)(struct egdb_driver *handle, EGDB_POSITION *position, int color, int cl);
-	void (*reset_stats)(struct egdb_driver *handle);
-	EGDB_STATS *(*get_stats)(struct egdb_driver *handle);
-	int (*verify)(struct egdb_driver *handle, void (*msg_fn)(char const *msg), int *abort, EGDB_VERIFY_MSGS *msgs);
-	int (*close)(struct egdb_driver *handle);
-	int (*get_pieces)(struct egdb_driver *handle, int *max_pieces, int *max_pieces_1side, int *max_9pc_kings, int *max_8pc_kings_1side);
-	void *internal_data;
+        int (*lookup)(struct egdb_driver *handle, EGDB_POSITION *position, int color, int cl);
+        void (*reset_stats)(struct egdb_driver *handle);
+        EGDB_STATS *(*get_stats)(struct egdb_driver *handle);
+        int (*verify)(struct egdb_driver *handle, void (*msg_fn)(char const *msg), int *abort, EGDB_VERIFY_MSGS *msgs);
+        int (*close)(struct egdb_driver *handle);
+        int (*get_pieces)(struct egdb_driver *handle, int *max_pieces, int *max_pieces_1side, int *max_9pc_kings, int *max_8pc_kings_1side);
+        void *internal_data;
 } EGDB_DRIVER;
 ```
-`"lookup"` is the function that returns a database value. For the WLD databases, the values returned by lookup are typically defined by one of the macros EGDB_WIN, EGDB_LOSS, or EGDB_DRAW. If the query is of a subset that has incompete data, such as 5men vs. 4men, lookup might also return EGDB_UNKNOWN, EGDB_DRAW_OR_LOSS, or EGDB_WIN_OR_DRAW. If you query a side-to-move of a 7pc or 8pc that is excluded from the database, you will get EGDB_UNKNOWN. If you had set the conditional lookup arguement true, you might get the return EGDB_NOT_IN_CACHE. If for example you query an 8pc position, but you only opened the driver for a maximum of 7 pieces, then you will get the value EGDB_SUBDB_UNAVAILABLE.
+`"lookup"` is the function that returns a database value. For the WLD databases, the values returned by lookup are typically defined by one of the macros EGDB_WIN, EGDB_LOSS, or EGDB_DRAW. If the query is of a subset that has incompete data, such as 5men vs. 4men, lookup might also return EGDB_UNKNOWN, EGDB_DRAW_OR_LOSS, or EGDB_WIN_OR_DRAW. If you query a side-to-move of a 7pc or 8pc that is excluded from the database, you will get EGDB_UNKNOWN. If you had set the conditional lookup arguement true, you might get the return EGDB_NOT_IN_CACHE. If for example you query an 8pc position, but you only opened the driver for a maximum of 7 pieces, then you will get the value EGDB_SUBDB_UNAVAILABLE. Note that depending on the position and the database type, you sometimes cannot call lookup for non-side capture positions, and you can never call lookup for capture positions, because the value returned will not be correct except by random luck. See the section "Excluded positions" for more details.
 
 For the MTC databases, the values returned by lookup are either the number of plies to a conversion move, or the value MTC_LESS_THAN_THRESHOLD for positions that are close to a conversion move. The mtc databases do not store positions that are closer than MTC_THRESHOLD plies to a conversion move. It will only return even mtc values, because the database represents the mtc value internally by distance/2. The true value is either the value returned, or (value-1). An application program can infer the true even or odd value of a position by looking up the mtc values of the position's successors. If the best successor mtc value is the same as the position's, then the position's true value is 1 less than the returned value.
 
@@ -126,10 +128,10 @@ For the MTC databases, the values returned by lookup are either the number of pl
 `"verify"` checks that every db index and data file has a correct CRC value. It returns 0 if all CRCs compared ok. If there are any CRCs that do not match, a non-zero value is returned, and an error message is written through the msg_fn. There is an abort argument that can be used to cancel the verification process (because it can take a while). To abort verification, set the value of *abort to non-zero. "msgs" is a struct of language localization messages used by verify. For English messages, define it like this:
 ```
 EGDB_VERIFY_MSGS verify_msgs = {
-	"crc failed",
-	"ok",
-	"errors",
-	"no errors"
+        "crc failed",
+        "ok",
+        "errors",
+        "no errors"
 };
 ```
 `"close"` is used to close the driver and free resources. If the application needs to change anything about an egdb driver after it has been opened, such as number of pieces or megabytes of ram to use, it must be closed and then opened again with the new parameters.  Close returns 0 on success, non-zero if there are any errors.
