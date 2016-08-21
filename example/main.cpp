@@ -201,7 +201,7 @@ int main(int argc, char* argv[])
 	nerrors = 0;
 	std::printf("Testing %zd positions.\n", sizeof(positions) / sizeof(positions[0]));
 	for (i = 0; i < sizeof(positions) / sizeof(positions[0]); ++i) {
-		value = handle->lookup(handle, &positions[i].pos, positions[i].color, 0);
+		value = egdb_lookup(handle, &positions[i].pos, positions[i].color, 0);
 		if (value != positions[i].value) {
 			std::printf("%d: lookup error, expected %d, got %d\n", i, value, positions[i].value);
 			++nerrors;
@@ -209,7 +209,7 @@ int main(int argc, char* argv[])
 	}
 
 	std::printf("Test complete, %d errors.\n", nerrors);
-	handle->close(handle);
+	egdb_close(handle);
 	return 0;
 }
 

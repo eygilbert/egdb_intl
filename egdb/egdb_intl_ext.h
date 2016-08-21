@@ -7,42 +7,6 @@
 
 namespace egdb_interface {
 
-inline
-int egdb_lookup(EGDB_DRIVER *handle, EGDB_POSITION *position, int color, int cl)
-{
-	return handle->lookup(handle, position, color, cl);
-}
-
-inline
-void egdb_reset_stats(EGDB_DRIVER *handle)
-{
-	handle->reset_stats(handle);
-}
-
-inline
-EGDB_STATS *egdb_get_stats(EGDB_DRIVER *handle)
-{
-	return handle->get_stats(handle);
-}
-
-inline
-int egdb_verify(EGDB_DRIVER *handle, void (*msg_fn)(char const *msg), int *abort, EGDB_VERIFY_MSGS *msgs)
-{
-	return handle->verify(handle, msg_fn, abort, msgs);
-}
-
-inline
-int egdb_close(EGDB_DRIVER *handle)
-{
-	return handle->close(handle);
-}
-
-inline
-int egdb_get_pieces(EGDB_DRIVER *handle, int *max_pieces, int *max_pieces_1side, int *max_9pc_kings, int *max_8pc_kings_1side)
-{
-	return handle->get_pieces(handle, max_pieces, max_pieces_1side, max_9pc_kings, max_8pc_kings_1side);
-}
-
 class EGDB_DRIVER_V2
 {
 	EGDB_DRIVER* handle_ = nullptr;
@@ -57,9 +21,13 @@ public:
 
 	~EGDB_DRIVER_V2()
 	{
-		if (is_open()) {
-			egdb_close(handle_);
-		}
+		safe_close();
+	}
+
+	int reopen(char const *options, int cache_mb, char const *directory, void (*msg_fn)(char const *msg))
+	{
+		safe_close();
+		handle_ = egdb_open(options, cache_mb, directory, msg_fn);
 	}
 
 	bool is_open() const
@@ -90,6 +58,14 @@ public:
 	int get_pieces(int *max_pieces, int *max_pieces_1side, int *max_9pc_kings, int *max_8pc_kings_1side)
 	{
 		return egdb_get_pieces(handle_, max_pieces, max_pieces_1side, max_9pc_kings, max_8pc_kings_1side);
+	}
+
+private:
+	void safe_close()
+	{
+		if (is_open() && !egdb_close(handle_)) {
+			std::exit(1);
+		}
 	}
 };
 

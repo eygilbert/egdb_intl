@@ -167,6 +167,7 @@ static void build_file_table(DBHANDLE *hdat);
 static void build_autoload_list(DBHANDLE *hdat);
 static void assign_subindices(DBHANDLE *hdat, CPRSUBDB *subdb, CCB *ccbp);
 
+namespace detail {
 
 static void reset_db_stats(EGDB_DRIVER *handle)
 {
@@ -196,6 +197,7 @@ static void reset_db_stats(EGDB_DRIVER *handle)
 	std::memset(&hdat->lookup_stats, 0, sizeof(hdat->lookup_stats));
 }
 
+}	// namespace detail
 
 void build_mispredict_table()
 {
@@ -229,6 +231,7 @@ void build_mispredict_table()
 	}
 }
 
+namespace detail {
 
 static EGDB_STATS *get_db_stats(EGDB_DRIVER *handle)
 {
@@ -301,6 +304,7 @@ static EGDB_STATS *get_db_stats(EGDB_DRIVER *handle)
 	return(&hdat->lookup_stats);
 }
 
+}	// namespace detail
 
 static void read_blocknum_from_file(DBHANDLE *hdat, CCB *ccb)
 {
@@ -1661,6 +1665,7 @@ static void build_autoload_list(DBHANDLE *hdat)
 	}
 }
 
+namespace detail {
 
 static int egdb_close(EGDB_DRIVER *handle)
 {
@@ -1867,6 +1872,7 @@ static int get_pieces(EGDB_DRIVER *handle, int *max_pieces, int *max_pieces_1sid
 	return(0);
 }
 
+}	// namespace detail
 
 EGDB_DRIVER *egdb_open_wld_huff(int pieces, int kings_1side_8pcs,
 				int cache_mb, char const *directory, void (*msg_fn)(char const*), EGDB_TYPE db_type)
@@ -1894,11 +1900,11 @@ EGDB_DRIVER *egdb_open_wld_huff(int pieces, int kings_1side_8pcs,
 
 	handle->lookup = dblookup;
 	
-	handle->get_stats = get_db_stats;
-	handle->reset_stats = reset_db_stats;
-	handle->verify = verify_crc;
-	handle->close = egdb_close;
-	handle->get_pieces = get_pieces;
+	handle->get_stats = detail::get_db_stats;
+	handle->reset_stats = detail::reset_db_stats;
+	handle->verify = detail::verify_crc;
+	handle->close = detail::egdb_close;
+	handle->get_pieces = detail::get_pieces;
 	return(handle);
 }
 
