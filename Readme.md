@@ -140,14 +140,10 @@ The MTC db is identified as type EGDB_MTC_RUNLEN. It has filenames with suffixes
 
 ### `egdb_interface::EGDB_DRIVER`
     struct EGDB_DRIVER {
-        int (*lookup)(EGDB_DRIVER *handle, EGDB_POSITION *position, int color, int cl);
-        void (*reset_stats)(EGDB_DRIVER *handle);
-        EGDB_STATS *(*get_stats)(EGDB_DRIVER *handle);
-        int (*verify)(EGDB_DRIVER *handle, void (*msg_fn)(char const *msg), int *abort, EGDB_VERIFY_MSGS *msgs);
-        int (*close)(EGDB_DRIVER *handle);
-        int (*get_pieces)(EGDB_DRIVER *handle, int *max_pieces, int *max_pieces_1side, int *max_9pc_kings, int *max_8pc_kings_1side);
-        void *internal_data;
+        // implementation defined
     };
+    
+**Notes** This is an opaque class whose implementation is not documented, and should not be relied upon. All calls of the form `handle->some_function(handle, other_args)` are now deprecated and support for them can be removed in a future release. Instead, use the new form `egdb_some_function(handle, other_args)`. In general, variables of type `EGDB_DRIVER` should only be accessed through global functions such as `egdb_open()`, `egdb_lookup()` and `egdb_close()` documented below. Note that this is similar to how `std::FILE` should only be accessed through the `std::fopen`, `std::fread` and `std::fclose` functions.    
     
 ---
 
