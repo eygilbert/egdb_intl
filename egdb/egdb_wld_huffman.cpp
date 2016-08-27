@@ -233,7 +233,7 @@ void build_mispredict_table()
 
 namespace detail {
 
-static EGDB_STATS *get_db_stats(EGDB_DRIVER *handle)
+static EGDB_STATS *get_db_stats(EGDB_DRIVER const *handle)
 {
 	DBHANDLE *hdat = (DBHANDLE *)handle->internal_data;
 #if LOG_HITS
@@ -337,7 +337,7 @@ static void read_blocknum_from_file(DBHANDLE *hdat, CCB *ccb)
  * the argument cl.  If cl is true, DB_NOT_IN_CACHE is returned, 
  * otherwise the disk block is read and cached and the value is obtained.
  */
-static int dblookup(EGDB_DRIVER *handle, EGDB_POSITION *p, int color, int cl)
+static int dblookup(EGDB_DRIVER *handle, EGDB_POSITION const *p, int color, int cl)
 {
 	DBHANDLE *hdat = (DBHANDLE *)handle->internal_data;
 	uint32_t index;
@@ -1729,7 +1729,7 @@ static int egdb_close(EGDB_DRIVER *handle)
 }
 
 
-static int verify_crc(EGDB_DRIVER *handle, void (*msg_fn)(char const*), int *abort, EGDB_VERIFY_MSGS *msgs)
+static int verify_crc(EGDB_DRIVER const *handle, void (*msg_fn)(char const*), int *abort, EGDB_VERIFY_MSGS *msgs)
 {
 	int i;
 	int status;
@@ -1810,7 +1810,7 @@ static int verify_crc(EGDB_DRIVER *handle, void (*msg_fn)(char const*), int *abo
 }
 
 
-static int get_pieces(EGDB_DRIVER *handle, int *max_pieces, int *max_pieces_1side, int *max_9pc_kings, int *max_8pc_kings_1side)
+static int get_pieces(EGDB_DRIVER const *handle, int *max_pieces, int *max_pieces_1side, int *max_9pc_kings, int *max_8pc_kings_1side)
 {
 	int i;
 	DBFILE *f;

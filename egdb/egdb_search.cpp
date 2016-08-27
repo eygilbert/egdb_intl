@@ -280,9 +280,9 @@ int EGDB_INFO::lookup_with_rep_check(BOARD *p, int color, int depth, int maxdept
 	if (canjump(p, color) == 0) {
 		if (depth != 0 || !force_root_search) {
 			if (!requires_nonside_capture_test(p))
-				return((*handle->lookup)(handle, (EGDB_POSITION *)p, color, 0));
+				return(egdb_lookup(handle, (EGDB_POSITION *)p, color, 0));
 			if (canjump(p, OTHER_COLOR(color)) == 0) {
-				value = (*handle->lookup)(handle, (EGDB_POSITION *)p, color, 0);
+				value = egdb_lookup(handle, (EGDB_POSITION *)p, color, 0);
 				if (value != EGDB_UNKNOWN)
 					return(value);
 			}

@@ -135,7 +135,7 @@ BITBOARD index2bitboard_rev(unsigned int index, int num_squares, int num_pieces,
 static int64_t man_index_base[MAXPIECE + 1][MAXPIECE + 1][RANK0MAX + 1];
 
 
-int64_t position_to_index_slice(EGDB_POSITION *p, int bm, int bk, int wm, int wk)
+int64_t position_to_index_slice(EGDB_POSITION const *p, int bm, int bk, int wm, int wk)
 {
 	BITBOARD bm0_mask;
 	BITBOARD bmmask, bkmask, wmmask, wkmask;

@@ -9,6 +9,36 @@
 
 namespace egdb_interface {
 
+int egdb_lookup(EGDB_DRIVER *handle, EGDB_POSITION const *position, int color, int cl)
+{
+	return handle->lookup(handle, const_cast<EGDB_POSITION*>(position), color, cl);
+}
+
+int egdb_close(EGDB_DRIVER *handle)
+{
+	return handle->close(handle);
+}
+
+int egdb_verify(EGDB_DRIVER const *handle, void (*msg_fn)(char const *msg), int *abort, EGDB_VERIFY_MSGS *msgs)
+{
+	return handle->verify(handle, msg_fn, abort, msgs);
+}
+
+int egdb_get_pieces(EGDB_DRIVER const *handle, int *max_pieces, int *max_pieces_1side, int *max_9pc_kings, int *max_8pc_kings_1side)
+{
+	return handle->get_pieces(const_cast<EGDB_DRIVER*>(handle), max_pieces, max_pieces_1side, max_9pc_kings, max_8pc_kings_1side);
+}
+
+void egdb_reset_stats(EGDB_DRIVER *handle)
+{
+	handle->reset_stats(handle);
+}
+
+EGDB_STATS *egdb_get_stats(EGDB_DRIVER const *handle)
+{
+	return handle->get_stats(const_cast<EGDB_DRIVER*>(handle));
+}
+
 int get_num_subslices(int nbm, int nbk, int nwm, int nwk)
 {
 	int64_t size, last;

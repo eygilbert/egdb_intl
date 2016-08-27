@@ -35,22 +35,12 @@ public:
 		return handle_ != nullptr;
 	}
 
-	int lookup(EGDB_POSITION *position, int color, int cl)
+	int lookup(EGDB_POSITION const *position, int color, int cl)
 	{
 		return egdb_lookup(handle_, position, color, cl);
 	}
 
-	void reset_stats()
-	{
-		return egdb_reset_stats(handle_);
-	}
-
-	EGDB_STATS *get_stats()
-	{
-		return egdb_get_stats(handle_);
-	}
-
-	int verify(void (*msg_fn)(char const *msg), int *abort, EGDB_VERIFY_MSGS *msgs)
+	int verify(void (*msg_fn)(char const *msg), int *abort, EGDB_VERIFY_MSGS *msgs) const
 	{
 		return egdb_verify(handle_, msg_fn, abort, msgs);
 	}
@@ -58,6 +48,16 @@ public:
 	int get_pieces(int *max_pieces, int *max_pieces_1side, int *max_9pc_kings, int *max_8pc_kings_1side)
 	{
 		return egdb_get_pieces(handle_, max_pieces, max_pieces_1side, max_9pc_kings, max_8pc_kings_1side);
+	}
+
+	EGDB_STATS *get_stats() const
+	{
+		return egdb_get_stats(handle_);
+	}
+
+	void reset_stats()
+	{
+		return egdb_reset_stats(handle_);
 	}
 
 private:
