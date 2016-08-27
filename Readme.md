@@ -115,19 +115,6 @@ The MTC db is identified as type EGDB_MTC_RUNLEN. It has filenames with suffixes
 
 ---
 
-### `egdb_interface::EGDB_STATS`    
-    struct EGDB_STATS {
-        unsigned int lru_cache_hits;
-        unsigned int lru_cache_loads;
-        unsigned int autoload_hits;
-        unsigned int db_requests;               /* total egdb requests. */
-        unsigned int db_returns;                /* total egdb w/l/d returns. */
-        unsigned int db_not_present_requests;   /* requests for positions not in the db */
-        float avg_ht_list_length;
-    };
-
----
-
 ### `egdb_interface::EGDB_VERIFY_MSGS`
     struct EGDB_VERIFY_MSGS {
         char crc_failed[80];
@@ -143,24 +130,13 @@ The MTC db is identified as type EGDB_MTC_RUNLEN. It has filenames with suffixes
         // implementation defined
     };
     
-**Notes** This is an opaque class whose implementation is not documented, and should not be relied upon. All calls of the form `handle->some_function(handle, other_args)` are now deprecated and support for them can be removed in a future release. Instead, use the new form `egdb_some_function(handle, other_args)`. In general, variables of type `EGDB_DRIVER` should only be accessed through global functions such as `egdb_open()`, `egdb_lookup()` and `egdb_close()` documented below. Note that this is similar to how `std::FILE` should only be accessed through the `std::fopen`, `std::fread` and `std::fclose` functions.    
+**Notes** This is an opaque class whose implementation is not documented, and should not be relied upon. Variables of type `EGDB_DRIVER*` can be accessed through global functions such as `egdb_open()`, `egdb_lookup()` and `egdb_close()` documented below. 
+
+**Deprecated access**: `EGDB_DRIVER*` variables named `handle` can also be access through calls of the form `handle->some_function(handle, other_args)`. Such access is deprecated, however, and support for it can be removed in a future release without prior notice. Instead, use the form `egdb_some_function(handle, other_args)`, similar to how the C Standard Library allows `std::FILE*` access through the `std::fopen`, `std::fread` and `std::fclose` functions.     
     
 ---
 
-## Global functions
-
-### `egdb_interface::egdb_identify`
-    int egdb_identify(
-        char const *directory, 
-        EGDB_TYPE *egdb_type, 
-        int *max_pieces
-    );
-
-**Effects**: Checks if an endgame database exists in `directory`. If so, the identified endgame database type is written into `egdb_type` and the maximum number of pieces for any of the databases identified is written into `max_pieces`. Otherwise, these out-parameters are unchanged on return.
-
-**Returns**: Zero if a database is found, non-zero otherwise.
-
----
+## Core functions
 
 ### `egdb_interface::egdb_open`
     EGDB_DRIVER *egdb_open(
@@ -171,7 +147,7 @@ The MTC db is identified as type EGDB_MTC_RUNLEN. It has filenames with suffixes
     );
 
 **Parameters**: 
-  - `options`:  a string of optional open settings. The options are of the form `name = value`. Multiple options are separated by a semicolon. Either a `NULL` pointer or an empty string ("") can be given for no options. The options were more useful a few years ago when computers had less memory. Now they are not usually needed. These options are defined:
+  - `options`:  a character string of optional open settings. The options are of the form `name = value`. Multiple options are separated by a semicolon (`:`). Either a `NULL` pointer or an empty string (`""`) can be given for no options. The options were more useful a few years ago when computers had less memory. Now they are not usually needed. These options are defined:
     - `maxpieces = N`: sets the maximum number of pieces for which the driver will lookup values. By default the driver will use all the database files that it finds during initialization. If you restrict the number of pieces, the driver will not have to load indexing data for larger positions, saving time during initialization and using its allotted memory more efficiently.
     - `maxkings_1side_8pcs = N` restricts the set of 8-piece positions for which the driver will lookup values. This saves time and memory during initialization.
   - `cache_mb`: the number of MiB (`2^20` bytes) of dynamically allocated memory that the driver will use. 
@@ -187,9 +163,9 @@ The MTC db is identified as type EGDB_MTC_RUNLEN. It has filenames with suffixes
 
 In Kingsrow I save driver messages to a log file. It can be useful when diagnosing an unexpected problem. 
 
-**Returns**: a pointer to a structure that has function pointers for subsequent communication with the driver. A `nullptr` return value means that an error occurred. 
+**Returns**: An `EGDB_DRIVER*` for subsequent communication with the driver. A `nullptr` return value means that an error occurred. 
 
-**Complexity**: linear in the size of the databases to be read in from disk.
+**Complexity**: Linear in the size of the databases to be read in from disk.
 
 **Notes**: Opening a db takes some time, but allows the db to be probed quickly during an engine search.
 
@@ -208,7 +184,7 @@ If you are opening the MTC db, give it a cache_mb value of 0. It will then use a
     );
 
 **Parameters**:
-  - `handle`: a value returned from `egdb_open()`.
+  - `handle`: an `EGDB_DRIVER*` returned from `egdb_open()`.
   - `position`: a legal 10x10 international draughts position. This position is not modified by `lookup()`. However, for legacy reasons, `position` is not declared as `EGDB_POSITION const*`. 
   - `color`: the side-to-move, either `EGDB_BLACK` or `EGDB_WHITE`.
   - `cl`: conditional lookup. If it is non-zero, then the driver will only get the value of the position if the data is already cached in ram, otherwise `EGDB_NOT_IN_CACHE` will be returned. If the conditional lookup argument is zero, the driver will always attempt to get a value for the position even if it has to read a disk file to get it. 
@@ -233,17 +209,42 @@ For the MTC databases, the values returned by `egdb_lookup()` are either the num
 
 ---
 
-### `egdb_interface::egdb_reset_stats`
-    void egdb_reset_stats(
+### `egdb_interface::egdb_close`
+    int egdb_close(
         EGDB_DRIVER *handle
     );
-    
-### `egdb_interface::egdb_get_stats`
-    EGDB_STATS *egdb_get_stats(
-        EGDB_DRIVER *handle
+
+**Parameters**:
+  - `handle`: an `EGDB_DRIVER*` returned by `egdb_open()`.
+
+**Effects**: Closes the driver pointed to by `handle` and releases all associated resources. 
+
+**Returns**: Zero on success, non-zero if there are any errors.
+
+**Notes**: If an application needs to change anything about an endgame database driver after it has been opened, such as the maximum number of pieces or the megabytes of memory to use, it must be closed and then opened again with the new parameters. [ *Example:*
+
+    // define dir and msg_fun
+    EGDB_DRIVER* handle = egdb_open("", 2048, dir, msg_fn); // use 2 GiB of memory, all databases found  
+    // various lookups
+    egdb_close(handle);
+    handle = egdb_open("maxpieces = 6", 1024, dir, msg_fn); // use 1 GiB of memory, at most 6-piece databases
+
+*- end example* ]
+
+---
+
+## Auxiliary functions
+
+### `egdb_interface::egdb_identify`
+    int egdb_identify(
+        char const *directory, 
+        EGDB_TYPE *egdb_type, 
+        int *max_pieces
     );
-    
-**Notes**: These functions for collecting statistics about the database use are primarily for use by the driver developer and are deprecated in this public release of the driver. They may be removed in future releases.
+
+**Effects**: Checks if an endgame database exists in `directory`. If so, the identified endgame database type is written into `egdb_type` and the maximum number of pieces for any of the databases identified is written into `max_pieces`. Otherwise, these out-parameters are unchanged on return.
+
+**Returns**: Zero if a database is found, non-zero otherwise.
 
 ---
 
@@ -265,19 +266,6 @@ For the MTC databases, the values returned by `egdb_lookup()` are either the num
 
 ---
 
-### `egdb_interface::egdb_close`
-    int egdb_close(
-        EGDB_DRIVER *handle
-    );
-
-**Effects**: closes the driver and frees resources. 
-
-**Returns**: zero on success, non-zero if there are any errors.
-
-**Notes**: If the application needs to change anything about an egdb driver after it has been opened, such as number of pieces or megabytes of ram to use, it must be closed and then opened again with the new parameters.  
-
----
-
 ### `egdb_interface::egdb_get_pieces`
     int egdb_get_pieces(
         EGDB_DRIVER *handle, 
@@ -290,6 +278,36 @@ For the MTC databases, the values returned by `egdb_lookup()` are either the num
 `"get_pieces"` is a way to query some attributes of an open database.
 
 ---
+
+## Deprecated functionality
+
+**Notes**: The functions `egdb_get_stats()` and `egdb_reset_stats()` for accessing statistics about the database use are primarily for use by the driver developer and are deprecated in this public release of the driver. They may be removed in future releases without prior notice.
+
+---
+
+### `egdb_interface::EGDB_STATS`    
+    struct EGDB_STATS {
+        unsigned int lru_cache_hits;
+        unsigned int lru_cache_loads;
+        unsigned int autoload_hits;
+        unsigned int db_requests;               /* total egdb requests. */
+        unsigned int db_returns;                /* total egdb w/l/d returns. */
+        unsigned int db_not_present_requests;   /* requests for positions not in the db */
+        float avg_ht_list_length;
+    };
+
+### `egdb_interface::egdb_get_stats`
+    EGDB_STATS *egdb_get_stats(
+        EGDB_DRIVER *handle
+    );
+    
+### `egdb_interface::egdb_reset_stats`
+    void egdb_reset_stats(
+        EGDB_DRIVER *handle
+    );
+    
+---
+
 
 # Acknowledgements
 
