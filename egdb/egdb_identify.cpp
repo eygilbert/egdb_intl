@@ -60,7 +60,7 @@ int egdb_identify(char const *directory, EGDB_TYPE *egdb_type, int *max_pieces)
 	EGDB_FIND_INFO *tablep;
 	char name[MAXFILENAME];
 
-	len = (int)strlen(directory);
+	len = (int)std::strlen(directory);
 	if (len && (directory[len - 1] != '/'))
 		sep = "/";
 	else

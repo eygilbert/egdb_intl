@@ -1069,7 +1069,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 	strcpy(hdat->db_filepath, filepath);
 
 	/* Add trailing backslash if needed. */
-	size = (int)strlen(hdat->db_filepath);
+	size = (int)std::strlen(hdat->db_filepath);
 	if (size && (hdat->db_filepath[size - 1] != '/'))
 		strcat(hdat->db_filepath, "/");
 
