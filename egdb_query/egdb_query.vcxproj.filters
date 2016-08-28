@@ -13,6 +13,9 @@
     <Filter Include="egdb">
       <UniqueIdentifier>{72c58257-8791-4824-8061-c67f089ec0f4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="egdb_ext">
+      <UniqueIdentifier>{e9c55642-1787-4436-9685-86227bb15452}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\builddb\compression_tables.cpp">
@@ -42,19 +45,10 @@
     <ClCompile Include="..\engine\reverse.cpp">
       <Filter>engine</Filter>
     </ClCompile>
-    <ClCompile Include="..\egdb\crc.cpp">
-      <Filter>egdb</Filter>
-    </ClCompile>
-    <ClCompile Include="..\egdb\egdb_common.cpp">
-      <Filter>egdb</Filter>
-    </ClCompile>
-    <ClCompile Include="..\egdb\egdb_identify.cpp">
-      <Filter>egdb</Filter>
+    <ClCompile Include="..\egdb_ext\egdb_intl_ext.cpp">
+      <Filter>egdb_ext</Filter>
     </ClCompile>
     <ClCompile Include="..\egdb\egdb_mtc_runlen.cpp">
-      <Filter>egdb</Filter>
-    </ClCompile>
-    <ClCompile Include="..\egdb\egdb_open.cpp">
       <Filter>egdb</Filter>
     </ClCompile>
     <ClCompile Include="..\egdb\egdb_wld_huffman.cpp">
@@ -72,7 +66,19 @@
     <ClCompile Include="..\egdb\slice.cpp">
       <Filter>egdb</Filter>
     </ClCompile>
-    <ClCompile Include="..\egdb\egdb_intl_ext.cpp">
+    <ClCompile Include="..\egdb\egdb_common.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\egdb\egdb_identify.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\egdb\egdb_open.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\egdb\egdb_search.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\egdb\crc.cpp">
       <Filter>egdb</Filter>
     </ClCompile>
   </ItemGroup>
@@ -116,13 +122,13 @@
     <ClInclude Include="..\engine\reverse.h">
       <Filter>engine</Filter>
     </ClInclude>
-    <ClInclude Include="..\egdb\crc.h">
-      <Filter>egdb</Filter>
-    </ClInclude>
-    <ClInclude Include="..\egdb\egdb_common.h">
-      <Filter>egdb</Filter>
+    <ClInclude Include="..\egdb_ext\egdb_intl_ext.h">
+      <Filter>egdb_ext</Filter>
     </ClInclude>
     <ClInclude Include="..\egdb\egdb_intl.h">
+      <Filter>egdb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\egdb\egdb_search.h">
       <Filter>egdb</Filter>
     </ClInclude>
     <ClInclude Include="..\egdb\platform.h">
@@ -131,7 +137,10 @@
     <ClInclude Include="..\egdb\slice.h">
       <Filter>egdb</Filter>
     </ClInclude>
-    <ClInclude Include="..\egdb\egdb_intl_ext.h">
+    <ClInclude Include="..\egdb\egdb_common.h">
+      <Filter>egdb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\egdb\crc.h">
       <Filter>egdb</Filter>
     </ClInclude>
   </ItemGroup>
@@ -145,5 +154,8 @@
     <Text Include="..\egdb\tunstall_decompress_v2.txt">
       <Filter>egdb</Filter>
     </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Readme.md" />
   </ItemGroup>
 </Project>

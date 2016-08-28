@@ -24,14 +24,15 @@
     <ClCompile Include="..\egdb\crc.cpp" />
     <ClCompile Include="..\egdb\egdb_common.cpp" />
     <ClCompile Include="..\egdb\egdb_identify.cpp" />
-    <ClCompile Include="..\egdb\egdb_intl_ext.cpp" />
     <ClCompile Include="..\egdb\egdb_mtc_runlen.cpp" />
     <ClCompile Include="..\egdb\egdb_open.cpp" />
+    <ClCompile Include="..\egdb\egdb_search.cpp" />
     <ClCompile Include="..\egdb\egdb_wld_huffman.cpp" />
     <ClCompile Include="..\egdb\egdb_wld_runlen.cpp" />
     <ClCompile Include="..\egdb\egdb_wld_tunstall_v1.cpp" />
     <ClCompile Include="..\egdb\egdb_wld_tunstall_v2.cpp" />
     <ClCompile Include="..\egdb\slice.cpp" />
+    <ClCompile Include="..\egdb_ext\egdb_intl_ext.cpp" />
     <ClCompile Include="..\engine\bicoef.cpp" />
     <ClCompile Include="..\engine\bitcount.cpp" />
     <ClCompile Include="..\engine\board.cpp" />
@@ -47,9 +48,10 @@
     <ClInclude Include="..\egdb\crc.h" />
     <ClInclude Include="..\egdb\egdb_common.h" />
     <ClInclude Include="..\egdb\egdb_intl.h" />
-    <ClInclude Include="..\egdb\egdb_intl_ext.h" />
+    <ClInclude Include="..\egdb\egdb_search.h" />
     <ClInclude Include="..\egdb\platform.h" />
     <ClInclude Include="..\egdb\slice.h" />
+    <ClInclude Include="..\egdb_ext\egdb_intl_ext.h" />
     <ClInclude Include="..\engine\bicoef.h" />
     <ClInclude Include="..\engine\bitcount.h" />
     <ClInclude Include="..\engine\board.h" />
@@ -65,6 +67,9 @@
     <Text Include="..\egdb\huffman_decompress.txt" />
     <Text Include="..\egdb\tunstall_decompress_v1.txt" />
     <Text Include="..\egdb\tunstall_decompress_v2.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Readme.md" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{56C7E836-AF29-454E-BB23-805A98F610DC}</ProjectGuid>

@@ -18,15 +18,6 @@
     <ClCompile Include="main.cpp">
       <Filter>egdb_test</Filter>
     </ClCompile>
-    <ClCompile Include="..\Egdb\crc.cpp">
-      <Filter>egdb</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Egdb\egdb_identify.cpp">
-      <Filter>egdb</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Egdb\egdb_open.cpp">
-      <Filter>egdb</Filter>
-    </ClCompile>
     <ClCompile Include="..\Engine\bicoef.cpp">
       <Filter>engine</Filter>
     </ClCompile>
@@ -42,26 +33,8 @@
     <ClCompile Include="..\Engine\board.cpp">
       <Filter>engine</Filter>
     </ClCompile>
-    <ClCompile Include="..\Egdb\egdb_common.cpp">
-      <Filter>egdb</Filter>
-    </ClCompile>
     <ClCompile Include="..\Engine\fen.cpp">
       <Filter>engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Egdb\egdb_mtc_runlen.cpp">
-      <Filter>egdb</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Egdb\egdb_wld_huffman.cpp">
-      <Filter>egdb</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Egdb\egdb_wld_runlen.cpp">
-      <Filter>egdb</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Egdb\egdb_wld_tunstall_v1.cpp">
-      <Filter>egdb</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Egdb\egdb_wld_tunstall_v2.cpp">
-      <Filter>egdb</Filter>
     </ClCompile>
     <ClCompile Include="..\engine\move.cpp">
       <Filter>engine</Filter>
@@ -69,23 +42,41 @@
     <ClCompile Include="..\builddb\compression_tables.cpp">
       <Filter>builddb</Filter>
     </ClCompile>
-    <ClCompile Include="..\egdb\egdb_search.cpp">
+    <ClCompile Include="..\egdb\egdb_mtc_runlen.cpp">
       <Filter>egdb</Filter>
     </ClCompile>
-    <ClCompile Include="..\egdb\egdb_intl_ext.cpp">
+    <ClCompile Include="..\egdb\egdb_wld_huffman.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\egdb\egdb_wld_runlen.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\egdb\egdb_wld_tunstall_v1.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\egdb\egdb_wld_tunstall_v2.cpp">
       <Filter>egdb</Filter>
     </ClCompile>
     <ClCompile Include="..\egdb\slice.cpp">
       <Filter>egdb</Filter>
     </ClCompile>
+    <ClCompile Include="..\egdb\egdb_common.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\egdb\egdb_identify.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\egdb\egdb_open.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\egdb\egdb_search.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\egdb\crc.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Egdb\crc.h">
-      <Filter>egdb</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Egdb\egdb_intl.h">
-      <Filter>egdb</Filter>
-    </ClInclude>
     <ClInclude Include="..\Engine\bicoef.h">
       <Filter>engine</Filter>
     </ClInclude>
@@ -107,9 +98,6 @@
     <ClInclude Include="..\Engine\board.h">
       <Filter>engine</Filter>
     </ClInclude>
-    <ClInclude Include="..\Egdb\egdb_common.h">
-      <Filter>egdb</Filter>
-    </ClInclude>
     <ClInclude Include="..\Engine\fen.h">
       <Filter>engine</Filter>
     </ClInclude>
@@ -128,32 +116,38 @@
     <ClInclude Include="..\engine\lock.h">
       <Filter>engine</Filter>
     </ClInclude>
-    <ClInclude Include="..\egdb\platform.h">
+    <ClInclude Include="..\egdb\egdb_intl.h">
       <Filter>egdb</Filter>
     </ClInclude>
     <ClInclude Include="..\egdb\egdb_search.h">
       <Filter>egdb</Filter>
     </ClInclude>
+    <ClInclude Include="..\egdb\platform.h">
+      <Filter>egdb</Filter>
+    </ClInclude>
     <ClInclude Include="..\egdb\slice.h">
       <Filter>egdb</Filter>
     </ClInclude>
-    <ClInclude Include="..\egdb\egdb_intl_ext.h">
+    <ClInclude Include="..\egdb\egdb_common.h">
+      <Filter>egdb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\egdb\crc.h">
       <Filter>egdb</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <Text Include="..\Readme.md" />
+    <Text Include="10x10 HighMtc.txt">
+      <Filter>egdb_test</Filter>
+    </Text>
+    <Text Include="..\egdb\huffman_decompress.txt">
+      <Filter>egdb</Filter>
+    </Text>
     <Text Include="..\egdb\tunstall_decompress_v1.txt">
       <Filter>egdb</Filter>
     </Text>
     <Text Include="..\egdb\tunstall_decompress_v2.txt">
       <Filter>egdb</Filter>
-    </Text>
-    <Text Include="..\Readme.md" />
-    <Text Include="..\egdb\huffman_decompress.txt">
-      <Filter>egdb</Filter>
-    </Text>
-    <Text Include="10x10 HighMtc.txt">
-      <Filter>egdb_test</Filter>
     </Text>
   </ItemGroup>
 </Project>
