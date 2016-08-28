@@ -77,8 +77,6 @@ The example program below (which is a condened version of `example/main.cpp`) op
     
     int main()
     {
-        using namespace egdb_interface;
-    
         // open the database, use at most 6 piece database, 1 GiB of memory cache
         EGDB_DRIVER *handle = egdb_open("maxpieces=6", 1024, DB_PATH, print_msgs);
         if (!handle) {
