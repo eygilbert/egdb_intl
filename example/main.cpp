@@ -1,8 +1,8 @@
 #include "egdb/egdb_intl.h"
 #include <cstdio>
-#include <cstdlib>
 
 using namespace egdb_interface;
+
 
 #define DB_PATH "C:/db_intl/wld_v2"
 
@@ -179,38 +179,34 @@ POS_VALUE positions[] = {
 	{0x0000014008001100, 0x0008000000000000, 0x0000000000000000, EGDB_WHITE, EGDB_LOSS},
 };
 
+static const int num_positions = sizeof(positions) / sizeof(positions[0]);
 
 void print_msgs(char const *msg)
 {
 	std::printf("%s", msg);
 }
 
-
-int main(int argc, char* argv[])
+int main()
 {
-	int i, value, nerrors;
-	EGDB_DRIVER *handle;
-
-	/* Open the endgame db drivers for 6 pieces max. */
-	handle = egdb_open("maxpieces=6", 1000, DB_PATH, print_msgs);
+	// use at most 6 piece database, 1 GiB of memory
+	EGDB_DRIVER *handle = egdb_open("maxpieces=6", 1024, DB_PATH, print_msgs);
 	if (!handle) {
 		std::printf("Cannot open egdb driver at %s\n", DB_PATH);
 		return(1);
 	}
 
-	nerrors = 0;
-	std::printf("Testing %zd positions.\n", sizeof(positions) / sizeof(positions[0]));
-	for (i = 0; i < sizeof(positions) / sizeof(positions[0]); ++i) {
-		value = egdb_lookup(handle, &positions[i].pos, positions[i].color, 0);
+	int nerrors = 0;
+	std::printf("Testing %d positions.\n", num_positions);
+	for (int i = 0; i < num_positions; ++i) {
+		int value = egdb_lookup(handle, &positions[i].pos, positions[i].color, 0);
 		if (value != positions[i].value) {
 			std::printf("%d: lookup error, expected %d, got %d\n", i, value, positions[i].value);
 			++nerrors;
 		}
 	}
-
 	std::printf("Test complete, %d errors.\n", nerrors);
+
 	egdb_close(handle);
-	return 0;
 }
 
 
