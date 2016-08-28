@@ -1,4 +1,4 @@
-# Reference documentation
+# Reference documentation for `egdb_intl`
 
 ## Core types
 
@@ -9,12 +9,12 @@
     
 **Notes**: This is an opaque class whose interface consists entirely of global functions such as `egdb_open()`, `egdb_close()` and `egdb_lookup()` documented below. 
 
-**Deprecated access**: in older versions of this driver, `EGDB_DRIVER*` variables named `handle` could be accessed through calls of the form `handle->some_function(handle, other_args)`. Such access is deprecated, however, and support for it can be removed in a future release without prior notice. Instead, use the form `egdb_some_function(handle, other_args)`, This is similar to how the C Standard Library allows `std::FILE*` access through the `std::fopen`, `std::fclose` and `std::fread` functions.     
+**Deprecated access**: in older versions of this driver, `EGDB_DRIVER*` variables named `handle` could be accessed through calls of the form `handle->some_function(handle, other_args)`. Such access is deprecated, however, and support for it can be removed in a future release without prior notice. Instead, use the form `egdb_some_function(handle, other_args)`. This is similar to how the C Standard Library allows `std::FILE*` access through the `std::fopen`, `std::fclose` and `std::fread` functions.     
     
 ---
 
 ### `egdb_interface::EGDB_BITBOARD`
-    #include <cstdint>    
+    #include <stdint.h>    
     typedef uint64_t EGDB_BITBOARD;
     
 **Notes**: For 10x10 board representations, bits 0 through 53 represent squares 1 through 50, with gaps (sometimes called "ghost squares") at bits 10, 21, 32, and 43, and bits 54 through 63. See also [this thread](http://laatste.info/bb3/viewtopic.php?f=53&t=1925&start=60) on the FMJD forum.   
@@ -110,7 +110,7 @@ Note that depending on the position and the database type, you sometimes cannot 
         printf("%s", msg);
     }
 
-**Returns**: An `EGDB_DRIVER*` for subsequent communication with the driver. A `nullptr` return value means that an error occurred. 
+**Returns**: An `EGDB_DRIVER*` for subsequent communication with the driver. A `NULL` pointer return value means that an error occurred. 
 
 **Complexity**: Linear in the size of the databases to be read in from disk.
 
@@ -166,7 +166,10 @@ Note that depending on the position and the database type, you sometimes cannot 
     - zero: always perform a lookup (which may cause a disk read). 
     - non-zero: only perform a lookup if the position is already cached in memory, otherwise return `EGDB_NOT_IN_CACHE`. 
 
-**Returns**: a database value. 
+**Returns**: a database value.
+
+  - when probing a WLD-database: an integer value as documented in `WLD_VALUE`.
+  - when probing a MTC-database: an integer value as documented in `MTC_VALUE`. 
 
 
 **Notes**: An example of a place to use conditional lookup is during quiescence search, where you don't want the search to be slowed by disk access. If the database is not on a fast SSD you might want to use conditional lookup in some other areas of a search to limit the slowing.
@@ -233,7 +236,7 @@ Note that depending on the position and the database type, you sometimes cannot 
 **Parameters**: 
   - `handle`: an `EGDB_DRIVER*` returned by `egdb_open()`.
   - `msg_fn`: a function pointer that will receive status and error messages from the driver. 
-  - `abort`: if non-zero, cancels the verification process (because it can take a while). To abort verification, set the value of *abort to non-zero. 
+  - `abort`: if non-zero, cancels the verification process (because it can take a while). To abort verification, set the value of `*abort` to non-zero. 
   - `msgs`: an `EGDB_VERIFY_MSGS` struct of language localization messages used by verify.
 
 **Effects**: checks that every index and data file associated to `handle` as a correct CRC value. If not, and an error message is written through the `msg_fn`. 
