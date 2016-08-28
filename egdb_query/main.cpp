@@ -1,5 +1,5 @@
 #include "egdb/egdb_intl.h"         // EGDB_POSITION
-#include "egdb/egdb_intl_ext.h"     // EGDB_DRIVER_V2, Slice, slice_range, position_range_slice
+#include "egdb_ext/egdb_intl_ext.h"	// EGDB_Driver, Slice, slice_range, position_range_slice
 #include "engine/board.h"           // BOARD
 #include "engine/fen.h"             // print_fen
 #include "engine/move_api.h"        // init_move_tables, canjump
@@ -55,7 +55,7 @@ bool is_majority_half_zugzwang(int score_to_move, int score_not_tomove)
 	return score_to_move == EGDB_DRAW && score_not_tomove == EGDB_LOSS;
 }
 
-void query_zugzwangs(EGDB_DRIVER_V2 *handle, int maxpieces)
+void query_zugzwangs(EGDB_Driver *handle, int maxpieces)
 {
     char fenbuf[150];
     
@@ -63,7 +63,7 @@ void query_zugzwangs(EGDB_DRIVER_V2 *handle, int maxpieces)
 	auto const slices = slice_range(2, maxpieces + 1);
 	std::cout << "Iterating over " << slices.size() << " slices\n";
 
-	for (Slice const& slice : slices) {
+	for (auto const& slice : slices) {
 
 		// filter on slice: both sides must have at least 1 man and 1 king
         // with Boost, use instead: for (auto const& slice : slice | boost::adaptors::filtered(slice_condition)) { /* bla */ }
@@ -73,8 +73,7 @@ void query_zugzwangs(EGDB_DRIVER_V2 *handle, int maxpieces)
 		std::printf("\n%.2fsec: ", TDIFF(t0));
 		std::cout << slice << '\n';
 
-        // need EGDB_POSITION& instead of EGDB_POSITION const& because none of the lookup functions are const-correct
-        for (EGDB_POSITION& pos : position_range_slice{ slice }) {
+        for (auto const& pos : position_range_slice{ slice }) {
 
             // filter on position: no pending captures or threatening captures
             // with Boost, use instead: for (auto const& pos : position_range_slice{slice} | boost::adaptors::filtered(position_condition)) { /* bla */ }
@@ -110,7 +109,7 @@ int main()
     char options[50];
     std::sprintf(options, "maxpieces=%d", maxpieces);
 
-	EGDB_DRIVER_V2 db(options, 2000, PATH_WLD, print_msgs);
+	EGDB_Driver db(options, 2000, PATH_WLD, print_msgs);
 	if (!db.is_open()) {
 		std::printf("Could not open db at %s\n", PATH_WLD);
 		return(1);

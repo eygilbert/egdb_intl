@@ -2,7 +2,7 @@
 #include "egdb/egdb_intl.h"
 #include "engine/board.h"
 #include <csetjmp>
-#include <cstdint>
+#include <stdint.h>
 
 namespace egdb_interface {
 

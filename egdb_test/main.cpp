@@ -1,6 +1,6 @@
 #include "builddb/indexing.h"
 #include "egdb/egdb_intl.h"
-#include "egdb/egdb_intl_ext.h"
+#include "egdb/slice.h"
 #include "egdb/egdb_search.h"
 #include "engine/bitcount.h"
 #include "engine/board.h"
@@ -10,13 +10,16 @@
 #include "engine/project.h"	// ARRAY_SIZE
 #include <algorithm>
 #include <cctype>
-#include <cinttypes>
-#include <cstdint>
+#include <inttypes.h>
+#include <stdint.h>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-#include <thread>
+
+#ifdef USE_MULTI_THREADING
+	#include <thread>
+#endif
 
 using namespace egdb_interface;
 
@@ -522,38 +525,41 @@ void parallel_read(EGDB_DRIVER *db, int &value)
 	value = egdb_lookup(db, &pos, EGDB_BLACK, 0);
 }
 
-void test_mutual_exclusion(char const *dbpath, LOCKT *lock)
-{
-	int value;
+#ifdef USE_MULTI_THREADING
 
-	std::printf("\nTesting mutual exclusion, %s\n", dbpath);
+	void test_mutual_exclusion(char const *dbpath, LOCKT *lock)
+	{
+		int value;
 
-	/* Open with minimum cache memory, so that all lookups will have to go to disk. */
-	EGDB_DRIVER* db = egdb_open("maxpieces=6", 0, dbpath, print_msgs);
-	if (!db) {
-		std::printf("Cannot open db at %s\n", dbpath);
-		std::exit(1);
+		std::printf("\nTesting mutual exclusion, %s\n", dbpath);
+
+		// Open with minimum cache memory, so that all lookups will have to go to disk.
+		EGDB_DRIVER* db = egdb_open("maxpieces=6", 0, dbpath, print_msgs);
+		if (!db) {
+			std::printf("Cannot open db at %s\n", dbpath);
+			std::exit(1);
+		}
+
+		value = EGDB_UNKNOWN;
+		take_lock(*lock);
+		std::thread threadobj(parallel_read, db, std::ref(value));
+		std::chrono::milliseconds delay_time(3000);
+		std::this_thread::sleep_for(delay_time);
+		if (value != EGDB_UNKNOWN) {
+			printf("Lock did not enforce mutual exclusion.\n");
+			std::exit(1);
+		}
+		release_lock(*lock);
+		std::this_thread::sleep_for(delay_time);
+		if (value == EGDB_UNKNOWN) {
+			printf("Releasking lock did not disable mutual exclusion.\n");
+			std::exit(1);
+		}
+		threadobj.detach();
+		egdb_close(db);
 	}
 	
-	value = EGDB_UNKNOWN;
-	take_lock(*lock);
-	std::thread threadobj(parallel_read, db, std::ref(value));
-	std::chrono::milliseconds delay_time(3000);
-	std::this_thread::sleep_for(delay_time);
-	if (value != EGDB_UNKNOWN) {
-		printf("Lock did not enforce mutual exclusion.\n");
-		std::exit(1);
-	}
-	release_lock(*lock);
-	std::this_thread::sleep_for(delay_time);
-	if (value == EGDB_UNKNOWN) {
-		printf("Releasking lock did not disable mutual exclusion.\n");
-		std::exit(1);
-	}
-	threadobj.detach();
-	egdb_close(db);
-}
-
+#endif
 
 int main(int argc, char *argv[])
 {
@@ -584,16 +590,16 @@ int main(int argc, char *argv[])
 	/* Do a quick verification of the indexing functions. */
 	t0 = std::clock();
 	std::printf("\nTesting indexing round trip\n");
-	for (Slice const& slice : slice_range(2, 10)) {
-		verify_indexing(slice, 100000);
+	for (Slice first(2), last(10); first != last; first.increment()) {
+		verify_indexing(first, 100000);
 	}
 	std::printf("%.2fsec: index test completed\n", TDIFF(t0));
 
 	std::printf("\nVerifying WLD Tunstall v1 against Tunstall v2 (up to 7 pieces).\n");
 	t0 = std::clock();
-	for (Slice const& slice : slice_range(2, maxpieces + 1)) {
+	for (Slice first(2), last(maxpieces + 1); first != last; first.increment()) {
 		std::printf("%.2fsec: ", TDIFF(t0));
-		verify(&db1, &db2, slice, 50000 / FAST_TEST_MULT);
+		verify(&db1, &db2, first, 50000 / FAST_TEST_MULT);
 	}
 
 	/* Close db2, leave db1 open for the next test. */
@@ -610,9 +616,9 @@ int main(int argc, char *argv[])
 	}
 
 	t0 = std::clock();
-	for (Slice const& slice : slice_range(2, 7)) {
+	for (Slice first(2), last(7); first != last; first.increment()) {
 		std::printf("%.2fsec: ", TDIFF(t0));
-		verify(&db1, &db2, slice, 50000 / FAST_TEST_MULT);
+		verify(&db1, &db2, first, 50000 / FAST_TEST_MULT);
 	}
 
 	egdb_close(db1.handle);
@@ -635,9 +641,9 @@ int main(int argc, char *argv[])
 	db.db8_kings_1side = 5;
 	db.egdb_excludes_some_nonside_caps = true;
 	t0 = std::clock();
-	for (Slice const& slice : slice_range(2, 9)) {
+	for (Slice first(2), last(9); first != last; first.increment()) {
 		std::printf("%.2fsec: ", TDIFF(t0));
-		self_verify(&db, slice, 10000 / FAST_TEST_MULT);
+		self_verify(&db, first, 10000 / FAST_TEST_MULT);
 	}
 	egdb_close(db.handle);
 
@@ -647,8 +653,9 @@ int main(int argc, char *argv[])
 	crc_verify_test(DB_TUN_V1);
 	crc_verify_test(DB_TUN_V2);
 
+#ifdef USE_MULTI_THREADING
 	test_mutual_exclusion(DB_TUN_V1, get_tun_v1_lock());
 	test_mutual_exclusion(DB_TUN_V2, get_tun_v2_lock());
+#endif
 }
-
 

@@ -4,7 +4,7 @@
 #include "engine/bitcount.h"
 #include "engine/board.h"       // BITBOARD
 #include "engine/bool.h"
-#include <cstdint>              // uint32_t
+#include <stdint.h>              // uint32_t
 
 namespace egdb_interface {
 
@@ -25,8 +25,6 @@ int64_t position_to_index_slice(EGDB_POSITION const *p, int bm, int bk, int wm, 
 void indextoposition_slice(int64_t index, EGDB_POSITION *p, int bm, int bk, int wm, int wk);
 void build_man_index_base();
 int64_t getdatabasesize_slice(int bm, int bk, int wm, int wk);
-
-
 
 inline uint32_t index_pieces_1_type(BITBOARD bb, int offset)
 {

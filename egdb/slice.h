@@ -31,20 +31,20 @@ namespace egdb_interface {
     public:
         // first slice of <n> pieces
         explicit Slice(int n)
-        :
-            Slice{ (n + 1) / 2, n - (n + 1) / 2 }
-        {}
+        {
+        	*this = Slice( (n + 1) / 2, n - (n + 1) / 2 );
+        }
 
         // first slice of <b, w> pieces
         Slice(int b, int w)
         :
-            npieces_{ b + w },
-            nb_{ b },
-            nw_{ w },
-            nbm_{ 0 },
-            nbk_{ nb_ },
-            nwm_{ 0 },
-            nwk_{ nw_ }
+            npieces_( b + w ),
+            nb_( b ),
+            nw_( w ),
+            nbm_( 0 ),
+            nbk_( nb_ ),
+            nwm_( 0 ),
+            nwk_( nw_)
         {
             assert_invariants();
         }
@@ -52,13 +52,13 @@ namespace egdb_interface {
         // slice of exactly <bm, bk, wm, wk> pieces
         Slice(int bm, int bk, int wm, int wk)
         :
-            npieces_{ bm + bk + wm + wk },
-            nb_{ bm + bk },
-            nw_{ wm + wk },
-            nbm_{ bm },
-            nbk_{ bk },
-            nwm_{ wm },
-            nwk_{ wk }
+            npieces_( bm + bk + wm + wk ),
+            nb_( bm + bk ),
+            nw_( wm + wk ),
+            nbm_( bm ),
+            nbk_( bk ),
+            nwm_( wm ),
+            nwk_( wk )
         {
             assert_invariants();
         }

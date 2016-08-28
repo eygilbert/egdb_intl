@@ -30,6 +30,22 @@
 
 #endif
 
+// --------------
+// C++98 vs C++11
+// --------------
+
+#if __cplusplus < 201103L
+	#define NULLPTR NULL
+#else
+	#define NULLPTR nullptr
+#endif
+
+// ---------------
+// multi-threading
+// ---------------
+
+#define USE_MULTI_THREADING
+
 // ------------------
 // System information
 // ------------------
@@ -192,7 +208,7 @@
 #if defined(_MSC_VER) && defined(USE_WIN_API)
 
 	#include <cassert>
-	#include <cstdint>
+	#include <stdint.h>
 	
 	namespace egdb_interface {
 
@@ -216,7 +232,7 @@
 		assert(return_value != NULL);	// Win API is inconsistent which invalid handle values it returns
 										// CreateFile uses -1, but other functions use 0
 										// the assert guards against the outside chance that 0 is a *valid handle* from CreateFile
-		return return_value == INVALID_HANDLE_VALUE ? nullptr : return_value;
+		return return_value == INVALID_HANDLE_VALUE ? NULLPTR : return_value;
 	}
 
 	inline
@@ -250,7 +266,7 @@
 	}	// namespace
 #else
 
-	#include <cstdint>
+	#include <stdint.h>
 	#include <cstdio>
 
 	namespace egdb_interface {
@@ -347,7 +363,7 @@
 #ifdef _MSC_VER
 
 	#include <intrin.h>
-	#include <cstdint>
+	#include <stdint.h>
 
 	namespace egdb_interface {
 
@@ -419,7 +435,7 @@
 
 #else 
 
-	#include <cstdint>
+	#include <stdint.h>
 
 	namespace egdb_interface {
 

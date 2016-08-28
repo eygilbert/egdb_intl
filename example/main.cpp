@@ -208,5 +208,3 @@ int main()
 
 	egdb_close(handle);
 }
-
-

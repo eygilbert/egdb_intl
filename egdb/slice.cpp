@@ -2,7 +2,6 @@
 #include <algorithm>    // min
 #include <cassert>      // assert
 #include <iostream>     // ostream
-#include <tuple>        // make_tuple
 
 namespace egdb_interface {
 
@@ -52,13 +51,12 @@ const int Slice::max_ncolor;
 
     bool operator==(Slice const& lhs, Slice const& rhs)
     {
-        // convert a slice to a std::tuple of the various piece counts
-        auto const as_tuple = [](Slice const& s) {
-            return std::make_tuple(s.nbm(), s.nbk(), s.nwm(), s.nwk());
-        };
-
-        // use std::tuple::operator== for Slice comparisons
-        return as_tuple(lhs) == as_tuple(rhs);
+        return
+        		lhs.nbm() == rhs.nbm() &&
+				lhs.nbk() == rhs.nbk() &&
+				lhs.nwm() == rhs.nwm() &&
+				lhs.nwk() == rhs.nwk()
+		;
     }
 
     std::ostream& operator<<(std::ostream& str, Slice const& s)

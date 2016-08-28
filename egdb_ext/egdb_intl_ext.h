@@ -7,19 +7,19 @@
 
 namespace egdb_interface {
 
-class EGDB_DRIVER_V2
+class EGDB_Driver
 {
 	EGDB_DRIVER* handle_ = nullptr;
 
 public:
-	EGDB_DRIVER_V2() = default;
+	EGDB_Driver() = default;
 
-	EGDB_DRIVER_V2(char const *options, int cache_mb, char const *directory, void (*msg_fn)(char const *msg))
+	EGDB_Driver(char const *options, int cache_mb, char const *directory, void (*msg_fn)(char const *msg))
 	:
 		handle_{egdb_open(options, cache_mb, directory, msg_fn)}
 	{}
 
-	~EGDB_DRIVER_V2()
+	~EGDB_Driver()
 	{
 		safe_close();
 	}
@@ -138,7 +138,7 @@ private:
     // Iteration over all slices with 2 through N (exclusive) pieces
     // This corresponds to the half-open range [2, N), not to [2, N] (inclusive)
 
-    for (Slice const& slice : slice_range(2, N)) {
+    for (auto const& slice : slice_range(2, N)) {
         // any code
     });
 

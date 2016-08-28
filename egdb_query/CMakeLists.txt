@@ -3,14 +3,15 @@ get_filename_component(t ${project_relative_path} PATH)
 
 add_executable(${t}.main main.cpp)
 
-target_compile_features(${t}.main PRIVATE 
-    cxx_auto_type 
-    cxx_lambdas
+set_target_properties(${t}.main PROPERTIES
+    CXX_STANDARD 11
+    CXX_STANDARD_REQUIRED YES
 )
 
 file(GLOB_RECURSE source_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} 
     ../builddb/*.cpp 
-    ../egdb/*.cpp 
+    ../egdb/*.cpp
+    ../egdb_ext/*.cpp 
     ../engine/*.cpp
 )
 

@@ -500,7 +500,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int cache_mb, char const *fi
 		/* If the file is not there, no problem.  A lot of slices have
 		 * no useful mtc data.
 		 */
-		if (hdat->dbfiles[i].fp == nullptr)
+		if (hdat->dbfiles[i].fp == NULLPTR)
 			continue;
 
 		/* Allocate the array of indices into ccbs[].
@@ -595,7 +595,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int cache_mb, char const *fi
 			if (!f || !f->is_present)
 				continue;
 
-			if (f->fp == nullptr)
+			if (f->fp == NULLPTR)
 				continue;
 
 			std::sprintf(msg, "preload %s\n", f->name);
@@ -664,7 +664,7 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int *allocated_bytes)
 	/* No problem if we cant open a file.  Most slices dont have any
 	 * useful mtc data.
 	 */
-	if (cprfp == nullptr)
+	if (cprfp == NULLPTR)
 		return(0);
 
 	/* Get the size in bytes and index blocks. */
@@ -682,7 +682,7 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int *allocated_bytes)
 
 	std::sprintf(name, "%s%s.idx_mtc", hdat->db_filepath, f->name);
 	fp = std::fopen(name, "r");
-	if (fp == nullptr) {
+	if (fp == NULLPTR) {
 		std::sprintf(msg, "cannot open index file %s\n", name);
 		(*hdat->log_msg_fn)(msg);
 		return(1);
@@ -843,7 +843,7 @@ static void build_file_table(DBHANDLE *hdat)
 			std::sprintf(hdat->dbfiles[count].name, "db%d", npieces);
 			hdat->dbfiles[count].pieces = npieces;
 			hdat->dbfiles[count].max_pieces_1side = (std::min)(npieces - 1, MAXPIECE);
-			hdat->dbfiles[count].fp = nullptr;
+			hdat->dbfiles[count].fp = NULLPTR;
 			++count;
 		}
 		else {
@@ -866,7 +866,7 @@ static void build_file_table(DBHANDLE *hdat)
 									npieces, nbm, nbk, nwm, nwk);
 						hdat->dbfiles[count].pieces = npieces;
 						hdat->dbfiles[count].max_pieces_1side = nbm + nbk;
-						hdat->dbfiles[count].fp = nullptr;
+						hdat->dbfiles[count].fp = NULLPTR;
 						++count;
 					}
 				}
@@ -902,12 +902,12 @@ static int egdb_close(EGDB_DRIVER *handle)
 		std::free(hdat->dbfiles[i].cache_bufferi);
 		hdat->dbfiles[i].cache_bufferi = 0;
 
-		if (hdat->dbfiles[i].fp != nullptr)
+		if (hdat->dbfiles[i].fp != NULLPTR)
 			close_file(hdat->dbfiles[i].fp);
 
 		hdat->dbfiles[i].num_idx_blocks = 0;
 		hdat->dbfiles[i].num_cacheblocks = 0;
-		hdat->dbfiles[i].fp = nullptr;
+		hdat->dbfiles[i].fp = NULLPTR;
 	}
 	std::memset(hdat->dbfiles, 0, sizeof(hdat->dbfiles));
 

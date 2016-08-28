@@ -1,4 +1,4 @@
-#include "egdb/egdb_intl_ext.h"
+#include "egdb_ext/egdb_intl_ext.h"
 #include "builddb/indexing.h"   // indextoposition_slice, getdatabasesize_slice
 #include <tuple>                // make_tuple
 

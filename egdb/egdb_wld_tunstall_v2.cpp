@@ -1029,7 +1029,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 
 		std::sprintf(dbname, "%s%s.cpr1", hdat->db_filepath, hdat->dbfiles[i].name);
 		hdat->dbfiles[i].fp = open_file(dbname);
-		if (hdat->dbfiles[i].fp == nullptr) {
+		if (hdat->dbfiles[i].fp == NULLPTR) {
 			std::sprintf(msg, "Cannot open %s\n", dbname);
 			(*hdat->log_msg_fn)(msg);
 			return(1);
@@ -1056,7 +1056,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 
 			/* Close the db file, we are done with it. */
 			close_file(hdat->dbfiles[i].fp);
-			hdat->dbfiles[i].fp = nullptr;
+			hdat->dbfiles[i].fp = NULLPTR;
 
 			/* Allocate the subindices. */
 			stat = init_autoload_subindices(hdat, hdat->dbfiles + i, &size);
@@ -1228,7 +1228,7 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64_t *allocated_bytes)
 	/* Open the compressed data file. */
 	std::sprintf(name, "%s%s.cpr1", hdat->db_filepath, f->name);
 	cprfp = open_file(name);
-	if (cprfp == nullptr) {
+	if (cprfp == NULLPTR) {
 
 		/* We can't find the compressed data file.  Its ok as long as 
 		 * this is for more pieces than SAME_PIECES_ONE_FILE pieces.
@@ -1621,11 +1621,11 @@ static int egdb_close(EGDB_DRIVER *handle)
 			}
 		}
 
-		if (hdat->dbfiles[i].fp != nullptr)
+		if (hdat->dbfiles[i].fp != NULLPTR)
 			close_file(hdat->dbfiles[i].fp);
 
 		hdat->dbfiles[i].num_cacheblocks = 0;
-		hdat->dbfiles[i].fp = nullptr;
+		hdat->dbfiles[i].fp = NULLPTR;
 	}
 	std::memset(hdat->dbfiles, 0, sizeof(hdat->dbfiles));
 

@@ -3,7 +3,7 @@
 #include "engine/bitcount.h"
 #include "engine/board.h"
 #include "engine/bool.h"
-#include <cstdint>
+#include <stdint.h>
 
 namespace egdb_interface {
 
