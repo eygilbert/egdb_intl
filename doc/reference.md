@@ -9,8 +9,8 @@
     
 **Notes**: This is an opaque class whose interface consists entirely of global functions such as `egdb_open()`, `egdb_close()` and `egdb_lookup()` documented below. 
 
-**Deprecated access**: in older versions of this driver, `EGDB_DRIVER*` variables named `handle` could be accessed through calls of the form `handle->some_function(handle, other_args)`. Such access is deprecated, however, and support for it can be removed in a future release without prior notice. Instead, use the form `egdb_some_function(handle, other_args)`. This is similar to how the C Standard Library allows `std::FILE*` access through the `std::fopen`, `std::fclose` and `std::fread` functions.     
-    
+**Deprecated access**: in older versions of this driver, `EGDB_DRIVER*` variables named `handle` could be accessed through calls of the form `handle->some_function(handle, other_args)`. Such access is deprecated, however, and support for it can be removed in a future release. Instead, use the form 
+
 ---
 
 ### `egdb_interface::EGDB_BITBOARD`
@@ -76,11 +76,11 @@ Note that depending on the position and the database type, you sometimes cannot 
         MTC_THRESHOLD = 10,
     };
     
-**Notes**: enumerates integer values returned by `egdb_lookup()` on the MTC-database. The following values will be returned, depending on the position being queried:
+**Notes**: enumerates integer values returned by `egdb_lookup()` on the MTC database. The following values will be returned, depending on the position being queried:
 
   - For positions that are closer than `MTC_THRESHOLD` to a conversion move, `MTC_LESS_THAN_THRESHOLD` will be returned.
-  - Otherwise, the number of moves (not plies) to a conversion move will be returned.
-    - The MTC-databases do not store positions that are closer than `MTC_THRESHOLD` plies to a conversion move. It will only return even MTC values, because the database represents the MTC value internally by half the number of plies. The true value is either the returned `value` or `value - 1`. 
+  - Otherwise, the number of plies to a conversion move will be returned.
+    - The MTC databases do not store positions that are closer than `MTC_THRESHOLD` plies to a conversion move, because this allows the databases to be much smaller than if all positions were stored. It will only return even MTC values, because the database represents the MTC value internally by half the number of plies. The true value is either the returned `value` or `value - 1`. 
     - An application program can infer the true even or odd value of a position by looking up the MTC values of the position's successors. If the best successor MTC value is the same as the position's, then the position's true value is 1 less than the returned value.
  
 ---
@@ -96,8 +96,8 @@ Note that depending on the position and the database type, you sometimes cannot 
     );
 
 **Parameters**: 
-  - `options`:  a character string of optional open settings. The options are of the form `name = value`, with multiple options are separated by a semicolon (`;`) and either a `NULL` pointer or an empty string (`""`) can be given for no options. The following options are currently defined: 
-    - `maxpieces = N`: sets the maximum number of pieces for which the driver will lookup values. By default, all the database files found during `egdb_open()` will be used. This can also be queried by `egdb_identify()`. 
+  - `options`:  a character string of optional open settings. The options are of the form `name = value`, with multiple options separated by a semicolon (`;`) and either a `NULL` pointer or an empty string (`""`) can be given for no options. The following options are currently defined: 
+    - `maxpieces = N`: sets the maximum number of pieces for which the driver will lookup values. By default, all the database files found during `egdb_open()` will be used. This can also be queried using `egdb_identify()`. 
     - `maxkings_1side_8pcs = N`: sets the maximum number of kings each side can have in 8-piece positions for which the driver will lookup values. By default, all 8-piece databases (if not otherwise restricted by `max_pieces`) will be used. 
   - `cache_mb`: the number of MiB (`2^20` bytes) of dynamically allocated memory that the driver will use for caching previously looked up positions. 
   - `directory`: the full path to the location of the database files.  
@@ -116,10 +116,10 @@ Note that depending on the position and the database type, you sometimes cannot 
 
 **Notes**: Opening a db takes some time, but allows the db to be probed quickly during an engine search. Some of it is used for indexing data, and the rest is used to dynamically cache database data to minimize disk access during lookups. The more memory you give the driver, the faster it works on average during an engine search.
 
-  - If you are opening the WLD-database, give it the following values for `cache_mb`: 
+  - If you are opening the WLD database, give it the following values for `cache_mb`: 
     - for systems with at least 8 GiB of memory: the total amount memory minus 3 GiB 
     - for systems with less than 8 GiB of memory: around 1.5 GiB has been tested to perform well, but of course more memory is better.
-  - If you are opening the MTC-database, give it a `cache_mb` value of 0. It will then automatically be initialized to its required amount of memory, approximately 25 MiB. 
+  - If you are opening the MTC database, give it a `cache_mb` value of 0. It will then automatically be initialized to its required amount of memory, approximately 25 MiB. 
     - Unlike the WLD-database, it is not necessary to probe the MTC-database during a recursive search routine. It is sufficient to probe at the root of the recursive search, and collect the MTC values of the immediate successors of the target position. If at least one move can be obtained from the MTC-database then a further search is not necessary. 
     - The successor with the best MTC value is the lowest value for a won position, or the highest value for a lost position. 
     - To obtain a move from the MTC db it is necessary to skip probing of successors that were conversion moves from the target position. A conversion move is a capture or a man move.
@@ -187,8 +187,8 @@ Note that depending on the position and the database type, you sometimes cannot 
         EGDB_WLD_TUN_V2,
     };
 
-**Notes**: there is a single version of the MTC-database, and several versions of WLD-databases, each using a different compression technique:
-  - `EGDB_WLD_RUNLEN`: [runlength encoding](https://en.wikipedia.org/wiki/Run-length_encoding). This original format  was only distributed to a limited number of Kingsrow testers, and is now deprecated.
+**Notes**: there is a single version of the MTC-database, and several versions of WLD databases, each using a different compression technique:
+  - `EGDB_WLD_RUNLEN`: [runlength encoding](https://en.wikipedia.org/wiki/Run-length_encoding). This original format was only distributed to a limited number of Kingsrow testers, and is now deprecated.
   - `EGDB_MTC_RUNLEN`: runlength encoding. There are no other formats for the MTC-datbase.
   - `EGDB_WLD_HUFFMAN`: [Huffman coding](https://en.wikipedia.org/wiki/Huffman_coding). This experimental format used substantially less disk space at the expense of substantially more time during the engine search. For this reason, this version was never released.  
   - `EGDB_WLD_TUN_V1`: a mixture of [Tunstall coding](https://en.wikipedia.org/wiki/Tunstall_coding) and runlength encoding. The databases are 407gb of data, which includes a small subset of 9-piece positions: 5 men vs. 4 men. However, the 9-piece functionality is disabled in this driver because on average it turns out to be less effective during an engine search than not using it. From 2010 to 2014, these databases were bundled with the commercially available Kingsrow program, and distributed on a portable external hard drive. See also [this thread](http://laatste.info/bb3/viewtopic.php?t=2905) on the FMJD forum.
@@ -260,7 +260,7 @@ Note that depending on the position and the database type, you sometimes cannot 
 
 ## Deprecated functionality
 
-**Notes**: The functions `egdb_get_stats()` and `egdb_reset_stats()` for accessing statistics about the database use are primarily for use by the driver developer and are deprecated in this public release of the driver. They may be removed in future releases without prior notice.
+**Notes**: The functions `egdb_get_stats()` and `egdb_reset_stats()` for accessing statistics about the database use are primarily for use by the driver developer and are deprecated in this public release of the driver. They may be removed in future releases.
 
 ---
 
