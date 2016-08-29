@@ -112,7 +112,7 @@ Version 1 of the WLD database is identified as type `EGDB_WLD_TUN_V1`. Version 1
 
 Version 2 of the WLD database is identified as type `EGDB_WLD_TUN_V2`. Version 2 filenames have suffixes ".cpr1" and ".idx1". Like version 1, it does not have valid data for positions that are a capture for the side-to-move. Additionally, for positions with 7 and 8 pieces that have more than 1 king present, it does not have valid data for positions that would be captures for the opposite of the side-to-move (non-side captures), and it only has data for one side. Which side is excluded varies with position. It's not always black or always white, although it is consistent within each slice. It's whatever makes the compression more effective. If you call `egdb_lookup()` and the data for that side is not present, you get the return value `EGDB_UNKNOWN`. If you call `egdb_lookup()` for a position that is excluded because of a capture or non-side capture, you will get a WLD value, but it will not be the correct value except by random luck. The value will be whatever makes the compression work best.
 
-**Guideline**: before calling `egdb_lookup()` on a version 2 WLD database, you should first test that the position is not a capture or a non-side capture.
+**Guideline**: before calling `egdb_lookup()` on a version 2 WLD database, you should first test that the position is not a capture, and for 7 and 8-piece positions with more than one king present, test that it is not a non-side capture.
 
 ---
 
