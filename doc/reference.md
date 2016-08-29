@@ -9,7 +9,7 @@
     
 **Notes**: This is an opaque class whose interface consists entirely of global functions such as `egdb_open()`, `egdb_close()` and `egdb_lookup()` documented below. 
 
-**Deprecated access**: in older versions of this driver, `EGDB_DRIVER*` variables named `handle` could be accessed through calls of the form `handle->some_function(handle, other_args)`. Such access is deprecated, however, and support for it can be removed in a future release. Instead, use the form 
+**Deprecated access**: in older versions of this driver, `EGDB_DRIVER*` variables named `handle` could be accessed through calls of the form `handle->some_function(handle, other_args)`. Such access is deprecated, however, and support for it can be removed in a future release. Instead, use the form `egdb_some_function(handle, other_args)`.
 
 ---
 
@@ -163,7 +163,7 @@ Note that depending on the position and the database type, you sometimes cannot 
   - `position`: a legal 10x10 international draughts position.
   - `color`: the side-to-move, either `EGDB_BLACK` or `EGDB_WHITE`.
   - `cl`: an integer indicating whether the driver should perform a conditional lookup.  
-    - zero: always perform a lookup (which may cause a disk read). 
+    - zero: always perform a lookup. If the position is not in cache, the driver will load a 4K block of data from disk into cache to get the position's value. 
     - non-zero: only perform a lookup if the position is already cached in memory, otherwise return `EGDB_NOT_IN_CACHE`. 
 
 **Returns**: a database value.
