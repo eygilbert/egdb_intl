@@ -163,7 +163,7 @@ Note that depending on the position and the database type, you sometimes cannot 
   - `position`: a legal 10x10 international draughts position.
   - `color`: the side-to-move, either `EGDB_BLACK` or `EGDB_WHITE`.
   - `cl`: an integer indicating whether the driver should perform a conditional lookup.  
-    - zero: always perform a lookup. If the position is not in cache, the driver will load a 4K block of data from disk into cache to get the position's value. 
+    - zero: always perform a lookup. If the position is cached in memory, the value is returned very quickly -- typically in less than a microsecond. If the position is not in cache, the driver will load a 4K block of data from disk into cache to get the position's value. 
     - non-zero: only perform a lookup if the position is already cached in memory, otherwise return `EGDB_NOT_IN_CACHE`. 
 
 **Returns**: a database value.
