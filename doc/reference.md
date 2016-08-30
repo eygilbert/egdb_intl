@@ -116,11 +116,12 @@ Note that depending on the position and the database type, you sometimes cannot 
 
 **Notes**: Opening a db takes some time, but allows the db to be probed quickly during an engine search. Some of it is used for indexing data, and the rest is used to dynamically cache database data to minimize disk access during lookups. The more memory you give the driver, the faster it works on average during an engine search.
 
-  - If you are opening the WLD database, give it the following values for `cache_mb`: 
-    - for systems with at least 8 GiB of memory: the total amount memory minus 3 GiB 
-    - for systems with less than 8 GiB of memory: around 1.5 GiB has been tested to perform well, but of course more memory is better.
+  - If you are opening a WLD database, give it the following values for `cache_mb`: 
+    - On a machine with at least 8gb of ram, setting the cache_mb to something like 3000 MiB less than the total PC memory gives good driver performance and still leaves some memory for Windows drivers and a few other smaller programs to run. 
+    - On machines with less memory you'll have to make the margin smaller and manage the memory usage more carefully. My experience is that the driver actually works surprisingly well in a kingsrow search with the 8pc db and a very small setting like 1500 Mib, but of course more memory is better.
+    - There are diminishing returns for settings larger than 20% of the total db size (~10000 MiB for type EGDB_WLD_TUN_V2), and larger settings cause egdb_open to take more time.
   - If you are opening the MTC database, give it a `cache_mb` value of 0. It will then automatically be initialized to its required amount of memory, approximately 25 MiB. 
-    - Unlike the WLD-database, it is not necessary to probe the MTC-database during a recursive search routine. It is sufficient to probe at the root of the recursive search, and collect the MTC values of the immediate successors of the target position. If at least one move can be obtained from the MTC-database then a further search is not necessary. 
+    - Unlike the WLD-database, it is not necessary to probe the MTC-database during a recursive search routine. It is sufficient to probe at the root of the recursive search, and collect the MTC values of the immediate successors of the target position. If at least one move can be obtained from the MTC database then an engine search is not necessary. 
     - The successor with the best MTC value is the lowest value for a won position, or the highest value for a lost position. 
     - To obtain a move from the MTC db it is necessary to skip probing of successors that were conversion moves from the target position. A conversion move is a capture or a man move.
 
