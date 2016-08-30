@@ -16,7 +16,7 @@ You can contact me at [eygilbert@gmail.com](eygilbert@gmail.com) if you have que
 
 **Obtaining the databases**
 
-The databases are standalone and do not depend on the Kingsrow draughts program. They can be downloaded free of charge using the links at this web page: [http://edgilbert.org/InternationalDraughts/endgame_database_downloads.htm](http://edgilbert.org/InternationalDraughts/endgame_database_downloads.htm). These databases are the same as the ones used in the Kingsrow draughts program. They can be used directly on both Windows or Linux systems.
+The databases are standalone and do not depend on the Kingsrow draughts program. They can be downloaded using the links at this web page: [http://edgilbert.org/InternationalDraughts/endgame_database_downloads.htm](http://edgilbert.org/InternationalDraughts/endgame_database_downloads.htm). These databases are the same as the ones used in the Kingsrow draughts program. They can be used directly on both Windows or Linux systems.
 
 **Re-using the databases of an existing Kingsrow installation**
 
