@@ -5,6 +5,7 @@
 #include "engine/board.h"
 #include "engine/bool.h"
 #include <algorithm>
+#include <stdint.h>
 #include <cstdio>
 #include <cstdlib>
 
@@ -134,7 +135,7 @@ BITBOARD index2bitboard_rev(unsigned int index, int num_squares, int num_pieces,
 static int64_t man_index_base[MAXPIECE + 1][MAXPIECE + 1][RANK0MAX + 1];
 
 
-int64_t position_to_index_slice(EGDB_POSITION *p, int bm, int bk, int wm, int wk)
+int64_t position_to_index_slice(EGDB_POSITION const *p, int bm, int bk, int wm, int wk)
 {
 	BITBOARD bm0_mask;
 	BITBOARD bmmask, bkmask, wmmask, wkmask;
@@ -154,7 +155,7 @@ int64_t position_to_index_slice(EGDB_POSITION *p, int bm, int bk, int wm, int wk
 	checker_index_base = man_index_base[bm][wm][bm0];
 
 	/* Set the index for the black men that are not on rank0. */
-	bmindex = index_pieces_1_type(bmmask ^ bm0_mask, 5);
+	bmindex = index_pieces_1_type(bmmask ^ bm0_mask, ROWSIZE);
 
 	/* Set the index for the black men that are on rank0. */
 	bm0index = index_pieces_1_type(bm0_mask, 0);
@@ -177,8 +178,8 @@ int64_t position_to_index_slice(EGDB_POSITION *p, int bm, int bk, int wm, int wk
 	wkmask = p->white & p->king;
 	wkindex = index_pieces_1_type(wkmask, bmmask | wmmask | bkmask);
 
-	bmrange = choose(40, bm - bm0);
-	bm0range = choose(5, bm0);
+	bmrange = choose(MAXSQUARE - 2 * ROWSIZE, bm - bm0);
+	bm0range = choose(ROWSIZE, bm0);
 	bkrange = choose(MAXSQUARE - bm - wm, bk);
 	wkrange = choose(MAXSQUARE - bm - wm - bk, wk);
 
@@ -219,15 +220,15 @@ void indextoposition_slice(int64_t index, EGDB_POSITION *p, int bm, int bk, int 
 	index -= checker_index * multiplier;
 
 	/* Find bm0. */
-	for (bm0 = (std::min)(bm, 5); bm0 > 0; --bm0)
+	for (bm0 = (std::min)(bm, ROWSIZE); bm0 > 0; --bm0)
 		if (man_index_base[bm][wm][bm0 - 1] > checker_index)
 			break;
 
 	checker_index -= man_index_base[bm][wm][bm0];
 
 	/* Compute the range of indices for each piece type. */
-	bmrange = choose(40, bm - bm0);
-	bm0range = choose(5, bm0);
+	bmrange = choose(MAXSQUARE - 2 * ROWSIZE, bm - bm0);
+	bm0range = choose(ROWSIZE, bm0);
 
 	/* Extract the wmindex, bmindex, and bm0index. */
 	multiplier = bmrange * bm0range;
@@ -246,13 +247,13 @@ void indextoposition_slice(int64_t index, EGDB_POSITION *p, int bm, int bk, int 
 	wkindex = (uint32_t)(index);
 
 	/* Place black men, except those on rank0. */
-	bmmask = place_pieces_fwd_no_interferences(bmindex, 40, 5, bm - bm0);
+	bmmask = place_pieces_fwd_no_interferences(bmindex, MAXSQUARE - 2 * ROWSIZE, ROWSIZE, bm - bm0);
 
 	/* Place black men on rank0. */
-	bmmask |= place_pieces_fwd_no_interferences(bm0index, 5, 0, bm0);
+	bmmask |= place_pieces_fwd_no_interferences(bm0index, ROWSIZE, 0, bm0);
 
 	/* Place white men. */
-	wmmask = index2bitboard_rev(wmindex, 45, wm, bmmask);
+	wmmask = index2bitboard_rev(wmindex, MAXSQUARE - ROWSIZE, wm, bmmask);
 
 	/* Place black kings. */
 	bkmask = index2bitboard_fwd(bkindex, MAXSQUARE, bk, bmmask | wmmask);
@@ -274,14 +275,14 @@ void build_man_index_base()
 	for (bm = 0; bm <= MAXPIECE; ++bm) {
 		for (wm = 0; wm <= MAXPIECE; ++wm) {
 			base = 0;
-			for (bm0 = (std::min)(5, bm); bm0 >= 0; --bm0) {
+			for (bm0 = (std::min)(ROWSIZE, bm); bm0 >= 0; --bm0) {
 				man_index_base[bm][wm][bm0] = base;
 
 				/* First the number of men configurations excluding black's backrank. */
-				partial = (int64_t)choose(40, bm - bm0) * (int64_t)choose(45 - bm + bm0, wm);
+				partial = (int64_t)choose(MAXSQUARE - 2 * ROWSIZE, bm - bm0) * (int64_t)choose(MAXSQUARE - ROWSIZE - bm + bm0, wm);
 
 				/* Add the contribution from black's kingrow. */
-				partial *= choose(5, bm0);
+				partial *= choose(ROWSIZE, bm0);
 				base += partial;
 			}
 		}
@@ -302,23 +303,23 @@ int64_t getdatabasesize_slice(int bm, int bk, int wm, int wk)
 	* the contributions of 0, 1, 2, 3, 4, or 5 black men on the backrank.
 	*/
 	size = 0;
-	for (black_men_backrank = 0; black_men_backrank <= (std::min)(bm, 5); ++black_men_backrank) {
+	for (black_men_backrank = 0; black_men_backrank <= (std::min)(bm, ROWSIZE); ++black_men_backrank) {
 
 		/* First the number of men configurations excluding black's backrank. */
-		partial = (int64_t)choose(40, bm - black_men_backrank) * (int64_t)choose(45 - bm + black_men_backrank, wm);
+		partial = (int64_t)choose(MAXSQUARE - 2 * ROWSIZE, bm - black_men_backrank) * (int64_t)choose(MAXSQUARE - ROWSIZE - bm + black_men_backrank, wm);
 
 		/* Add the contribution from black's kingrow. */
 		if (black_men_backrank)
-			partial *= choose(5, black_men_backrank);
+			partial *= choose(ROWSIZE, black_men_backrank);
 
 		size += partial;
 	}
 
 	/* Add the black kings. */
-	size *= choose(50 - bm - wm, bk);
+	size *= choose(MAXSQUARE - bm - wm, bk);
 
 	/* Add the white kings. */
-	size *= choose(50 - bm - wm - bk, wk);
+	size *= choose(MAXSQUARE - bm - wm - bk, wk);
 
 	return(size);
 }

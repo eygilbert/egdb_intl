@@ -136,6 +136,7 @@ static void build_file_table(DBHANDLE *hdat);
 static void build_autoload_list(DBHANDLE *hdat);
 static void assign_subindices(DBHANDLE *hdat, CPRSUBDB *subdb, CCB *ccbp);
 
+namespace detail {
 
 static void reset_db_stats(EGDB_DRIVER *handle)
 {
@@ -166,7 +167,7 @@ static void reset_db_stats(EGDB_DRIVER *handle)
 }
 
 
-static EGDB_STATS *get_db_stats(EGDB_DRIVER *handle)
+static EGDB_STATS *get_db_stats(EGDB_DRIVER const *handle)
 {
 	DBHANDLE *hdat = (DBHANDLE *)handle->internal_data;
 #if LOG_HITS
@@ -237,6 +238,7 @@ static EGDB_STATS *get_db_stats(EGDB_DRIVER *handle)
 	return(&hdat->lookup_stats);
 }
 
+}	// namespace detail
 
 static void read_blocknum_from_file(DBHANDLE *hdat, CCB *ccb)
 {
@@ -255,6 +257,7 @@ static void read_blocknum_from_file(DBHANDLE *hdat, CCB *ccb)
 		(*hdat->log_msg_fn)("Error reading file\n");
 }
 
+namespace {
 
 /*
  * Returns EGDB_WIN, EGDB_LOSS, EGDB_DRAW, EGDB_UNKNOWN, or EGDB_NOT_IN_CACHE.
@@ -269,7 +272,7 @@ static void read_blocknum_from_file(DBHANDLE *hdat, CCB *ccb)
  * the argument cl.  If cl is true, DB_NOT_IN_CACHE is returned, 
  * otherwise the disk block is read and cached and the value is obtained.
  */
-static int dblookup(EGDB_DRIVER *handle, EGDB_POSITION *p, int color, int cl)
+int dblookup(EGDB_DRIVER *handle, EGDB_POSITION const *p, int color, int cl)
 {
 	DBHANDLE *hdat = (DBHANDLE *)handle->internal_data;
 	uint32_t index;
@@ -564,6 +567,8 @@ static int dblookup(EGDB_DRIVER *handle, EGDB_POSITION *p, int color, int cl)
 	}
 }
 
+}
+
 static int init_autoload_subindices(DBHANDLE *hdat, DBFILE *file, int *allocated_bytes)
 {
 	int i, k, m, size;
@@ -735,7 +740,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 	strcpy(hdat->db_filepath, filepath);
 
 	/* Add trailing backslash if needed. */
-	size = (int)strlen(hdat->db_filepath);
+	size = (int)std::strlen(hdat->db_filepath);
 	if (size && (hdat->db_filepath[size - 1] != '/'))
 		strcat(hdat->db_filepath, "/");
 
@@ -846,7 +851,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 
 		std::sprintf(dbname, "%s%s.cpr", hdat->db_filepath, hdat->dbfiles[i].name);
 		hdat->dbfiles[i].fp = open_file(dbname);
-		if (hdat->dbfiles[i].fp == nullptr) {
+		if (hdat->dbfiles[i].fp == NULLPTR) {
 			std::sprintf(msg, "Cannot open %s\n", dbname);
 			(*hdat->log_msg_fn)(msg);
 			return(1);
@@ -873,7 +878,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 
 			/* Close the db file, we are done with it. */
 			close_file(hdat->dbfiles[i].fp);
-			hdat->dbfiles[i].fp = nullptr;
+			hdat->dbfiles[i].fp = NULLPTR;
 
 			/* Allocate the subindices. */
 			stat = init_autoload_subindices(hdat, hdat->dbfiles + i, &size);
@@ -1037,7 +1042,7 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64_t *allocated_bytes)
 	/* Open the compressed data file. */
 	std::sprintf(name, "%s%s.cpr", hdat->db_filepath, f->name);
 	cprfp = open_file(name);
-	if (cprfp == nullptr) {
+	if (cprfp == NULLPTR) {
 
 		/* We can't find the compressed data file.  Its ok as long as 
 		 * this is for more pieces than SAME_PIECES_ONE_FILE pieces.
@@ -1367,6 +1372,7 @@ static void build_autoload_list(DBHANDLE *hdat)
 	}
 }
 
+namespace detail {
 
 static int egdb_close(EGDB_DRIVER *handle)
 {
@@ -1398,12 +1404,12 @@ static int egdb_close(EGDB_DRIVER *handle)
 			hdat->dbfiles[i].cache_bufferi = 0;
 		}
 
-		if (hdat->dbfiles[i].fp != nullptr)
+		if (hdat->dbfiles[i].fp != NULLPTR)
 			close_file(hdat->dbfiles[i].fp);
 
 		hdat->dbfiles[i].num_idx_blocks = 0;
 		hdat->dbfiles[i].num_cacheblocks = 0;
-		hdat->dbfiles[i].fp = nullptr;
+		hdat->dbfiles[i].fp = NULLPTR;
 	}
 	std::memset(hdat->dbfiles, 0, sizeof(hdat->dbfiles));
 
@@ -1426,7 +1432,7 @@ static int egdb_close(EGDB_DRIVER *handle)
 }
 
 
-static int verify_crc(EGDB_DRIVER *handle, void (*msg_fn)(char const*), int *abort, EGDB_VERIFY_MSGS *msgs)
+static int verify_crc(EGDB_DRIVER const *handle, void (*msg_fn)(char const*), int *abort, EGDB_VERIFY_MSGS *msgs)
 {
 	int i;
 	int status;
@@ -1507,7 +1513,7 @@ static int verify_crc(EGDB_DRIVER *handle, void (*msg_fn)(char const*), int *abo
 }
 
 
-static int get_pieces(EGDB_DRIVER *handle, int *max_pieces, int *max_pieces_1side, int *max_9pc_kings, int *max_8pc_kings_1side)
+static int get_pieces(EGDB_DRIVER const *handle, int *max_pieces, int *max_pieces_1side, int *max_9pc_kings, int *max_8pc_kings_1side)
 {
 	int i;
 	DBFILE *f;
@@ -1569,6 +1575,7 @@ static int get_pieces(EGDB_DRIVER *handle, int *max_pieces, int *max_pieces_1sid
 	return(0);
 }
 
+}	// namespace detail
 
 EGDB_DRIVER *egdb_open_wld_runlen(int pieces, int kings_1side_8pcs,
 				int cache_mb, char const *directory, void (*msg_fn)(char const*), EGDB_TYPE db_type)
@@ -1595,12 +1602,11 @@ EGDB_DRIVER *egdb_open_wld_runlen(int pieces, int kings_1side_8pcs,
 	}
 
 	handle->lookup = dblookup;
-	
-	handle->get_stats = get_db_stats;
-	handle->reset_stats = reset_db_stats;
-	handle->verify = verify_crc;
-	handle->close = egdb_close;
-	handle->get_pieces = get_pieces;
+	handle->get_stats = detail::get_db_stats;
+	handle->reset_stats = detail::reset_db_stats;
+	handle->verify = detail::verify_crc;
+	handle->close = detail::egdb_close;
+	handle->get_pieces = detail::get_pieces;
 	return(handle);
 }
 

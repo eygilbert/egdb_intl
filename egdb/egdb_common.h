@@ -5,6 +5,20 @@
 
 namespace egdb_interface {
 
+/* The driver handle type */
+struct EGDB_DRIVER {
+	int (*lookup)(EGDB_DRIVER *handle, EGDB_POSITION const *position, int color, int cl);
+	void (*reset_stats)(EGDB_DRIVER *handle);
+	EGDB_STATS *(*get_stats)(EGDB_DRIVER const *handle);
+	int (*verify)(EGDB_DRIVER const *handle, void (*msg_fn)(char const *msg), int *abort, EGDB_VERIFY_MSGS *msgs);
+	int (*close)(EGDB_DRIVER *handle);
+	int (*get_pieces)(EGDB_DRIVER const *handle, int *max_pieces, int *max_pieces_1side, int *max_9pc_kings, int *max_8pc_kings_1side);
+	void *internal_data;
+};
+
+#define NOT_SINGLEVALUE 127
+#define MTC_SKIPS 94
+
 #define MAXMSG 256
 #define ONE_MB 1048576
 #define IDX_READBUFSIZE 20000

@@ -9,9 +9,6 @@ namespace egdb_interface {
 #define MAXSKIP_INC 500
 
 #define MAX_MTCSKIP 1000000000
-#define MTC_THRESHOLD 10
-#define MTC_LESS_THAN_THRESHOLD 1
-#define MTC_UNKNOWN 0
 
 /* Encode a moves-to-conv number that is >= the threshold for saving. */
 #define MTC_ENCODE(mtc) (MTC_SKIPS + (mtc) / 2)

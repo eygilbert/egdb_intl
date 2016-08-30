@@ -1,5 +1,5 @@
 #pragma once
-#include <cstdint>
+#include <stdint.h>
 
 namespace egdb_interface {
 
@@ -173,9 +173,9 @@ extern int bitboard_to_square0(BITBOARD bb);
 extern int bitboard_to_square(BITBOARD bb);
 
 
-inline int mirrored(int sq)
+inline int mirrored(int bitnum)
 {
-	return(S50_bit - sq);
+	return(S50_bit - bitnum);
 }
 
 

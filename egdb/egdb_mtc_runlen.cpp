@@ -21,6 +21,9 @@
 
 namespace egdb_interface {
 
+/* Decode a moves-to-conv number that is >= the threshold for saving. */
+#define MTC_DECODE(val) (2 * ((val) - MTC_SKIPS))
+
 #define MAXPIECES 8
 #define MAXPIECE 5
 
@@ -108,6 +111,7 @@ static DBCRC dbcrc[] = {
 static int parseindexfile(DBHANDLE *, DBFILE *, int *allocated_bytes);
 static void build_file_table(DBHANDLE *hdat);
 
+namespace detail {
 
 static void reset_db_stats(EGDB_DRIVER *handle)
 {
@@ -116,12 +120,13 @@ static void reset_db_stats(EGDB_DRIVER *handle)
 }
 
 
-static EGDB_STATS *get_db_stats(EGDB_DRIVER *handle)
+static EGDB_STATS *get_db_stats(EGDB_DRIVER const *handle)
 {
 	DBHANDLE *hdat = (DBHANDLE *)handle->internal_data;
 	return(&hdat->lookup_stats);
 }
 
+}	// namespace detail
 
 static void read_blocknum_from_file(DBHANDLE *hdat, CCB *ccb)
 {
@@ -209,7 +214,7 @@ static int needed_cache_buffers(DBHANDLE *hdat)
  * the argument cl.  If cl is true, DB_NOT_IN_CACHE is returned, 
  * otherwise the disk block is read and cached and the value is obtained.
  */
-static int dblookup(EGDB_DRIVER *handle, EGDB_POSITION *p, int color, int cl)
+static int dblookup(EGDB_DRIVER *handle, EGDB_POSITION const *p, int color, int cl)
 {
 	DBHANDLE *hdat = (DBHANDLE *)handle->internal_data;
 	uint32_t index;
@@ -424,7 +429,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int cache_mb, char const *fi
 	strcpy(hdat->db_filepath, filepath);
 
 	/* Add trailing backslash if needed. */
-	size = (int)strlen(hdat->db_filepath);
+	size = (int)std::strlen(hdat->db_filepath);
 	if (size && (hdat->db_filepath[size - 1] != '/'))
 		strcat(hdat->db_filepath, "/");
 
@@ -495,7 +500,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int cache_mb, char const *fi
 		/* If the file is not there, no problem.  A lot of slices have
 		 * no useful mtc data.
 		 */
-		if (hdat->dbfiles[i].fp == nullptr)
+		if (hdat->dbfiles[i].fp == NULLPTR)
 			continue;
 
 		/* Allocate the array of indices into ccbs[].
@@ -590,7 +595,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int cache_mb, char const *fi
 			if (!f || !f->is_present)
 				continue;
 
-			if (f->fp == nullptr)
+			if (f->fp == NULLPTR)
 				continue;
 
 			std::sprintf(msg, "preload %s\n", f->name);
@@ -659,7 +664,7 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int *allocated_bytes)
 	/* No problem if we cant open a file.  Most slices dont have any
 	 * useful mtc data.
 	 */
-	if (cprfp == nullptr)
+	if (cprfp == NULLPTR)
 		return(0);
 
 	/* Get the size in bytes and index blocks. */
@@ -677,7 +682,7 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int *allocated_bytes)
 
 	std::sprintf(name, "%s%s.idx_mtc", hdat->db_filepath, f->name);
 	fp = std::fopen(name, "r");
-	if (fp == nullptr) {
+	if (fp == NULLPTR) {
 		std::sprintf(msg, "cannot open index file %s\n", name);
 		(*hdat->log_msg_fn)(msg);
 		return(1);
@@ -838,7 +843,7 @@ static void build_file_table(DBHANDLE *hdat)
 			std::sprintf(hdat->dbfiles[count].name, "db%d", npieces);
 			hdat->dbfiles[count].pieces = npieces;
 			hdat->dbfiles[count].max_pieces_1side = (std::min)(npieces - 1, MAXPIECE);
-			hdat->dbfiles[count].fp = nullptr;
+			hdat->dbfiles[count].fp = NULLPTR;
 			++count;
 		}
 		else {
@@ -861,7 +866,7 @@ static void build_file_table(DBHANDLE *hdat)
 									npieces, nbm, nbk, nwm, nwk);
 						hdat->dbfiles[count].pieces = npieces;
 						hdat->dbfiles[count].max_pieces_1side = nbm + nbk;
-						hdat->dbfiles[count].fp = nullptr;
+						hdat->dbfiles[count].fp = NULLPTR;
 						++count;
 					}
 				}
@@ -871,6 +876,7 @@ static void build_file_table(DBHANDLE *hdat)
 	hdat->numdbfiles = count;
 }
 
+namespace detail {
 
 static int egdb_close(EGDB_DRIVER *handle)
 {
@@ -896,12 +902,12 @@ static int egdb_close(EGDB_DRIVER *handle)
 		std::free(hdat->dbfiles[i].cache_bufferi);
 		hdat->dbfiles[i].cache_bufferi = 0;
 
-		if (hdat->dbfiles[i].fp != nullptr)
+		if (hdat->dbfiles[i].fp != NULLPTR)
 			close_file(hdat->dbfiles[i].fp);
 
 		hdat->dbfiles[i].num_idx_blocks = 0;
 		hdat->dbfiles[i].num_cacheblocks = 0;
-		hdat->dbfiles[i].fp = nullptr;
+		hdat->dbfiles[i].fp = NULLPTR;
 	}
 	std::memset(hdat->dbfiles, 0, sizeof(hdat->dbfiles));
 
@@ -922,7 +928,7 @@ static int egdb_close(EGDB_DRIVER *handle)
 }
 
 
-static int verify_crc(EGDB_DRIVER *handle, void (*msg_fn)(char const*), int *abort, EGDB_VERIFY_MSGS *msgs)
+static int verify_crc(EGDB_DRIVER const *handle, void (*msg_fn)(char const*), int *abort, EGDB_VERIFY_MSGS *msgs)
 {
 	int i;
 	int status;
@@ -1003,7 +1009,7 @@ static int verify_crc(EGDB_DRIVER *handle, void (*msg_fn)(char const*), int *abo
 }
 
 
-static int get_pieces(EGDB_DRIVER *handle, int *max_pieces, int *max_pieces_1side, int *max_9pc_kings, int *max_8pc_kings_1side)
+static int get_pieces(EGDB_DRIVER const *handle, int *max_pieces, int *max_pieces_1side, int *max_9pc_kings, int *max_8pc_kings_1side)
 {
 	int i;
 	DBFILE *f;
@@ -1039,6 +1045,7 @@ static int get_pieces(EGDB_DRIVER *handle, int *max_pieces, int *max_pieces_1sid
 	return(0);
 }
 
+}	// namespace detail
 
 EGDB_DRIVER *egdb_open_mtc_runlen(int pieces, int kings_1side_8pcs,
 				int cache_mb, char const *directory, void (*msg_fn)(char const*), EGDB_TYPE db_type)
@@ -1066,11 +1073,11 @@ EGDB_DRIVER *egdb_open_mtc_runlen(int pieces, int kings_1side_8pcs,
 
 	handle->lookup = dblookup;
 	
-	handle->get_stats = get_db_stats;
-	handle->reset_stats = reset_db_stats;
-	handle->verify = verify_crc;
-	handle->close = egdb_close;
-	handle->get_pieces = get_pieces;
+	handle->get_stats = detail::get_db_stats;
+	handle->reset_stats = detail::reset_db_stats;
+	handle->verify = detail::verify_crc;
+	handle->close = detail::egdb_close;
+	handle->get_pieces = detail::get_pieces;
 	return(handle);
 }
 

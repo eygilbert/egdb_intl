@@ -1,5 +1,5 @@
 #include "builddb/compression_tables.h"
-#include "egdb/egdb_intl.h"
+#include "egdb/egdb_common.h"
 
 namespace egdb_interface {
 
