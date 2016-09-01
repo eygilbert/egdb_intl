@@ -117,7 +117,7 @@ Note that depending on the position and the database type, you sometimes cannot 
 **Notes**: Opening a db takes some time, but allows the db to be probed quickly during an engine search. Some of it is used for indexing data, and the rest is used to dynamically cache database data to minimize disk access during lookups. The more memory you give the driver, the faster it works on average during an engine search.
 
   - If you are opening a WLD database, give it the following values for `cache_mb`: 
-    - On a machine with at least 8 BiB of ram, setting the cache_mb to something like 3000 MiB less than the total PC memory gives good driver performance and still leaves some memory for Windows drivers and a few other smaller programs to run. 
+    - On a machine with at least 8 GiB of ram, setting the cache_mb to something like 3000 MiB less than the total PC memory gives good driver performance and still leaves some memory for Windows drivers and a few other smaller programs to run. 
     - On machines with less memory you'll have to make the margin smaller and manage the memory usage more carefully. My experience is that the driver actually works surprisingly well in a kingsrow search with the 8pc db and a very small setting like 1500 Mib, but of course more memory is better.
     - There are diminishing returns for settings larger than 20% of the total db size (~10000 MiB for type EGDB_WLD_TUN_V2), and larger settings cause egdb_open to take more time.
   - If you are opening the MTC database, give it a `cache_mb` value of 0. It will then automatically be initialized to its required amount of memory, approximately 25 MiB. 
