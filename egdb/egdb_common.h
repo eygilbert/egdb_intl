@@ -19,6 +19,9 @@ struct EGDB_DRIVER {
 #define NOT_SINGLEVALUE 127
 #define MTC_SKIPS 94
 
+/* Decode a moves-to-conv number that is >= the threshold for saving. */
+#define MTC_DECODE(val) (2 * ((val) - MTC_SKIPS))
+
 #define MAXMSG 256
 #define ONE_MB 1048576
 #define IDX_READBUFSIZE 20000
@@ -55,7 +58,6 @@ struct EGDB_DRIVER {
 
 #define LOWORD32(x) (uint32_t)((x) & 0xffffffff)
 
-typedef uint32_t INDEX;
 
 extern int get_num_subslices(int nbm, int nbk, int nwm, int nwk);
 int read_file(FILE_HANDLE fp, unsigned char *buf, size_t size, int pagesize);

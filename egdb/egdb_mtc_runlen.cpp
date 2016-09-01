@@ -21,9 +21,6 @@
 
 namespace egdb_interface {
 
-/* Decode a moves-to-conv number that is >= the threshold for saving. */
-#define MTC_DECODE(val) (2 * ((val) - MTC_SKIPS))
-
 #define MAXPIECES 8
 #define MAXPIECE 5
 
@@ -45,6 +42,8 @@ namespace egdb_interface {
 #define DBP DBP_MTC
 #define CCB CCB_MTC
 #define DBHANDLE DBHANDLE_MTC
+
+typedef uint32_t INDEX;
 
 typedef struct {
 	char is_present;

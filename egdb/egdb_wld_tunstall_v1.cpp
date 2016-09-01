@@ -45,6 +45,8 @@ namespace egdb_interface {
 #define CCB CCB_TUN_V1
 #define DBHANDLE DBHANDLE_TUN_V1
 
+typedef uint32_t INDEX;
+
 typedef struct {
 	char is_present;
 	char pieces;			/* number of pieces in this db file. */
@@ -59,7 +61,6 @@ typedef struct {
 	int hits;
 #endif
 } DBFILE;
-
 
 // definition of a structure for compressed databases
 typedef struct CPRSUBDB {

@@ -55,6 +55,8 @@ namespace egdb_interface {
 #define CCB CCB_HUFF
 #define DBHANDLE DBHANDLE_HUFF
 
+typedef uint32_t INDEX;
+
 typedef unsigned short SUBINDEX_INFO;
 
 typedef union {

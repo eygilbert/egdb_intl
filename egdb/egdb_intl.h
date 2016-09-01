@@ -3,6 +3,10 @@
 
 namespace egdb_interface {
 
+/* Option strings to egdb_open(). */
+#define MAXPIECES_OPTSTR "maxpieces"
+#define MAXKINGS_1SIDE_8PCS_OPTSTR "maxkings_1side_8pcs"
+
 typedef uint64_t EGDB_BITBOARD;
 
 /* This is the driver's definition of a draughts position.
@@ -36,6 +40,7 @@ enum WLD_VALUE {
 };
 
 enum MTC_VALUE {
+	MTC_UNKNOWN = 0,
 	MTC_LESS_THAN_THRESHOLD = 1,
 	MTC_THRESHOLD = 10,
 };

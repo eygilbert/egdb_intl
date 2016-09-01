@@ -362,8 +362,8 @@ int EGDB_INFO::lookup_with_search(BOARD *p, int color, int maxdepth, bool force_
 		}
 	}
 
-    // if maxdepth <= 2, value will not have been initialized
-	assert(maxdepth > 2);
+    // if maxdepth <= 1, value will not have been initialized
+	assert(maxdepth > 1);
 	return(value);
 }
 
