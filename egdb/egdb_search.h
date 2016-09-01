@@ -9,6 +9,17 @@ namespace egdb_interface {
 #define MAXREPDEPTH 64
 
 typedef struct {
+	short int og;
+	short int eg;
+	short int val;
+	short int index;
+	short int og_mir;
+	short int eg_mir;
+	short int val_mir;
+	short int index_mir;
+} LRSC;
+
+typedef struct {
 	int nbm;
 	int nbk;
 	int nwm;
@@ -21,6 +32,13 @@ typedef struct {
 	uint64_t blackkings;
 	uint64_t whitemen;
 	uint64_t whitekings;
+	int phase;
+	LRSC patscores[10];
+	LRSC lrbal;
+	LRSC men;
+	LRSC first_king;
+	LRSC multi_kings;
+	int value;
 } MATERIAL;
 
 class EGDB_INFO {
