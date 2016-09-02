@@ -45,7 +45,6 @@ namespace egdb_interface {
 #define CCB CCB_TUN_V1
 #define DBHANDLE DBHANDLE_TUN_V1
 
-typedef uint32_t INDEX;
 
 typedef struct {
 	char is_present;

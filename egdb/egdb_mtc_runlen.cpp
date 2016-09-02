@@ -43,8 +43,6 @@ namespace egdb_interface {
 #define CCB CCB_MTC
 #define DBHANDLE DBHANDLE_MTC
 
-typedef uint32_t INDEX;
-
 typedef struct {
 	char is_present;
 	char pieces;			/* number of pieces in this db file. */

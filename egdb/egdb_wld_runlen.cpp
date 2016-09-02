@@ -45,7 +45,6 @@ namespace egdb_interface {
 #define CCB CCB_RUNLEN
 #define DBHANDLE DBHANDLE_RUNLEN
 
-typedef uint32_t INDEX;
 
 typedef struct {
 	char is_present;
