@@ -3,16 +3,6 @@
 
 namespace egdb_interface {
 
-/* Option strings to egdb_open(). */
-#define MAXPIECES_OPTSTR "maxpieces"
-#define MAXKINGS_1SIDE_8PCS_OPTSTR "maxkings_1side_8pcs"
-
-/* Decode a moves-to-conv number that is >= the threshold for saving. */
-#define MTC_DECODE(val) (2 * ((val) - MTC_SKIPS))
-#define NOT_SINGLEVALUE 127
-#define MTC_SKIPS 94
-
-
 typedef uint64_t EGDB_BITBOARD;
 
 /* This is the driver's definition of a draughts position.

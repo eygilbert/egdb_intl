@@ -446,13 +446,11 @@ void open_options_test(void)
 {
 	int value1, value2;
 	EGDB_POSITION pos;
-	char options[100];
 
 	{
 		/* Verify that no slices with more than 2 kings on a side are loaded. */
 		std::printf("\nTesting open options.\n");
-		std::sprintf(options, "%s = %d; %s = %d", MAXPIECES_OPTSTR, 8, MAXKINGS_1SIDE_8PCS_OPTSTR, 2);
-		EGDB_DRIVER* db = egdb_open(options, 500, DB_TUN_V2, print_msgs);
+		EGDB_DRIVER *db = egdb_open("maxpieces = 8; maxkings_1side_8pcs = 2", 500, DB_TUN_V2, print_msgs);
 		if (!db) {
 			std::printf("Cannot open db at %s\n", DB_TUN_V2);
 			std::exit(1);
@@ -475,8 +473,7 @@ void open_options_test(void)
 
 	{
 		/* Verify that no slices with more than 6 pieces are loaded. */
-		std::sprintf(options, "%s = %d", MAXPIECES_OPTSTR, 6);
-		EGDB_DRIVER* db = egdb_open(options, 500, DB_TUN_V2, print_msgs);
+		EGDB_DRIVER *db = egdb_open("maxpieces = 6", 500, DB_TUN_V2, print_msgs);
 		if (!db) {
 			std::printf("Cannot open db at %s\n", DB_TUN_V2);
 			std::exit(1);

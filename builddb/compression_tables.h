@@ -13,6 +13,11 @@ namespace egdb_interface {
 /* Encode a moves-to-conv number that is >= the threshold for saving. */
 #define MTC_ENCODE(mtc) (MTC_SKIPS + (mtc) / 2)
 
+/* Decode a moves-to-conv number that is >= the threshold for saving. */
+#define MTC_DECODE(val) (2 * ((val) - MTC_SKIPS))
+#define NOT_SINGLEVALUE 127
+#define MTC_SKIPS 94
+
 #define SINGLEVALUE_CODES ".+-=?!"
 
 void init_compression_tables();

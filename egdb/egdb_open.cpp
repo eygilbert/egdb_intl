@@ -23,9 +23,9 @@ static void parse_options(char const *options, int *pieces, int *kings_1side_8pc
 		return;
 
 	{
-		char const *p = std::strstr(options, MAXPIECES_OPTSTR);
+		char const *p = std::strstr(options, "maxpieces");
 		if (p) {
-			p += std::strlen(MAXPIECES_OPTSTR);
+			p += std::strlen("maxpieces");
 			while (*p != '=')
 				++p;
 			++p;
@@ -35,9 +35,9 @@ static void parse_options(char const *options, int *pieces, int *kings_1side_8pc
 		}
 	}
 	{
-		char const* p = std::strstr(options, MAXKINGS_1SIDE_8PCS_OPTSTR);
+		char const* p = std::strstr(options, "maxkings_1side_8pcs");
 		if (p) {
-			p += std::strlen(MAXKINGS_1SIDE_8PCS_OPTSTR);
+			p += std::strlen("maxkings_1side_8pcs");
 			while (*p != '=')
 				++p;
 			++p;
