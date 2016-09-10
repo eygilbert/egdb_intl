@@ -426,16 +426,17 @@ void mtc_test()
 
 		/* For 7 and 8 pieces, only test every 10th position, to speed up the test. */
 		++count;
-		if ((count % (10 * FAST_TEST_MULT)) == 0 && bitcount64(pos.black | pos.white) >= 6) {
-			print_fen(&pos, color, linebuf);
-			std::printf("%s ", linebuf);
-			value = egdb_lookup(mtc, (EGDB_POSITION *)&pos, color, 0);
-			if (value >= 12) {
-				test_best_mtc_successor(&wld, mtc, &pos, color);
-			}
+		if ((count % (10 * FAST_TEST_MULT)) && bitcount64(pos.black | pos.white) >= 7)
+			continue;
 
-			std::printf("mtc %d\n", value);
+		print_fen(&pos, color, linebuf);
+		std::printf("%s ", linebuf);
+		value = egdb_lookup(mtc, (EGDB_POSITION *)&pos, color, 0);
+		if (value >= 12) {
+			test_best_mtc_successor(&wld, mtc, &pos, color);
 		}
+
+		std::printf("mtc %d\n", value);
 	}
 	egdb_close(mtc);
 	egdb_close(wld.handle);
