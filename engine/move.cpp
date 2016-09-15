@@ -1,4 +1,5 @@
 #include "egdb/platform.h"
+#include "engine/bitcount.h"
 #include "engine/move.h"
 #include "engine/board.h"
 #include "engine/bool.h"
@@ -2275,6 +2276,25 @@ void get_fromto(BITBOARD fromboard, BITBOARD toboard, int *fromsq, int *tosq)
 void get_fromto(BOARD *fromboard, BOARD *toboard, int color, int *fromsq, int *tosq)
 {
 	get_fromto(fromboard->pieces[color], toboard->pieces[color] , fromsq, tosq);
+}
+
+
+bool is_conversion_move(BOARD *from, BOARD *to, int color)
+{
+	uint64_t from_bits, to_bits, moved_bits;
+
+	/* It is a conversion move if its a capture. */
+	from_bits = from->black | from->white;
+	to_bits = to->black | to->white;
+	if (bitcount64(from_bits) > bitcount64(to_bits))
+		return(true);
+
+	/* Return true if there is a man move. */
+	moved_bits = from_bits & ~to_bits;
+	if (moved_bits & from->king)
+		return(false);
+	else
+		return(true);
 }
 
 }   // namespace egdb_interface

@@ -39,7 +39,7 @@ using namespace egdb_interface;
 #define DB_RUNLEN C_DRIVE "db_intl/wld_runlen"	/* Need 6 pieces for test. */
 #define DB_TUN_V1 E_DRIVE "db_intl/wld_v1"		/* Need 7 pieces for test. */
 #define DB_TUN_V2 C_DRIVE "db_intl/wld_v2"		/* Need 8 pieces for test. */
-#define DB_MTC E_DRIVE "db_intl/slice32_mtc"	/* Need 8 pieces for test. */
+#define DB_MTC E_DRIVE "db_intl/mtc"	/* Need 8 pieces for test. */
 const int maxpieces = 8;
 #endif
 
@@ -264,25 +264,6 @@ int identify(char const *dir, DB_INFO *db)
 		db->excludes_some_sidetomove_colors = false;
 	}
 	return(0);
-}
-
-
-bool is_conversion_move(BOARD *from, BOARD *to, int color)
-{
-	uint64_t from_bits, to_bits, moved_bits;
-
-	/* It is a conversion move if its a capture. */
-	from_bits = from->black | from->white;
-	to_bits = to->black | to->white;
-	if (bitcount64(from_bits) > bitcount64(to_bits))
-		return(true);
-
-	/* Return true if there is a man move. */
-	moved_bits = from_bits & ~to_bits;
-	if (moved_bits & from->king)
-		return(false);
-	else
-		return(true);
 }
 
 

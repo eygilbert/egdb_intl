@@ -82,19 +82,22 @@ inline int needs_reversal(int nbm, int nbk, int nwm, int nwk, int color)
 
 /*
  * Do a binary search to find the block number that contains the target index.
+ * block_starts[] has the first index in each block[i].
+ * begin is the index into block_starts[] of the first block to search.
+ * end is index into block_starts[] of one past the last block to search.
  */
-inline int find_block(int first, int last, uint32_t block_starts[], uint32_t target)
+inline int find_block(int begin, int end, uint32_t block_starts[], uint32_t target)
 {
 	int mid;
 
-	while (last > first + 1) {
-		mid = first + (last - first) / 2;
+	while (end > begin + 1) {
+		mid = begin + (end - begin) / 2;
 		if (block_starts[mid] <= target)
-			first = mid;
+			begin = mid;
 		else
-			last = mid;
+			end = mid;
 	}
-	return(first);
+	return(begin);
 }
 
 

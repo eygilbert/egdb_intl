@@ -47,6 +47,7 @@ void get_from_to(int jumpcount, int movei, int color, BOARD *board, MOVELIST *mo
 void get_fromto(BITBOARD fromboard, BITBOARD toboard, int *fromsq, int *tosq);
 void get_fromto(BOARD *fromboard, BOARD *toboard, int color, int *fromsq, int *tosq);
 int match_jumpto_square(CAPTURE_INFO *cap, int jumpindex, int color, int jumpto_square, int jumpcount);
+bool is_conversion_move(BOARD *from, BOARD *to, int color);
 
 
 inline void get_fromto_bitnums(BITBOARD fromboard, BITBOARD toboard, int *frombitnum, int *tobitnum)
