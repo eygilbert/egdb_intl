@@ -11,6 +11,3 @@
 #include <cassert>
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
-
-#define L1_CACHE_SIZE 64
-#define CACHE_ALIGN __declspec(align(L1_CACHE_SIZE))

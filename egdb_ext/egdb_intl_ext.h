@@ -24,7 +24,7 @@ public:
 		safe_close();
 	}
 
-	int reopen(char const *options, int cache_mb, char const *directory, void (*msg_fn)(char const *msg))
+	void reopen(char const *options, int cache_mb, char const *directory, void (*msg_fn)(char const *msg))
 	{
 		safe_close();
 		handle_ = egdb_open(options, cache_mb, directory, msg_fn);
