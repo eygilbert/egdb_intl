@@ -15,7 +15,7 @@
 			#define release_lock(a) LeaveCriticalSection(&a)
 			#define take_lock(a) EnterCriticalSection(&a)
 
-		#elif (LOCKING_METHOD == ATOMIC_EXCHANGE)
+		#elif (LOCKING_METHOD == USE_ATOMIC_EXCHANGE)
 
 			#include <intrin.h>
 

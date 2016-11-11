@@ -40,7 +40,7 @@
         #define USE_ATOMIC_FLAG     2
         #define USE_ATOMIC_BOOL     3
 
-        #define LOCKING_METHOD 0
+        #define LOCKING_METHOD 1
 
 #endif
 

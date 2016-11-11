@@ -47,7 +47,7 @@ int main()
 		tinfo[i].threadobj.join();
 	}
 
-	std::printf("%.1f secs, final shared value is %" PRId64 "check \n", (std::clock() - t0) / (double)CLOCKS_PER_SEC, shared);
+	std::printf("%.1f secs, final shared value is %" PRId64 " check\n", (std::clock() - t0) / (double)CLOCKS_PER_SEC, shared);
 
 	return 0;
 }
