@@ -510,7 +510,7 @@ void parallel_read(EGDB_DRIVER *db, int &value)
 
 #ifdef USE_MULTI_THREADING
 
-	void test_mutual_exclusion(char const *dbpath, LOCK_TYPE *lock)
+	void test_mutual_exclusion(char const *dbpath, LOCK_TYPE *m)
 	{
 		std::printf("\nTesting mutual exclusion, %s\n", dbpath);
 
@@ -523,22 +523,20 @@ void parallel_read(EGDB_DRIVER *db, int &value)
 
 		int value = EGDB_UNKNOWN;
                 std::chrono::milliseconds delay_time(3000);
-		{ // BEGIN CRITICAL SECTION
-		        std::lock_guard<LOCK_TYPE> guard(*lock);
-
-                        std::thread threadobj(parallel_read, db, std::ref(value));
-                        std::this_thread::sleep_for(delay_time);
-                        if (value != EGDB_UNKNOWN) {
-                                printf("Lock did not enforce mutual exclusion.\n");
-                                std::exit(1);
-                        }
-                        threadobj.detach();
-		} // END CRITICAL SECTION
+		m->lock();
+                std::thread threadobj(parallel_read, db, std::ref(value));
+                std::this_thread::sleep_for(delay_time);
+                if (value != EGDB_UNKNOWN) {
+                        printf("Lock did not enforce mutual exclusion.\n");
+                        std::exit(1);
+                }
+		m->unlock();
 		std::this_thread::sleep_for(delay_time);
 		if (value == EGDB_UNKNOWN) {
 			printf("Releasing lock did not disable mutual exclusion.\n");
 			std::exit(1);
 		}
+		threadobj.join();
 		egdb_close(db);
 	}
 	
