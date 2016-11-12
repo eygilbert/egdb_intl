@@ -36,7 +36,6 @@ int main()
 	thread_t tinfo[maxthreads];
 
 	t0 = std::clock();
-	//init_lock(lock);
 	for (i = 0; i < maxthreads; ++i)
 		tinfo[i].threadobj = std::thread(incfunc, (int64_t)1);
  	for (i = 0; i < maxthreads; ++i) {

@@ -26,7 +26,7 @@ using namespace egdb_interface;
 
 #define FAST_TEST_MULT 1		/* Set to 5 to speed up the tests. */
 
-#define EYG
+//#define EYG
 #ifdef EYG
 	#ifdef _MSC_VER
 		// drive name where Kingsrow is installed under Windows
@@ -44,7 +44,7 @@ using namespace egdb_interface;
 const int maxpieces = 8;
 #endif
 
-//#define RH
+#define RH
 #ifdef RH
 	#ifdef _MSC_VER
 		// drive name where Kingsrow is installed under Windows

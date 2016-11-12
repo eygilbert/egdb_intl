@@ -33,16 +33,6 @@
 
 #define USE_MULTI_THREADING
 
-#ifdef USE_MULTI_THREADING
-
-        #define USE_MUTEX    0
-        #define USE_EXCHANGE 1
-        #define USE_SPINLOCK 2
-
-        #define LOCKING_METHOD 1
-
-#endif
-
 // --------------
 // C++98 vs C++11
 // --------------
