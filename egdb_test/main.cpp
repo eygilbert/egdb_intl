@@ -512,8 +512,6 @@ void parallel_read(EGDB_DRIVER *db, int &value)
 
 	void test_mutual_exclusion(char const *dbpath, LOCK_TYPE *lock)
 	{
-		int value;
-
 		std::printf("\nTesting mutual exclusion, %s\n", dbpath);
 
 		// Open with minimum cache memory, so that all lookups will have to go to disk.
@@ -523,7 +521,7 @@ void parallel_read(EGDB_DRIVER *db, int &value)
 			std::exit(1);
 		}
 
-		value = EGDB_UNKNOWN;
+		int value = EGDB_UNKNOWN;
                 std::chrono::milliseconds delay_time(3000);
 		{ // BEGIN CRITICAL SECTION
 		        std::lock_guard<LOCK_TYPE> guard(*lock);
@@ -534,7 +532,7 @@ void parallel_read(EGDB_DRIVER *db, int &value)
                                 printf("Lock did not enforce mutual exclusion.\n");
                                 std::exit(1);
                         }
-                        threadobj.join();
+                        threadobj.detach();
 		} // END CRITICAL SECTION
 		std::this_thread::sleep_for(delay_time);
 		if (value == EGDB_UNKNOWN) {
@@ -558,7 +556,7 @@ int main(int argc, char *argv[])
 	if (identify(DB_TUN_V1, &db2))
 		return(1);
 
-	/* Open the endgame db drivers. */
+	// Open the endgame db drivers.
 	char opt[50];
 	std::sprintf(opt, "maxpieces=%d", maxpieces);
 	db1.handle = egdb_open(opt, 2000, DB_TUN_V2, print_msgs);
@@ -572,7 +570,7 @@ int main(int argc, char *argv[])
 		return(1);
 	}
 
-	/* Do a quick verification of the indexing functions. */
+	// Do a quick verification of the indexing functions.
 	t0 = std::clock();
 	std::printf("\nTesting indexing round trip\n");
 	for (Slice first(2), last(10); first != last; first.increment()) {
@@ -587,7 +585,7 @@ int main(int argc, char *argv[])
 		verify(&db1, &db2, first, 50000 / FAST_TEST_MULT);
 	}
 
-	/* Close db2, leave db1 open for the next test. */
+	// Close db2, leave db1 open for the next test.
 	egdb_close(db2.handle);
 
 	std::printf("\nVerifying WLD runlen against WLD Tunstall v2 (up to 6 pieces).\n");
