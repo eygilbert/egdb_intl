@@ -16,7 +16,7 @@
                 #define USE_MUTEX                            3
                 #define USE_SPINLOCK                         4
 
-                #define LOCKING_METHOD                       4
+                #define LOCKING_METHOD                       3
         #endif
 
 	#if defined(_MSC_VER) && defined(USE_WIN_API)
@@ -47,10 +47,10 @@
                         namespace egdb_interface {
 
                         class interlocked_exchange {
-                                CACHE_ALIGN volatile long m_data[L1_CACHE_SIZE / sizeof(long)] = { 0 };
+                                CACHE_ALIGN volatile long m_lock[L1_CACHE_SIZE / sizeof(long)] = { 0 };
                         public:
-                                void lock()   { while(m_data[0] || _InterlockedExchange(&m_data[0], 1)); }
-                                void unlock() { m_data[0] = 0;                                           }
+                                void lock()   { while(m_lock[0] || _InterlockedExchange(&m_lock[0], 1)); }
+                                void unlock() { m_lock[0] = 0;                                           }
                         };
 
                         typedef interlocked_exchange LOCK_TYPE;
@@ -115,3 +115,9 @@
         }       // namespace
 
 #endif
+
+// backward compatibility with the older Kingsrow locking macros
+#define STATIC_DEFINE_LOCK(m) static LOCK_TYPE m
+template<class Mutex> void init_lock(Mutex& /* m */) { /* no-op */ }
+template<class Mutex> void take_lock(Mutex& m)       { m.lock();   }
+template<class Mutex> void release_lock(Mutex& m)    { m.unlock(); }
