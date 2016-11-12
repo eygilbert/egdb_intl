@@ -39,7 +39,7 @@
 
                         }       // namespace
 
-		#elif (LOCKING_METHOD == USE_INTERLOCKED_EXCHANGE)
+		#elif (LOCKING_METHOD == USE_WIN_INTERLOCKED_EXCHANGE)
 
 			#include <intrin.h>
                         #pragma intrinsic (_InterlockedExchange)
@@ -49,8 +49,8 @@
                         class interlocked_exchange {
                                 CACHE_ALIGN volatile long m_data[L1_CACHE_SIZE / sizeof(long)] = { 0 };
                         public:
-                                void lock()   { while(m_lock[0] || _InterlockedExchange(&m_lock[0], 1)); }
-                                void unlock() { m_lock[0] = 0;                                           }
+                                void lock()   { while(m_data[0] || _InterlockedExchange(&m_data[0], 1)); }
+                                void unlock() { m_data[0] = 0;                                           }
                         };
 
                         typedef interlocked_exchange LOCK_TYPE;
