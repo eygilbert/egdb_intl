@@ -35,10 +35,9 @@
 
 #ifdef USE_MULTI_THREADING
 
-        #define USE_MUTEX           0
-        #define USE_ATOMIC_EXCHANGE 1
-        #define USE_ATOMIC_FLAG     2
-        #define USE_ATOMIC_BOOL     3
+        #define USE_MUTEX    0
+        #define USE_EXCHANGE 1
+        #define USE_SPINLOCK 2
 
         #define LOCKING_METHOD 1
 

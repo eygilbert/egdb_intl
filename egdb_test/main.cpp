@@ -16,6 +16,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
+#include <mutex>
 
 #ifdef USE_MULTI_THREADING
 	#include <thread>
@@ -75,8 +76,8 @@ typedef struct {
 } DB_INFO;
 
 namespace egdb_interface {
-	extern LOCKT *get_tun_v1_lock();
-	extern LOCKT *get_tun_v2_lock();
+	extern LOCK_TYPE *get_tun_v1_lock();
+	extern LOCK_TYPE *get_tun_v2_lock();
 }
 
 
@@ -509,7 +510,7 @@ void parallel_read(EGDB_DRIVER *db, int &value)
 
 #ifdef USE_MULTI_THREADING
 
-	void test_mutual_exclusion(char const *dbpath, LOCKT *lock)
+	void test_mutual_exclusion(char const *dbpath, LOCK_TYPE *lock)
 	{
 		int value;
 
@@ -523,21 +524,23 @@ void parallel_read(EGDB_DRIVER *db, int &value)
 		}
 
 		value = EGDB_UNKNOWN;
-		take_lock(*lock);
-		std::thread threadobj(parallel_read, db, std::ref(value));
-		std::chrono::milliseconds delay_time(3000);
-		std::this_thread::sleep_for(delay_time);
-		if (value != EGDB_UNKNOWN) {
-			printf("Lock did not enforce mutual exclusion.\n");
-			std::exit(1);
-		}
-		release_lock(*lock);
+                std::chrono::milliseconds delay_time(3000);
+		{ // BEGIN CRITICAL SECTION
+		        std::lock_guard<LOCK_TYPE> guard(*lock);
+
+                        std::thread threadobj(parallel_read, db, std::ref(value));
+                        std::this_thread::sleep_for(delay_time);
+                        if (value != EGDB_UNKNOWN) {
+                                printf("Lock did not enforce mutual exclusion.\n");
+                                std::exit(1);
+                        }
+                        threadobj.join();
+		} // END CRITICAL SECTION
 		std::this_thread::sleep_for(delay_time);
 		if (value == EGDB_UNKNOWN) {
-			printf("Releasking lock did not disable mutual exclusion.\n");
+			printf("Releasing lock did not disable mutual exclusion.\n");
 			std::exit(1);
 		}
-		threadobj.detach();
 		egdb_close(db);
 	}
 	
