@@ -26,7 +26,7 @@ using namespace egdb_interface;
 
 #define FAST_TEST_MULT 1		/* Set to 5 to speed up the tests. */
 
-//#define EYG
+#define EYG
 #ifdef EYG
 	#ifdef _MSC_VER
 		// drive name where Kingsrow is installed under Windows
@@ -44,7 +44,7 @@ using namespace egdb_interface;
 const int maxpieces = 8;
 #endif
 
-#define RH
+//#define RH
 #ifdef RH
 	#ifdef _MSC_VER
 		// drive name where Kingsrow is installed under Windows
@@ -522,21 +522,20 @@ void parallel_read(EGDB_DRIVER *db, int &value)
 		}
 
 		int value = EGDB_UNKNOWN;
-                std::chrono::milliseconds delay_time(3000);
+		std::chrono::milliseconds delay_time(2000);
 		m->lock();
-                std::thread threadobj(parallel_read, db, std::ref(value));
-                std::this_thread::sleep_for(delay_time);
-                if (value != EGDB_UNKNOWN) {
-                        printf("Lock did not enforce mutual exclusion.\n");
-                        std::exit(1);
-                }
-		m->unlock();
+		std::thread threadobj(parallel_read, db, std::ref(value));
 		std::this_thread::sleep_for(delay_time);
+        if (value != EGDB_UNKNOWN) {
+			printf("Lock did not enforce mutual exclusion.\n");
+			std::exit(1);
+        }
+		m->unlock();
+		threadobj.join();
 		if (value == EGDB_UNKNOWN) {
 			printf("Releasing lock did not disable mutual exclusion.\n");
 			std::exit(1);
 		}
-		threadobj.join();
 		egdb_close(db);
 	}
 	
