@@ -20,7 +20,7 @@ void incfunc(int64_t incr)
 		shared += incr;
 	}
 	for (int64_t i = 0; i < maxiters; ++i) {
-                std::lock_guard<LOCK_TYPE> guard(lock);
+		std::lock_guard<LOCK_TYPE> guard(lock);
 		shared -= incr;
 	}
 }

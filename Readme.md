@@ -43,7 +43,7 @@ The minimum requirements depend on the operating system in use (Windows or Linux
 
 **Compiling the driver**
 
-  - On Windows: The `example` directory includes a project file for Microsoft Visual Studio 2015. Alternatively, one can use the CMake GUI for Windows to automatically generate a Visual Studio project file. To run the example, edit the macro `DB_PATH` near the top of `example/main.cpp` to point it to the location of your db files, then compile and run without arguments.  
+  - On Windows: The `example` directory includes a project file for Microsoft Visual Studio 2015. Alternatively, one can use the CMake GUI for Windows to automatically generate a Visual Studio project file. To run the example, edit the macro `DB_PATH` near the top of `example/main.cpp` to point it to the location of your db files, then compile and run without arguments. When integrating the driver into your own Visual Studio projects, be aware that the driver uses C standard library functions that VS2015 will give warnings about. A simple way to turn off these warnings is by adding the preprocessor definition _CRT_SECURE_NO_WARNINGS to the project file. 
   - On Linux: do the usual CMake incantations for an out-of-tree build:
 
 
