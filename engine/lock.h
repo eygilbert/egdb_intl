@@ -1,72 +1,123 @@
 #pragma once
-#include "engine/project.h"	// CACHE_ALIGN, L1_CACHE_SIZE
+#include "engine/config.h"
 
 #ifdef USE_MULTI_THREADING
 
+        #if defined(_MSC_VER) && defined(USE_WIN_API)
+                #define USE_CRITICAL_SECTION         0
+                #define USE_WIN_INTERLOCKED_EXCHANGE 1
+
+                #define LOCKING_METHOD               1
+        #else
+                #if !defined(_MSC_VER)
+                        #define USE_GNU_INTERLOCKED_EXCHANGE 2
+                #endif
+
+                #define USE_MUTEX                            3
+                #define USE_SPINLOCK                         4
+
+                #define LOCKING_METHOD                       3
+        #endif
+
 	#if defined(_MSC_VER) && defined(USE_WIN_API)
 
-		#define USE_CRITICAL_SECTION 0
-
-		#if USE_CRITICAL_SECTION
+		#if (LOCKING_METHOD == USE_CRITICAL_SECTION)
 
 			#include <Windows.h>
 
-			#define LOCKT CRITICAL_SECTION
-			#define STATIC_DEFINE_LOCK(lock) static LOCKT lock
-			#define init_lock(a) InitializeCriticalSection(&a)
-			#define release_lock(a) LeaveCriticalSection(&a)
-			#define take_lock(a) EnterCriticalSection(&a)
+                        namespace egdb_interface {
 
-		#else
+                        class critical_section {
+                                CRITICAL_SECTION m_critical_section;
+                        public:
+                                critical_section() { InitializeCriticalSection(&m_critical_section); }
+                                void lock()        {      EnterCriticalSection(&m_critical_section); }
+                                void unlock()      {      LeaveCriticalSection(&m_critical_section); }
+                        };
+
+                        typedef critical_section LOCK_TYPE;
+
+                        }       // namespace
+
+		#elif (LOCKING_METHOD == USE_WIN_INTERLOCKED_EXCHANGE)
 
 			#include <intrin.h>
+                        #pragma intrinsic (_InterlockedExchange)
 
-	namespace egdb_interface {
+                        namespace egdb_interface {
 
-	typedef volatile CACHE_ALIGN long LOCKT[L1_CACHE_SIZE / sizeof(long)];
-	typedef volatile long *const LOCKT_PTR;
-	#pragma intrinsic (_InterlockedExchange)
-	#define interlocked_exchange(target, value) _InterlockedExchange(target, value)
+                        class interlocked_exchange {
+                                CACHE_ALIGN volatile long m_lock[L1_CACHE_SIZE / sizeof(long)] = { 0 };
+                        public:
+                                void lock()   { while(m_lock[0] || _InterlockedExchange(&m_lock[0], 1)); }
+                                void unlock() { m_lock[0] = 0;                                           }
+                        };
 
-			#define is_locked(lock) ((lock)[0])
-			#define set_lock_state(lock, state) ((lock)[0] = (state))
-			#define STATIC_DEFINE_LOCK(lock) static LOCKT lock
-			#define init_lock(lock) set_lock_state(lock, 0)
-			static inline void volatile take_lock(LOCKT_PTR lock) { while (is_locked(lock) || interlocked_exchange(lock, 1)); }
-			static inline void volatile release_lock(LOCKT_PTR lock) {set_lock_state(lock, 0);}
+                        typedef interlocked_exchange LOCK_TYPE;
 
-	}	// namespace
-
-		#endif
+                        }       // namespace
+                #endif
 
 	#else
+                #if (LOCKING_METHOD == USE_MUTEX)
 
-		#include <atomic>
+                        #include <mutex>
 
-		namespace egdb_interface {
+                        typedef std::mutex LOCK_TYPE;
 
-		typedef std::atomic_flag LOCKT;
+                #elif (!defined(_MSC_VER) && LOCKING_METHOD == USE_GNU_INTERLOCKED_EXCHANGE)
 
-		#define STATIC_DEFINE_LOCK(lock) static LOCKT lock = ATOMIC_FLAG_INIT
-		#define init_lock(lock)
-		static inline void take_lock(LOCKT& lock) { while (lock.test_and_set(std::memory_order_acquire)) { ; } }
-		static inline void release_lock(LOCKT& lock) { lock.clear(std::memory_order_release); }
+                        namespace egdb_interface {
 
-		}	// namespace
+                        class interlocked_exchange {
+                                CACHE_ALIGN volatile char m_lock[L1_CACHE_SIZE] = { 0 };
+                        public:
+                                void lock()   { while(m_lock[0] || __sync_lock_test_and_set(&m_lock[0], 1)); }
+                                void unlock() { __sync_lock_release(&m_lock[0]);                             }
+                        };
+
+                        typedef interlocked_exchange LOCK_TYPE;
+
+                        }       // namespace
+
+                #elif (LOCKING_METHOD == USE_SPINLOCK)
+
+                        #include <atomic>
+
+                        namespace egdb_interface {
+
+                        class spinlock {
+                                std::atomic_flag m_flag = ATOMIC_FLAG_INIT;
+                        public:
+                                void lock()   { while(m_flag.test_and_set(std::memory_order_acquire)); }
+                                void unlock() { m_flag.clear(std::memory_order_release);               }
+                        };
+
+                        typedef spinlock LOCK_TYPE;
+
+                        }       // namespace
+
+                 #endif
 
 	#endif
 
 #else
 
-		namespace egdb_interface {
+        namespace egdb_interface {
 
-		typedef int LOCKT;
-	
-		#define STATIC_DEFINE_LOCK(lock) static LOCKT lock = 0
-		#define init_lock(lock)
-		static inline void take_lock(LOCKT& /*lock*/) {  }
-		static inline void release_lock(LOCKT& /*lock*/) {  }
-	
-		}	// namespace
+        struct null_lock {
+                void lock()   {}
+                void unlock() {}
+        };
+
+        typedef null_lock LOCK_TYPE;
+
+        }       // namespace
 
 #endif
+
+// backward compatibility with the older Kingsrow locking macros
+#define STATIC_DEFINE_LOCK(m) static LOCK_TYPE m
+template<class Mutex> void init_lock(Mutex& /* m */) { /* no-op */ }
+template<class Mutex> void take_lock(Mutex& m)       { m.lock();   }
+template<class Mutex> void release_lock(Mutex& m)    { m.unlock(); }

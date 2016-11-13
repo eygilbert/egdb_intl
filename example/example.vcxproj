@@ -137,10 +137,12 @@
     <ClInclude Include="..\egdb\crc.h" />
     <ClInclude Include="..\egdb\egdb_common.h" />
     <ClInclude Include="..\egdb\egdb_intl.h" />
+    <ClInclude Include="..\egdb\platform.h" />
     <ClInclude Include="..\engine\bicoef.h" />
     <ClInclude Include="..\engine\bitcount.h" />
     <ClInclude Include="..\engine\board.h" />
     <ClInclude Include="..\engine\bool.h" />
+    <ClInclude Include="..\engine\config.h" />
     <ClInclude Include="..\engine\lock.h" />
     <ClInclude Include="..\engine\project.h" />
     <ClInclude Include="..\engine\reverse.h" />

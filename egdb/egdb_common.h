@@ -5,20 +5,6 @@
 
 namespace egdb_interface {
 
-/* The driver handle type */
-struct EGDB_DRIVER {
-	int (*lookup)(EGDB_DRIVER *handle, EGDB_POSITION const *position, int color, int cl);
-	void (*reset_stats)(EGDB_DRIVER *handle);
-	EGDB_STATS *(*get_stats)(EGDB_DRIVER const *handle);
-	int (*verify)(EGDB_DRIVER const *handle, void (*msg_fn)(char const *msg), int *abort, EGDB_VERIFY_MSGS *msgs);
-	int (*close)(EGDB_DRIVER *handle);
-	int (*get_pieces)(EGDB_DRIVER const *handle, int *max_pieces, int *max_pieces_1side, int *max_9pc_kings, int *max_8pc_kings_1side);
-	void *internal_data;
-};
-
-#define NOT_SINGLEVALUE 127
-#define MTC_SKIPS 94
-
 #define MAXMSG 256
 #define ONE_MB 1048576
 #define IDX_READBUFSIZE 20000
@@ -57,7 +43,18 @@ struct EGDB_DRIVER {
 
 typedef uint32_t INDEX;
 
-extern int get_num_subslices(int nbm, int nbk, int nwm, int nwk);
+/* The driver handle type */
+struct EGDB_DRIVER {
+	int (*lookup)(EGDB_DRIVER *handle, EGDB_POSITION const *position, int color, int cl);
+	void (*reset_stats)(EGDB_DRIVER *handle);
+	EGDB_STATS *(*get_stats)(EGDB_DRIVER const *handle);
+	int (*verify)(EGDB_DRIVER const *handle, void (*msg_fn)(char const *msg), int *abort, EGDB_VERIFY_MSGS *msgs);
+	int (*close)(EGDB_DRIVER *handle);
+	int (*get_pieces)(EGDB_DRIVER const *handle, int *max_pieces, int *max_pieces_1side, int *max_9pc_kings, int *max_8pc_kings_1side);
+	void *internal_data;
+};
+
+int get_num_subslices(int nbm, int nbk, int nwm, int nwk);
 int read_file(FILE_HANDLE fp, unsigned char *buf, size_t size, int pagesize);
 
 
@@ -85,19 +82,22 @@ inline int needs_reversal(int nbm, int nbk, int nwm, int nwk, int color)
 
 /*
  * Do a binary search to find the block number that contains the target index.
+ * block_starts[] has the first index in each block[i].
+ * begin is the index into block_starts[] of the first block to search.
+ * end is index into block_starts[] of one past the last block to search.
  */
-inline int find_block(int first, int last, uint32_t block_starts[], uint32_t target)
+inline int find_block(int begin, int end, uint32_t block_starts[], uint32_t target)
 {
 	int mid;
 
-	while (last > first + 1) {
-		mid = first + (last - first) / 2;
+	while (end > begin + 1) {
+		mid = begin + (end - begin) / 2;
 		if (block_starts[mid] <= target)
-			first = mid;
+			begin = mid;
 		else
-			last = mid;
+			end = mid;
 	}
-	return(first);
+	return(begin);
 }
 
 

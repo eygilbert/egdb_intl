@@ -1,50 +1,5 @@
 #pragma once
-
-// -------------------------------------------------------------
-// when using Visual C++, define this to rely on the Windows API
-// -------------------------------------------------------------
-
-#ifdef _MSC_VER
-	#define USE_WIN_API 
-#endif
-
-// ------------
-// 32 vs 64 bit
-// ------------
-
-#ifdef _MSC_VER
-
-	#if _WIN64
-		#define ENVIRONMENT64
-	#else
-		#define ENVIRONMENT32
-	#endif
-
-#else
-
-	#if __x86_64__ || __ppc64__
-		#define ENVIRONMENT64
-	#else
-		#define ENVIRONMENT32
-	#endif
-
-#endif
-
-// --------------
-// C++98 vs C++11
-// --------------
-
-#if __cplusplus < 201103L
-	#define NULLPTR NULL
-#else
-	#define NULLPTR nullptr
-#endif
-
-// ---------------
-// multi-threading
-// ---------------
-
-#define USE_MULTI_THREADING
+#include "engine/config.h"
 
 // ------------------
 // System information
@@ -482,6 +437,7 @@
 		}
 
 		}	// namespace
+
 	#endif
 
 #endif

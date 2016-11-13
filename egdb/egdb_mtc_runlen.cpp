@@ -21,9 +21,6 @@
 
 namespace egdb_interface {
 
-/* Decode a moves-to-conv number that is >= the threshold for saving. */
-#define MTC_DECODE(val) (2 * ((val) - MTC_SKIPS))
-
 #define MAXPIECES 8
 #define MAXPIECE 5
 

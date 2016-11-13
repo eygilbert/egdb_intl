@@ -1,5 +1,6 @@
 #include "builddb/compression_tables.h"
-#include "egdb/egdb_common.h"
+#include "egdb/egdb_intl.h"
+#include <stdlib.h>
 
 namespace egdb_interface {
 
@@ -34,12 +35,14 @@ int mtc_skip[MTC_SKIPS] = {
 };
 
 int skipindex[MAXSKIP + 1]; // holds the index of the next smaller or equal skip.
+int skipindex_inc[MAXSKIP_INC + 1];
 
 int runlength[256];					/* holds the run length for every byte. */
 int runlength_inc[256];				/* holds the run length for every byte. */
 int runlength_4val[256];
 int runlength_mtc[256];
 unsigned short runlength16[65536];	/* the run length of each 2 bytes. */
+unsigned int *runlength16_mtc;
 int compressed_value[256];			/* holds the value for every byte. */
 int compressed_value_inc[256];		/* holds the value for every byte. */
 int compressed_value_4val[256];
@@ -56,6 +59,21 @@ void init_skips()
 		for (j = SKIPS - 1; j >= 0; j--) {
 			if (skip[j] <= i) {
 				skipindex[i] = j;
+				break;
+			}
+		}
+	}
+}
+
+
+void init_skips_inc()
+{
+	int i, j;
+
+	for (i = 0; i <= MAXSKIP_INC; i++) {
+		for (j = SKIPS_INC - 1; j >= 0; j--) {
+			if (skip_inc[j] <= i) {
+				skipindex_inc[i] = j;
 				break;
 			}
 		}
@@ -103,10 +121,24 @@ void init_runlengths_inc()
 }
 
 
+void init_runlength16_mtc()
+{
+	int i;
+
+	if (!runlength16_mtc) {
+		runlength16_mtc = (unsigned int *)malloc(65536 * sizeof(*runlength16_mtc));
+		for (i = 0; i < 65536; ++i)
+			runlength16_mtc[i] = runlength_mtc[i & 0xff] + runlength_mtc[i >> 8];
+	}
+
+}
+
+
 void init_compression_tables()
 {
 	init_skips();
 	init_runlengths();
+	init_skips_inc();
 	init_runlengths_inc();
 }
 

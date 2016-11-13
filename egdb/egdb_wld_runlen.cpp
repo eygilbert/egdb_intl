@@ -17,6 +17,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
+#include <mutex>
 #include <utility>
 
 namespace egdb_interface {
@@ -44,6 +45,7 @@ namespace egdb_interface {
 #define DBP DBP_RUNLEN
 #define CCB CCB_RUNLEN
 #define DBHANDLE DBHANDLE_RUNLEN
+
 
 typedef struct {
 	char is_present;
@@ -118,7 +120,7 @@ typedef struct {
 	unsigned int crc;
 } DBCRC;
 
-STATIC_DEFINE_LOCK(egdb_lock);
+static LOCK_TYPE egdb_lock;
 
 /* A table of crc values for each database file. */
 static DBCRC dbcrc[] = {
@@ -382,60 +384,59 @@ int dblookup(EGDB_DRIVER *handle, EGDB_POSITION const *p, int color, int cl)
 		/* See if blocknumber is already in cache. */
 		blocknum = (dbpointer->first_idx_block + idx_blocknum) / IDX_BLOCKS_PER_CACHE_BLOCK;
 
-		/* Is this block already cached? */
-		take_lock(egdb_lock);
-		ccbi = dbpointer->file->cache_bufferi[blocknum];
-		if (ccbi != UNDEFINED_BLOCK_ID) {
+		{ // BEGIN CRITICAL SECTION
+		        std::lock_guard<LOCK_TYPE> guard(egdb_lock);
 
-			/* Already cached.  Update the lru list. */
-			ccbp = update_lru<CCB>(hdat, dbpointer->file, ccbi);
-		}
-		else {
+                        /* Is this block already cached? */
+                        ccbi = dbpointer->file->cache_bufferi[blocknum];
+                        if (ccbi != UNDEFINED_BLOCK_ID) {
 
-			/* we must load it.
-			 * if the lookup was a "conditional lookup", we don't load the block.
-			 */
-			if (cl) {
-				release_lock(egdb_lock);
-				return(EGDB_NOT_IN_CACHE);
-			}
+                                /* Already cached.  Update the lru list. */
+                                ccbp = update_lru<CCB>(hdat, dbpointer->file, ccbi);
+                        }
+                        else {
 
-			/* If necessary load this block from disk, update lru list. */
-			ccbp = load_blocknum<CCB>(hdat, dbpointer, blocknum);
-		}
+                                /* we must load it.
+                                 * if the lookup was a "conditional lookup", we don't load the block.
+                                 */
+                                if (cl) return(EGDB_NOT_IN_CACHE);
 
-		/* Do a binary search to find the exact subindex.  This is complicated a bit by the
-		 * problem that there may be a boundary between the end of one subdb and the start of
-		 * the next in this block.  For any subindex block that contains one of these
-		 * boundaries, the subindex stored is the ending block (0 is implied for the
-		 * starting block).  Therefore the binary search cannot use the first subindex of
-		 * a subdb.  We check for this separately.
-		 */
-		indices = ccbp->subindices;
-		if (idx_blocknum == 0 && (dbpointer->single_subidx_block ||
-						dbpointer->first_subidx_block == NUM_SUBINDICES - 1 ||
-						indices[dbpointer->first_subidx_block + 1] > index)) {
-			subidx_blocknum = dbpointer->first_subidx_block;
-			n_idx = 0;
-			i = dbpointer->startbyte - subidx_blocknum * SUBINDEX_BLOCKSIZE;
-		}
-		else {
-			int first, last;
-			if (idx_blocknum == 0)
-				first = dbpointer->first_subidx_block + 1;
-			else
-				first = 0;
-			if (idx_blocknum == (dbpointer->num_idx_blocks - 1) / IDX_BLOCKS_PER_CACHE_BLOCK)
-				last = dbpointer->last_subidx_block + 1;
-			else
-				last = NUM_SUBINDICES;
-			subidx_blocknum = find_block(first, last, indices, index);
+                                /* If necessary load this block from disk, update lru list. */
+                                ccbp = load_blocknum<CCB>(hdat, dbpointer, blocknum);
+                        }
 
-			n_idx = indices[subidx_blocknum];
-			i = 0;
-		}
-		diskblock = ccbp->data + subidx_blocknum * SUBINDEX_BLOCKSIZE;
-		release_lock(egdb_lock);
+                        /* Do a binary search to find the exact subindex.  This is complicated a bit by the
+                         * problem that there may be a boundary between the end of one subdb and the start of
+                         * the next in this block.  For any subindex block that contains one of these
+                         * boundaries, the subindex stored is the ending block (0 is implied for the
+                         * starting block).  Therefore the binary search cannot use the first subindex of
+                         * a subdb.  We check for this separately.
+                         */
+                        indices = ccbp->subindices;
+                        if (idx_blocknum == 0 && (dbpointer->single_subidx_block ||
+                                                        dbpointer->first_subidx_block == NUM_SUBINDICES - 1 ||
+                                                        indices[dbpointer->first_subidx_block + 1] > index)) {
+                                subidx_blocknum = dbpointer->first_subidx_block;
+                                n_idx = 0;
+                                i = dbpointer->startbyte - subidx_blocknum * SUBINDEX_BLOCKSIZE;
+                        }
+                        else {
+                                int first, last;
+                                if (idx_blocknum == 0)
+                                        first = dbpointer->first_subidx_block + 1;
+                                else
+                                        first = 0;
+                                if (idx_blocknum == (dbpointer->num_idx_blocks - 1) / IDX_BLOCKS_PER_CACHE_BLOCK)
+                                        last = dbpointer->last_subidx_block + 1;
+                                else
+                                        last = NUM_SUBINDICES;
+                                subidx_blocknum = find_block(first, last, indices, index);
+
+                                n_idx = indices[subidx_blocknum];
+                                i = 0;
+                        }
+                        diskblock = ccbp->data + subidx_blocknum * SUBINDEX_BLOCKSIZE;
+		} // END CRITICAL SECTION
 	}
 
 	/* The subindex block we were looking for is now pointed to by diskblock.
@@ -753,7 +754,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 	std::sprintf(msg, "Available RAM: %dmb\n", get_mem_available_mb());
 	(*hdat->log_msg_fn)(msg);
 
-	init_lock(egdb_lock);
+	//init_lock(egdb_lock);
 	init_bitcount();
 
 	/* initialize binomial coefficients. */

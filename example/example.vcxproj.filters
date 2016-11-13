@@ -54,6 +54,12 @@
     <ClInclude Include="..\engine\reverse.h">
       <Filter>engine</Filter>
     </ClInclude>
+    <ClInclude Include="..\egdb\platform.h">
+      <Filter>egdb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\config.h">
+      <Filter>engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
