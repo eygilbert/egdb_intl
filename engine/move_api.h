@@ -24,7 +24,6 @@ typedef struct {
 
 
 
-void init_move_tables();
 int build_nonjump_list(BOARD *board, MOVELIST *movelist, int color);
 int build_man_nonjump_list(BOARD *board, MOVELIST *movelist, int color);
 int build_king_nonjump_list(BOARD *board, MOVELIST *movelist, int color);

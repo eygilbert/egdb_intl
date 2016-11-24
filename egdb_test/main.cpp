@@ -546,8 +546,6 @@ int main(int argc, char *argv[])
 	DB_INFO db1, db2;
 	clock_t t0;
 
-	init_move_tables();
-
 	if (identify(DB_TUN_V2, &db1))
 		return(1);
 	if (identify(DB_TUN_V1, &db2))

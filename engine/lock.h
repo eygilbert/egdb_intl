@@ -63,7 +63,11 @@
 
                         #include <mutex>
 
-                        typedef std::mutex LOCK_TYPE;
+                        namespace egdb_interface {
+
+							typedef std::mutex LOCK_TYPE;
+
+                        }       // namespace
 
                 #elif (!defined(_MSC_VER) && LOCKING_METHOD == USE_GNU_INTERLOCKED_EXCHANGE)
 

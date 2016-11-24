@@ -10,20 +10,6 @@
 
 namespace egdb_interface {
 
-template <bool save_capture_info>
-static void black_man_jump(BOARD *board, BITBOARD all_jumped, MOVELIST *movelist, BITBOARD from, int num_jumps, int *largest_num_jumps, CAPTURE_INFO cap[]);
-
-template <bool save_capture_info>
-static void white_man_jump(BOARD *board, BITBOARD all_jumped, MOVELIST *movelist, BITBOARD from, int num_jumps, int *largest_num_jumps, CAPTURE_INFO cap[]);
-
-template <bool save_capture_info>
-static void black_king_jump(BOARD *board, BITBOARD all_jumped, MOVELIST *movelist, BITBOARD from, DIR dir,
-					 int num_jumps, int *largest_num_jumps, CAPTURE_INFO cap[]);
-
-template <bool save_capture_info>
-static void white_king_jump(BOARD *board, BITBOARD all_jumped, MOVELIST *movelist, BITBOARD from, DIR dir,
-					 int num_jumps, int *largest_num_jumps, CAPTURE_INFO cap[]);
-
 
 /*
  *     Bit positions           Square numbers
@@ -44,27 +30,317 @@ static void white_king_jump(BOARD *board, BITBOARD all_jumped, MOVELIST *movelis
  *         black                    black
  */
 
+void init_move_tables();
 
-extern int fwd_shift_counts[2];
-extern int back_shift_counts[2];
+class init_move_tables_c {
+public:
+	init_move_tables_c(void) {init_move_tables();}
+};
+
+static init_move_tables_c init;
+
 extern DIAGS diag_tbl[NUM_BITBOARD_BITS];
 
+struct Local {
+	MOVELIST *movelist;
+	CAPTURE_INFO *cap;
+	BITBOARD free;
+	BOARD intermediate;
+	int largest_num_jumps;
+};
 
-static void assign_black_jump_path(BOARD *board, BITBOARD jumps, CAPTURE_INFO *cap,
-							 int capture_count, int movecount)
+template <bool save_capture_info, int color>
+static void man_jump(BITBOARD all_jumped, MOVELIST *movelist, BITBOARD from, int num_jumps, Local *local);
+
+template <int color>
+void add_king_capture_path(int num_jumps, BITBOARD jumper, BITBOARD jumped, Local *local)
 {
-	cap[movecount].path[capture_count] = *board;
-	cap[movecount].path[capture_count].white &= ~jumps;
-	cap[movecount].path[capture_count].king &= ~jumps;
+	BOARD *board = local->cap[local->movelist->count].path + num_jumps;
+	if (color == BLACK) {
+		board->black = local->intermediate.black | jumper;
+		board->white = local->intermediate.white & ~jumped;
+		board->king = (local->intermediate.king | jumper) & ~jumped;
+	}
+	else {
+		board->white = local->intermediate.white | jumper;
+		board->black = local->intermediate.black & ~jumped;
+		board->king = (local->intermediate.king | jumper) & ~jumped;
+	}
 }
 
 
-static void assign_white_jump_path(BOARD *board, BITBOARD jumps, CAPTURE_INFO *cap,
-							 int capture_count, int movecount)
+template <bool save_capture_info, int color>
+void lf_king_capture(BITBOARD jumped, BITBOARD jumper, int num_jumps, Local *local)
 {
-	cap[movecount].path[capture_count] = *board;
-	cap[movecount].path[capture_count].black &= ~jumps;
-	cap[movecount].path[capture_count].king &= ~jumps;
+	int bitnum;
+	BITBOARD new_jumper, mask, jumps, opponents;
+
+	/* Loop over each empty square in the captured direction. */
+	new_jumper = jumper;
+	if (color == BLACK)
+		opponents = local->intermediate.white & ~jumped;
+	else
+		opponents = local->intermediate.black & ~jumped;
+	while (1) {
+		if (save_capture_info)
+			add_king_capture_path<color>(num_jumps, new_jumper, jumped, local);
+
+		/* Get occupied squares along the rf diagonal. */
+		bitnum = LSB64(new_jumper);
+		mask = (rf_diag << bitnum) & ~local->free;
+
+		/* Get closest occupied square. */
+		jumps = mask & -(SIGNED_BITBOARD)mask;
+
+		/* Capture is possible if the next rf square is free. */
+		if (jumps & opponents & (local->free >> RIGHT_FWD_SHIFT))
+			rf_king_capture<save_capture_info, color>(jumped | jumps, jumps << RIGHT_FWD_SHIFT, num_jumps + 1, local);
+
+		/* Get occupied squares along the lb diagonal. */
+		mask = (lb_diag >> (S50_bit - bitnum)) & ~local->free;
+
+		/* Get closest occupied square. */
+		jumps = (BITBOARD)1 << MSB64(mask);
+
+		/* Capture is possible if the next lb square is free. */
+		if (jumps & opponents & (local->free << LEFT_BACK_SHIFT))
+			lb_king_capture<save_capture_info, color>(jumped | jumps, jumps >> LEFT_BACK_SHIFT, num_jumps + 1, local);
+
+		/* Save this move if we didn't find a continuation above. */
+		if (num_jumps >= local->largest_num_jumps)
+			add_king_capture<save_capture_info, color>(new_jumper, jumped, num_jumps, local);
+
+		new_jumper <<= LEFT_FWD_SHIFT;
+
+		/* Exit when reach an occupied or off-the-board square. */
+		if (!(new_jumper & local->free))
+			break;
+	}
+
+	/* Reached an occupied or off-the-board square. See if it's an opponent and following is a free square. */
+	if (new_jumper & opponents & (local->free >> LEFT_FWD_SHIFT)) {
+		if (save_capture_info)
+			add_king_capture_path<color>(num_jumps, jumper, jumped, local);
+
+		lf_king_capture<save_capture_info, color>(jumped | new_jumper, new_jumper << LEFT_FWD_SHIFT, num_jumps + 1, local);
+	}
+}
+
+
+template <bool save_capture_info, int color>
+void rf_king_capture(BITBOARD jumped, BITBOARD jumper, int num_jumps, Local *local)
+{
+	int bitnum;
+	BITBOARD new_jumper, mask, jumps, opponents;
+
+	/* Loop over each empty square in the captured direction. */
+	new_jumper = jumper;
+	if (color == BLACK)
+		opponents = local->intermediate.white & ~jumped;
+	else
+		opponents = local->intermediate.black & ~jumped;
+	while (1) {
+		if (save_capture_info)
+			add_king_capture_path<color>(num_jumps, new_jumper, jumped, local);
+
+		/* Get occupied squares along the lf diagonal. */
+		bitnum = LSB64(new_jumper);
+		mask = (lf_diag << bitnum) & ~local->free;
+
+		/* Get closest occupied square. */
+		jumps = mask & -(SIGNED_BITBOARD)mask;
+
+		/* Capture is possible if the next lf square is free. */
+		if (jumps & opponents & (local->free >> LEFT_FWD_SHIFT))
+			lf_king_capture<save_capture_info, color>(jumped | jumps, jumps << LEFT_FWD_SHIFT, num_jumps + 1, local);
+
+		/* Get occupied squares along the rb diagonal. */
+		mask = (rb_diag >> (S50_bit - bitnum)) & ~local->free;
+
+		/* Get closest occupied square. */
+		jumps = (BITBOARD)1 << MSB64(mask);
+
+		/* Capture is possible if the next rb square is free. */
+		if (jumps & opponents & (local->free << RIGHT_BACK_SHIFT))
+			rb_king_capture<save_capture_info, color>(jumped | jumps, jumps >> RIGHT_BACK_SHIFT, num_jumps + 1, local);
+
+		/* Save this move if we didn't find a continuation above. */
+		if (num_jumps >= local->largest_num_jumps)
+			add_king_capture<save_capture_info, color>(new_jumper, jumped, num_jumps, local);
+
+		new_jumper <<= RIGHT_FWD_SHIFT;
+
+		/* Exit when reach an occupied or off-the-board square. */
+		if (!(new_jumper & local->free))
+			break;
+	}
+
+	/* Reached an occupied or off-the-board square. See if it's an opponent and following is a free square. */
+	if (new_jumper & opponents & (local->free >> RIGHT_FWD_SHIFT)) {
+		if (save_capture_info)
+			add_king_capture_path<color>(num_jumps, jumper, jumped, local);
+
+		rf_king_capture<save_capture_info, color>(jumped | new_jumper, new_jumper << RIGHT_FWD_SHIFT, num_jumps + 1, local);
+	}
+}
+
+
+template <bool save_capture_info, int color>
+void lb_king_capture(BITBOARD jumped, BITBOARD jumper, int num_jumps, Local *local)
+{
+	int bitnum;
+	BITBOARD new_jumper, mask, jumps, opponents;
+
+	/* Loop over each empty square in the captured direction. */
+	new_jumper = jumper;
+	if (color == BLACK)
+		opponents = local->intermediate.white & ~jumped;
+	else
+		opponents = local->intermediate.black & ~jumped;
+	while (1) {
+		if (save_capture_info)
+			add_king_capture_path<color>(num_jumps, new_jumper, jumped, local);
+
+		/* Get occupied squares along the lf diagonal. */
+		bitnum = LSB64(new_jumper);
+		mask = (lf_diag << bitnum) & ~local->free;
+
+		/* Get closest occupied square. */
+		jumps = mask & -(SIGNED_BITBOARD)mask;
+
+		/* Capture is possible if the next lf square is free. */
+		if (jumps & opponents & (local->free >> LEFT_FWD_SHIFT))
+			lf_king_capture<save_capture_info, color>(jumped | jumps, jumps << LEFT_FWD_SHIFT, num_jumps + 1, local);
+
+		/* Get occupied squares along the rb diagonal. */
+		mask = (rb_diag >> (S50_bit - bitnum)) & ~local->free;
+
+		/* Get closest occupied square. */
+		jumps = (BITBOARD)1 << MSB64(mask);
+
+		/* Capture is possible if the next lb square is free. */
+		if (jumps & opponents & (local->free << RIGHT_BACK_SHIFT))
+			rb_king_capture<save_capture_info, color>(jumped | jumps, jumps >> RIGHT_BACK_SHIFT, num_jumps + 1, local);
+
+		/* Save this move if we didn't find a continuation above. */
+		if (num_jumps >= local->largest_num_jumps)
+			add_king_capture<save_capture_info, color>(new_jumper, jumped, num_jumps, local);
+
+		new_jumper >>= LEFT_BACK_SHIFT;
+
+		/* Exit when reach an occupied or off-the-board square. */
+		if (!(new_jumper & local->free))
+			break;
+	}
+
+	/* Reached an occupied or off-the-board square. See if it's an opponent and following is a free square. */
+	if (new_jumper & opponents & (local->free << LEFT_BACK_SHIFT)) {
+		if (save_capture_info)
+			add_king_capture_path<color>(num_jumps, jumper, jumped, local);
+
+		lb_king_capture<save_capture_info, color>(jumped | new_jumper, new_jumper >> LEFT_BACK_SHIFT, num_jumps + 1, local);
+	}
+}
+
+
+template <bool save_capture_info, int color>
+void rb_king_capture(BITBOARD jumped, BITBOARD jumper, int num_jumps, Local *local)
+{
+	int bitnum;
+	BITBOARD new_jumper, mask, jumps, opponents;
+
+	/* Loop over each empty square in the captured direction. */
+	new_jumper = jumper;
+	if (color == BLACK)
+		opponents = local->intermediate.white & ~jumped;
+	else
+		opponents = local->intermediate.black & ~jumped;
+	while (1) {
+		if (save_capture_info)
+			add_king_capture_path<color>(num_jumps, new_jumper, jumped, local);
+
+		/* Get occupied squares along the rf diagonal. */
+		bitnum = LSB64(new_jumper);
+		mask = (rf_diag << bitnum) & ~local->free;
+
+		/* Get closest occupied square. */
+		jumps = mask & -(SIGNED_BITBOARD)mask;
+
+		/* Capture is possible if the next rf square is free. */
+		if (jumps & opponents & (local->free >> RIGHT_FWD_SHIFT))
+			rf_king_capture<save_capture_info, color>(jumped | jumps, jumps << RIGHT_FWD_SHIFT, num_jumps + 1, local);
+
+		/* Get occupied squares along the lb diagonal. */
+		mask = (lb_diag >> (S50_bit - bitnum)) & ~local->free;
+
+		/* Get closest occupied square. */
+		jumps = (BITBOARD)1 << MSB64(mask);
+
+		/* Capture is possible if the next lb square is free. */
+		if (jumps & opponents & (local->free << LEFT_BACK_SHIFT))
+			lb_king_capture<save_capture_info, color>(jumped | jumps, jumps >> LEFT_BACK_SHIFT, num_jumps + 1, local);
+
+		/* Save this move if we didn't find a continuation above. */
+		if (num_jumps >= local->largest_num_jumps)
+			add_king_capture<save_capture_info, color>(new_jumper, jumped, num_jumps, local);
+
+		new_jumper >>= RIGHT_BACK_SHIFT;
+
+		/* Exit when reach an occupied or off-the-board square. */
+		if (!(new_jumper & local->free))
+			break;
+	}
+
+	/* Reached an occupied or off-the-board square. See if it's an opponent and following is a free square. */
+	if (new_jumper & opponents & (local->free << RIGHT_BACK_SHIFT)) {
+		if (save_capture_info)
+			add_king_capture_path<color>(num_jumps, jumper, jumped, local);
+
+		rb_king_capture<save_capture_info, color>(jumped | new_jumper, new_jumper >> RIGHT_BACK_SHIFT, num_jumps + 1, local);
+	}
+}
+
+
+template <bool save_capture_info, int color>
+void add_king_capture(BITBOARD jumper, BITBOARD jumped, int num_jumps, Local *local)
+{
+	if (num_jumps >= local->largest_num_jumps) {
+		int i;
+		MOVELIST *movelist = local->movelist;
+
+		if (num_jumps > local->largest_num_jumps) {
+			if (save_capture_info)
+				std::memcpy(local->cap, local->cap + movelist->count, sizeof(local->cap[0]));
+			movelist->count = 0;
+			local->largest_num_jumps = num_jumps;
+		}
+
+		if (color == BLACK) {
+			movelist->board[movelist->count].black = local->intermediate.black | jumper;
+			movelist->board[movelist->count].white = local->intermediate.white & ~jumped;
+			movelist->board[movelist->count].king = (local->intermediate.king | jumper) & ~jumped;
+		}
+		else {
+			movelist->board[movelist->count].white = local->intermediate.white | jumper;
+			movelist->board[movelist->count].black = local->intermediate.black & ~jumped;
+			movelist->board[movelist->count].king = (local->intermediate.king | jumper) & ~jumped;
+		}
+
+		if (save_capture_info) {
+			local->cap[movelist->count].capture_count = num_jumps;
+
+			/* Copy the path to the next potential jump move. */
+			copy_path(local->cap, movelist);
+		}
+
+		/* Remove duplicate moves (same result board). */
+		if (num_jumps >= 4) {
+			for (i = 0; i < movelist->count; ++i)
+				if (memcmp(movelist->board + i, movelist->board + movelist->count, sizeof(BOARD)) == 0)
+					return;
+		}
+		movelist->count++;
+	}
 }
 
 
@@ -75,14 +351,22 @@ static void copy_path(CAPTURE_INFO *cap, MOVELIST *movelist)
 }
 
 
-int fwd_shift_counts[] = {
-	LEFT_FWD_SHIFT, RIGHT_FWD_SHIFT
-};
-
-int back_shift_counts[] = {
-	LEFT_BACK_SHIFT, RIGHT_BACK_SHIFT
-};
-
+const BITBOARD lf_diag = (S1 << LEFT_FWD_SHIFT) | (S1 << 2 * LEFT_FWD_SHIFT) |
+						(S1 << 3 * LEFT_FWD_SHIFT) | (S1 << 4 * LEFT_FWD_SHIFT) |
+						(S1 << 5 * LEFT_FWD_SHIFT) | (S1 << 6 * LEFT_FWD_SHIFT) |
+						(S1 << 7 * LEFT_FWD_SHIFT) | (S1 << 8 * LEFT_FWD_SHIFT);
+const BITBOARD rf_diag = (S1 << RIGHT_FWD_SHIFT) | (S1 << 2 * RIGHT_FWD_SHIFT) |
+						(S1 << 3 * RIGHT_FWD_SHIFT) | (S1 << 4 * RIGHT_FWD_SHIFT) |
+						(S1 << 5 * RIGHT_FWD_SHIFT) | (S1 << 6 * RIGHT_FWD_SHIFT) |
+						(S1 << 7 * RIGHT_FWD_SHIFT) | (S1 << 8 * RIGHT_FWD_SHIFT);
+const BITBOARD lb_diag = (S50 >> LEFT_BACK_SHIFT) | (S50 >> 2 * LEFT_BACK_SHIFT) |
+						(S50 >> 3 * LEFT_BACK_SHIFT) | (S50 >> 4 * LEFT_BACK_SHIFT) |
+						(S50 >> 5 * LEFT_BACK_SHIFT) | (S50 >> 6 * LEFT_BACK_SHIFT) |
+						(S50 >> 7 * LEFT_BACK_SHIFT) | (S50 >> 8 * LEFT_BACK_SHIFT);
+const BITBOARD rb_diag = (S50 >> RIGHT_BACK_SHIFT) | (S50 >> 2 * RIGHT_BACK_SHIFT) |
+						(S50 >> 3 * RIGHT_BACK_SHIFT) | (S50 >> 4 * RIGHT_BACK_SHIFT) |
+						(S50 >> 5 * RIGHT_BACK_SHIFT) | (S50 >> 6 * RIGHT_BACK_SHIFT) |
+						(S50 >> 7 * RIGHT_BACK_SHIFT) | (S50 >> 8 * RIGHT_BACK_SHIFT);
 
 /* A table of DIAGS indexed by bitnum. */
 DIAGS diag_tbl[NUM_BITBOARD_BITS];
@@ -273,21 +557,59 @@ int canjump(BOARD *board, int color)
 }
 #endif
 
+#define BLACK_KING_MOVE(shift_op, revshift_op, shift) \
+	/* Left forward kings. */	\
+	mask = (bk shift_op shift) & free;	\
+\
+	/* Add each to the list. */	\
+	while (mask) {	\
+		to = mask & -(SIGNED_BITBOARD)mask;	\
+		mask -= to;	\
+		from = to revshift_op shift;	\
+		while (1) {	\
+			mlp->black = board->black - from + to;	\
+			mlp->king = board->king - from + to;	\
+			mlp->white = board->white;	\
+			++mlp;	\
+			to = (to shift_op shift) & free; \
+			if (!to)	\
+				break;	\
+		}	\
+	}
+
+#define WHITE_KING_MOVE(shift_op, revshift_op, shift) \
+	/* Left forward kings. */	\
+	mask = (wk shift_op shift) & free;	\
+\
+	/* Add each to the list. */	\
+	while (mask) {	\
+		to = mask & -(SIGNED_BITBOARD)mask;	\
+		mask -= to;	\
+		from = to revshift_op shift;	\
+		while (1) {	\
+			mlp->white = board->white - from + to;	\
+			mlp->king = board->king - from + to;	\
+			mlp->black = board->black;	\
+			++mlp;	\
+			to = (to shift_op shift) & free; \
+			if (!to)	\
+				break;	\
+		}	\
+	}
+
 /*
  * Build a movelist of non-jump moves.
  * Return the number of moves in the list.
  */
 int build_nonjump_list(BOARD *board, MOVELIST *movelist, int color)
 {
-	int bitnum, i, len;
 	BITBOARD free;
 	BITBOARD mask;
 	BITBOARD bk, wk;
 	BITBOARD from, to;
-	BITBOARD *pdiag;
 	BOARD *mlp;
 
-	movelist->count = 0;
+	mlp = movelist->board;
 	free = ~(board->black | board->white) & ALL_SQUARES;
 	if (color == BLACK) {
 
@@ -299,18 +621,11 @@ int build_nonjump_list(BOARD *board, MOVELIST *movelist, int color)
 			to = mask & -(SIGNED_BITBOARD)mask;
 			from = to >> RIGHT_BACK_SHIFT;
 
-			/* Add it to the movelist. First clear the from square. */
-			mlp = movelist->board + movelist->count++;
-			mlp->black = board->black & ~from;
+			/* Add it to the movelist. */
+			mlp->black = (board->black & ~from) | to;
 			mlp->white = board->white;
-			mlp->king = board->king & ~from;
-
-			/* Put him on the square where he lands. */
-			mlp->black |= to;
-
-			/* See if this made him a king. */
-			if (to & BLACK_KING_RANK_MASK)
-				mlp->king |= to;
+			mlp->king = board->king | (to & BLACK_KING_RANK_MASK);
+			++mlp;
 		}
 
 		/* Right forward moves. */
@@ -321,88 +636,20 @@ int build_nonjump_list(BOARD *board, MOVELIST *movelist, int color)
 			to = mask & -(SIGNED_BITBOARD)mask;
 			from = to >> LEFT_BACK_SHIFT;
 
-			/* Add it to the movelist. First clear the from square. */
-			mlp = movelist->board + movelist->count++;
-			mlp->black = board->black & ~from;
+			/* Add it to the movelist. */
+			mlp->black = (board->black & ~from) | to;
 			mlp->white = board->white;
-			mlp->king = board->king & ~from;
-
-			/* Put him on the square where he lands. */
-			mlp->black |= to;
-
-			/* See if this made him a king. */
-			if (to & BLACK_KING_RANK_MASK)
-				mlp->king |= to;
+			mlp->king = board->king | (to & BLACK_KING_RANK_MASK);
+			++mlp;
 		}
 
 		/* Black kings. */
 		bk = board->black & board->king;
-		while (bk) {
-
-			/* Strip off the next black king. */
-			from = bk & -(SIGNED_BITBOARD)bk;
-			bk &= ~from;
-			bitnum = LSB64(from);
-
-			pdiag = diag_tbl[bitnum].lf;
-			len = diag_tbl[bitnum].lflen;
-			for (i = 0; i < len; ++i) {
-				if (pdiag[i] & free) {
-					mlp = movelist->board + movelist->count++;
-					mlp->white = board->white;
-					mlp->black = board->black & ~from;
-					mlp->black |= pdiag[i];
-					mlp->king = board->king & ~from;
-					mlp->king |= pdiag[i];
-				}
-				else
-					break;
-			}
-
-			pdiag = diag_tbl[bitnum].rf;
-			len = diag_tbl[bitnum].rflen;
-			for (i = 0; i < len; ++i) {
-				if (pdiag[i] & free) {
-					mlp = movelist->board + movelist->count++;
-					mlp->white = board->white;
-					mlp->black = board->black & ~from;
-					mlp->black |= pdiag[i];
-					mlp->king = board->king & ~from;
-					mlp->king |= pdiag[i];
-				}
-				else
-					break;
-			}
-
-			pdiag = diag_tbl[bitnum].lb;
-			len = diag_tbl[bitnum].lblen;
-			for (i = 0; i < len; ++i) {
-				if (pdiag[i] & free) {
-					mlp = movelist->board + movelist->count++;
-					mlp->white = board->white;
-					mlp->black = board->black & ~from;
-					mlp->black |= pdiag[i];
-					mlp->king = board->king & ~from;
-					mlp->king |= pdiag[i];
-				}
-				else
-					break;
-			}
-
-			pdiag = diag_tbl[bitnum].rb;
-			len = diag_tbl[bitnum].rblen;
-			for (i = 0; i < len; ++i) {
-				if (pdiag[i] & free) {
-					mlp = movelist->board + movelist->count++;
-					mlp->white = board->white;
-					mlp->black = board->black & ~from;
-					mlp->black |= pdiag[i];
-					mlp->king = board->king & ~from;
-					mlp->king |= pdiag[i];
-				}
-				else
-					break;
-			}
+		if (bk) {
+			BLACK_KING_MOVE(<<, >>, LEFT_FWD_SHIFT);
+			BLACK_KING_MOVE(<<, >>, RIGHT_FWD_SHIFT);
+			BLACK_KING_MOVE(>>, <<, LEFT_BACK_SHIFT);
+			BLACK_KING_MOVE(>>, <<, RIGHT_BACK_SHIFT);
 		}
 	}
 	else {
@@ -415,18 +662,11 @@ int build_nonjump_list(BOARD *board, MOVELIST *movelist, int color)
 			to = mask & -(SIGNED_BITBOARD)mask;
 			from = to << RIGHT_FWD_SHIFT;
 
-			/* Add it to the movelist. First clear the from square. */
-			mlp = movelist->board + movelist->count++;
-			mlp->white = board->white & ~from;
+			/* Add it to the movelist. */
+			mlp->white = (board->white & ~from) | to;
 			mlp->black = board->black;
-			mlp->king = board->king & ~from;
-
-			/* Put him on the square where he lands. */
-			mlp->white |= to;
-
-			/* See if this made him a king. */
-			if (to & WHITE_KING_RANK_MASK)
-				mlp->king |= to;
+			mlp->king = board->king | (to & WHITE_KING_RANK_MASK);
+			++mlp;
 		}
 
 		/* Right back moves. */
@@ -437,90 +677,23 @@ int build_nonjump_list(BOARD *board, MOVELIST *movelist, int color)
 			to = mask & -(SIGNED_BITBOARD)mask;
 			from = to << LEFT_FWD_SHIFT;
 
-			/* Add it to the movelist. First clear the from square. */
-			mlp = movelist->board + movelist->count++;
-			mlp->white = board->white & ~from;
+			/* Add it to the movelist. */
+			mlp->white = (board->white & ~from) | to;
 			mlp->black = board->black;
-			mlp->king = board->king & ~from;
-
-			/* Put him on the square where he lands. */
-			mlp->white |= to;
-
-			/* See if this made him a king. */
-			if (to & WHITE_KING_RANK_MASK)
-				mlp->king |= to;
+			mlp->king = board->king | (to & WHITE_KING_RANK_MASK);
+			++mlp;
 		}
 
 		/* White kings. */
 		wk = board->white & board->king;
-		while (wk) {
-
-			/* Strip off the next black king. */
-			from = wk & -(SIGNED_BITBOARD)wk;
-			wk &= ~from;
-			bitnum = LSB64(from);
-
-			pdiag = diag_tbl[bitnum].lf;
-			len = diag_tbl[bitnum].lflen;
-			for (i = 0; i < len; ++i) {
-				if (pdiag[i] & free) {
-					mlp = movelist->board + movelist->count++;
-					mlp->black = board->black;
-					mlp->white = board->white & ~from;
-					mlp->white |= pdiag[i];
-					mlp->king = board->king & ~from;
-					mlp->king |= pdiag[i];
-				}
-				else
-					break;
-			}
-
-			pdiag = diag_tbl[bitnum].rf;
-			len = diag_tbl[bitnum].rflen;
-			for (i = 0; i < len; ++i) {
-				if (pdiag[i] & free) {
-					mlp = movelist->board + movelist->count++;
-					mlp->black = board->black;
-					mlp->white = board->white & ~from;
-					mlp->white |= pdiag[i];
-					mlp->king = board->king & ~from;
-					mlp->king |= pdiag[i];
-				}
-				else
-					break;
-			}
-
-			pdiag = diag_tbl[bitnum].lb;
-			len = diag_tbl[bitnum].lblen;
-			for (i = 0; i < len; ++i) {
-				if (pdiag[i] & free) {
-					mlp = movelist->board + movelist->count++;
-					mlp->black = board->black;
-					mlp->white = board->white & ~from;
-					mlp->white |= pdiag[i];
-					mlp->king = board->king & ~from;
-					mlp->king |= pdiag[i];
-				}
-				else
-					break;
-			}
-
-			pdiag = diag_tbl[bitnum].rb;
-			len = diag_tbl[bitnum].rblen;
-			for (i = 0; i < len; ++i) {
-				if (pdiag[i] & free) {
-					mlp = movelist->board + movelist->count++;
-					mlp->black = board->black;
-					mlp->white = board->white & ~from;
-					mlp->white |= pdiag[i];
-					mlp->king = board->king & ~from;
-					mlp->king |= pdiag[i];
-				}
-				else
-					break;
-			}
+		if (wk) {
+			WHITE_KING_MOVE(<<, >>, LEFT_FWD_SHIFT);
+			WHITE_KING_MOVE(<<, >>, RIGHT_FWD_SHIFT);
+			WHITE_KING_MOVE(>>, <<, LEFT_BACK_SHIFT);
+			WHITE_KING_MOVE(>>, <<, RIGHT_BACK_SHIFT);
 		}
 	}
+	movelist->count = (int)(mlp - movelist->board);
 	return(movelist->count);
 }
 
@@ -718,6 +891,33 @@ int build_king_nonjump_list(BOARD *board, MOVELIST *movelist, int color)
 	return(movelist->count);
 }
 
+#define BLACK_MAN_JUMP(shift_op, revshift_op, shift)	\
+	mask = (((bm shift_op shift) & board->white) shift_op shift) & free;	\
+	for ( ; mask; mask = mask & (mask - 1)) {	\
+		/* Peel off the lowest set bit in mask. */	\
+		lands = mask & -(SIGNED_BITBOARD)mask;	\
+		jumps = lands revshift_op shift;	\
+		from = jumps revshift_op shift;		\
+		local.free = free | from;		\
+		local.intermediate.black = board->black & ~from;	\
+		if (save_capture_info)	\
+			cap[movelist->count].path[0] = *board;	\
+		man_jump<save_capture_info, BLACK>(jumps, movelist, lands, 1, &local);	\
+	}
+
+#define WHITE_MAN_JUMP(shift_op, revshift_op, shift)	\
+	mask = (((wm shift_op shift) & board->black) shift_op shift) & free;	\
+	for ( ; mask; mask = mask & (mask - 1)) {	\
+		/* Peel off the lowest set bit in mask. */	\
+		lands = mask & -(SIGNED_BITBOARD)mask;	\
+		jumps = lands revshift_op shift;	\
+		from = jumps revshift_op shift;		\
+		local.free = free | from;		\
+		local.intermediate.white = board->white & ~from;	\
+		if (save_capture_info)	\
+			cap[movelist->count].path[0] = *board;	\
+		man_jump<save_capture_info, WHITE>(jumps, movelist, lands, 1, &local);	\
+	}
 
 /*
  * Build a movelist of jump moves.
@@ -726,84 +926,32 @@ int build_king_nonjump_list(BOARD *board, MOVELIST *movelist, int color)
 template <bool save_capture_info>
 int build_jump_list(BOARD *board, MOVELIST *movelist, int color, CAPTURE_INFO cap[MAXMOVES])
 {
-	int i, lasti, bitnum, len, num_jumps, largest_num_jumps;
+	int bitnum;
 	BITBOARD free;
 	BITBOARD mask;
 	BITBOARD bm, wm;
 	BITBOARD bk, wk;
 	BITBOARD from, jumps, lands;
-	BOARD jboard, immediately_behind;
-	BITBOARD *pdiag;
+	Local local;
 
 	if (save_capture_info) {
 		assert(cap != NULL);
 	}
 	movelist->count = 0;
-	largest_num_jumps = 0;
+	local.largest_num_jumps = 0;
+	local.cap = cap;
+	local.movelist = movelist;
 	free = ~(board->black | board->white) & ALL_SQUARES;
 	if (color == BLACK) {
+		local.intermediate.white = board->white;
+		local.intermediate.king = board->king;
 
 		/* First do man jumps. */
 		bm = board->black & ~board->king;
-		for (i = 0; i < ARRAY_SIZE(fwd_shift_counts); ++i) {
-			mask = (((bm << fwd_shift_counts[i]) & board->white) << fwd_shift_counts[i]) & free;
-			for ( ; mask; mask = mask & (mask - 1)) {
-
-				/* Peel off the lowest set bit in mask. */
-				lands = mask & -(SIGNED_BITBOARD)mask;
-				jumps = lands >> fwd_shift_counts[i];
-				from = jumps >> fwd_shift_counts[i];
-
-				/* Found a jump.  Log this part of the move,
-				 * and make the move on a copy of the board to be
-				 * passed along to the recursion function.
-				 * First clear the from square.
-				 */
-				jboard.black = board->black & ~from;
-				jboard.white = board->white;
-				jboard.king = board->king;
-
-				/* Put him on the square where he lands. */
-				jboard.black |= lands;
-				if (save_capture_info) {
-					cap[movelist->count].path[0] = *board;
-					cap[movelist->count].path[1] = jboard;
-					cap[movelist->count].path[1].white &= ~jumps;
-					cap[movelist->count].path[1].king &= ~jumps;
-				}
-				black_man_jump<save_capture_info>(&jboard, jumps, movelist, lands, 1, &largest_num_jumps, cap);
-			}
-		}
-
-		for (i = 0; i < ARRAY_SIZE(back_shift_counts); ++i) {
-			mask = (((bm >> back_shift_counts[i]) & board->white) >> back_shift_counts[i]) & free;
-			for ( ; mask; mask = mask & (mask - 1)) {
-
-				/* Peel off the lowest set bit in mask. */
-				lands = mask & -(SIGNED_BITBOARD)mask;
-				jumps = lands << back_shift_counts[i];
-				from = jumps << back_shift_counts[i];
-
-				/* Found a jump.  Log this part of the move,
-				 * and make the move on a copy of the board to be
-				 * passed along to the recursion function.
-				 * First clear the from square.
-				 */
-				jboard.black = board->black & ~from;
-				jboard.white = board->white;
-				jboard.king = board->king;
-
-				/* Put him on the square where he lands. */
-				jboard.black |= lands;
-				if (save_capture_info) {
-					cap[movelist->count].path[0] = *board;
-					cap[movelist->count].path[1] = jboard;
-					cap[movelist->count].path[1].white &= ~jumps;
-					cap[movelist->count].path[1].king &= ~jumps;
-				}
-				black_man_jump<save_capture_info>(&jboard, jumps, movelist, lands, 1, &largest_num_jumps, cap);
-			}
-		}
+		BLACK_MAN_JUMP(<<, >>, LEFT_FWD_SHIFT);
+		BLACK_MAN_JUMP(<<, >>, RIGHT_FWD_SHIFT);
+		BLACK_MAN_JUMP(>>, <<, LEFT_BACK_SHIFT);
+		BLACK_MAN_JUMP(>>, <<, RIGHT_BACK_SHIFT);
 
 		bk = board->black & board->king;
 		while (bk) {
@@ -812,263 +960,65 @@ int build_jump_list(BOARD *board, MOVELIST *movelist, int color, CAPTURE_INFO ca
 			from = bk & -(SIGNED_BITBOARD)bk;
 			bk &= ~from;
 			bitnum = LSB64(from);
+			local.free = free | from;
 
-			pdiag = diag_tbl[bitnum].lf;
-			len = diag_tbl[bitnum].lflen;
+			if (save_capture_info) 
+				cap[movelist->count].path[0] = *board;
 
-			/* Move past free squares along the diagonal. */
-			for (i = 0; i < len - 2 && (pdiag[i] & free); ++i)
-				;
+			local.intermediate.black = board->black - from;
+			local.intermediate.king = board->king - from;
+			
+			/* Get occupied squares along the lf diagonal. */
+			mask = (lf_diag << bitnum) & ~free;
 
-			jumps = 0;
-			num_jumps = 0;
-			while (i < len - 1) {
-				if (pdiag[i] & board->white && (pdiag[i + 1] & free)) {
+			/* Get closest occupied square. */
+			jumps = mask & -(SIGNED_BITBOARD)mask;
 
-					/* Found a jump.  Log this part of the move,
-					 * and make the move on a copy of the board to be
-					 * passed along to the recursion function.
-					 * First clear the from square.
-					 */
-					jumps |= pdiag[i];
-					++num_jumps;
-					++i;
-					if (save_capture_info) {
-						lasti = i;
-						cap[movelist->count].path[0] = *board;
-					}
-					for ( ; i < len && (pdiag[i] & free); ++i) {
-						jboard.black = (board->black & ~from) | pdiag[i];
-						jboard.king = (board->king & ~from) | pdiag[i];
-						jboard.white = board->white;
-						if (save_capture_info) {
-							cap[movelist->count].path[num_jumps] = jboard;
-							cap[movelist->count].path[num_jumps].white &= ~jumps;
-							cap[movelist->count].path[num_jumps].king &= ~jumps;
+			/* Capture is possible if the next lf square is free. */
+			if (jumps & board->white & (free >> LEFT_FWD_SHIFT))
+				lf_king_capture<save_capture_info, BLACK>(jumps, jumps << LEFT_FWD_SHIFT, 1, &local);
 
-							if (num_jumps > 1) {
-								if (i == lasti)
-									cap[movelist->count].path[num_jumps - 1] = immediately_behind;
-							}
-							if (i == lasti)
-								immediately_behind = cap[movelist->count].path[num_jumps];
-						}
-						black_king_jump<save_capture_info>(&jboard, jumps, movelist, pdiag[i], DIR_RFLB, num_jumps,
-								&largest_num_jumps, cap);
-					}
-				}
-				else
-					break;
-			}
+			/* Get occupied squares along the rf diagonal. */
+			mask = (rf_diag << bitnum) & ~free;
 
-			pdiag = diag_tbl[bitnum].rf;
-			len = diag_tbl[bitnum].rflen;
+			/* Get closest occupied square. */
+			jumps = mask & -(SIGNED_BITBOARD)mask;
 
-			/* Move past free squares along the diagonal. */
-			for (i = 0; i < len - 2 && (pdiag[i] & free); ++i)
-				;
+			/* Capture is possible if the next rf square is free. */
+			if (jumps & board->white & (free >> RIGHT_FWD_SHIFT))
+				rf_king_capture<save_capture_info, BLACK>(jumps, jumps << RIGHT_FWD_SHIFT, 1, &local);
 
-			jumps = 0;
-			num_jumps = 0;
-			while (i < len - 1) {
-				if (pdiag[i] & board->white && (pdiag[i + 1] & free)) {
+			/* Get occupied squares along the lb diagonal. */
+			mask = (lb_diag >> (S50_bit - bitnum)) & ~free;
 
-					/* Found a jump.  Log this part of the move,
-					 * and make the move on a copy of the board to be
-					 * passed along to the recursion function.
-					 * First clear the from square.
-					 */
-					jumps |= pdiag[i];
-					++num_jumps;
-					++i;
-					if (save_capture_info) {
-						lasti = i;
-						cap[movelist->count].path[0] = *board;
-					}
-					for ( ; i < len && (pdiag[i] & free); ++i) {
-						jboard.black = (board->black & ~from) | pdiag[i];
-						jboard.king = (board->king & ~from) | pdiag[i];
-						jboard.white = board->white;
-						if (save_capture_info) {
-							cap[movelist->count].path[num_jumps] = jboard;
-							cap[movelist->count].path[num_jumps].white &= ~jumps;
-							cap[movelist->count].path[num_jumps].king &= ~jumps;
+			/* Get closest occupied square. */
+			jumps = (BITBOARD)1 << MSB64(mask);
 
-							if (num_jumps > 1) {
-								if (i == lasti)
-									cap[movelist->count].path[num_jumps - 1] = immediately_behind;
-							}
-							if (i == lasti)
-								immediately_behind = cap[movelist->count].path[num_jumps];
-						}
-						black_king_jump<save_capture_info>(&jboard, jumps, movelist, pdiag[i], DIR_LFRB, num_jumps,
-								&largest_num_jumps, cap);
-					}
-				}
-				else
-					break;
-			}
+			/* Capture is possible if the next lb square is free. */
+			if (jumps & board->white & (free << LEFT_BACK_SHIFT))
+				lb_king_capture<save_capture_info, BLACK>(jumps, jumps >> LEFT_BACK_SHIFT, 1, &local);
 
-			pdiag = diag_tbl[bitnum].lb;
-			len = diag_tbl[bitnum].lblen;
+			/* Get occupied squares along the rb diagonal. */
+			mask = (rb_diag >> (S50_bit - bitnum)) & ~free;
 
-			/* Move past free squares along the diagonal. */
-			for (i = 0; i < len - 2 && (pdiag[i] & free); ++i)
-				;
+			/* Get closest occupied square. */
+			jumps = (BITBOARD)1 << MSB64(mask);
 
-			jumps = 0;
-			num_jumps = 0;
-			while (i < len - 1) {
-				if (pdiag[i] & board->white && (pdiag[i + 1] & free)) {
-
-					/* Found a jump.  Log this part of the move,
-					 * and make the move on a copy of the board to be
-					 * passed along to the recursion function.
-					 * First clear the from square.
-					 */
-					jumps |= pdiag[i];
-					++num_jumps;
-					++i;
-					if (save_capture_info) {
-						lasti = i;
-						cap[movelist->count].path[0] = *board;
-					}
-					for ( ; i < len && (pdiag[i] & free); ++i) {
-						jboard.black = (board->black & ~from) | pdiag[i];
-						jboard.king = (board->king & ~from) | pdiag[i];
-						jboard.white = board->white;
-						if (save_capture_info) {
-							cap[movelist->count].path[num_jumps] = jboard;
-							cap[movelist->count].path[num_jumps].white &= ~jumps;
-							cap[movelist->count].path[num_jumps].king &= ~jumps;
-
-							if (num_jumps > 1) {
-								if (i == lasti)
-									cap[movelist->count].path[num_jumps - 1] = immediately_behind;
-							}
-							if (i == lasti)
-								immediately_behind = cap[movelist->count].path[num_jumps];
-						}
-						black_king_jump<save_capture_info>(&jboard, jumps, movelist, pdiag[i], DIR_LFRB, num_jumps,
-								&largest_num_jumps, cap);
-					}
-				}
-				else
-					break;
-			}
-
-			pdiag = diag_tbl[bitnum].rb;
-			len = diag_tbl[bitnum].rblen;
-
-			/* Move past free squares along the diagonal. */
-			for (i = 0; i < len - 2 && (pdiag[i] & free); ++i)
-				;
-
-			jumps = 0;
-			num_jumps = 0;
-			while (i < len - 1) {
-				if (pdiag[i] & board->white && (pdiag[i + 1] & free)) {
-
-					/* Found a jump.  Log this part of the move,
-					 * and make the move on a copy of the board to be
-					 * passed along to the recursion function.
-					 * First clear the from square.
-					 */
-					jumps |= pdiag[i];
-					++num_jumps;
-					++i;
-					if (save_capture_info) {
-						lasti = i;
-						cap[movelist->count].path[0] = *board;
-					}
-					for ( ; i < len && (pdiag[i] & free); ++i) {
-						jboard.black = (board->black & ~from) | pdiag[i];
-						jboard.king = (board->king & ~from) | pdiag[i];
-						jboard.white = board->white;
-						if (save_capture_info) {
-							cap[movelist->count].path[num_jumps] = jboard;
-							cap[movelist->count].path[num_jumps].white &= ~jumps;
-							cap[movelist->count].path[num_jumps].king &= ~jumps;
-
-							if (num_jumps > 1) {
-								if (i == lasti)
-									cap[movelist->count].path[num_jumps - 1] = immediately_behind;
-							}
-							if (i == lasti)
-								immediately_behind = cap[movelist->count].path[num_jumps];
-						}
-						black_king_jump<save_capture_info>(&jboard, jumps, movelist, pdiag[i], DIR_RFLB, num_jumps,
-								&largest_num_jumps, cap);
-					}
-				}
-				else
-					break;
-			}
+			/* Capture is possible if the next rb square is free. */
+			if (jumps & board->white & (free << RIGHT_BACK_SHIFT))
+				rb_king_capture<save_capture_info, BLACK>(jumps, jumps >> RIGHT_BACK_SHIFT, 1, &local);
 		}	
 	}
 	else {
+		local.intermediate.black = board->black;
+		local.intermediate.king = board->king;
+
+		/* First do man jumps. */
 		wm = board->white & ~board->king;
-		for (i = 0; i < ARRAY_SIZE(back_shift_counts); ++i) {
-			mask = (((wm >> back_shift_counts[i]) & board->black) >> back_shift_counts[i]) & free;
-
-			for ( ; mask; mask = mask & (mask - 1)) {
-
-				/* Peel off the lowest set bit in mask. */
-				lands = mask & -(SIGNED_BITBOARD)mask;
-				jumps = lands << back_shift_counts[i];
-				from = jumps << back_shift_counts[i];
-
-				/* Found a jump.  Log this part of the move,
-				 * and make the move on a copy of the board to be
-				 * passed along to the recursion function.
-				 * First clear the from square.
-				 */
-				jboard.white = board->white & ~from;
-				jboard.black = board->black;
-				jboard.king = board->king;
-
-				/* Put him on the square where he lands. */
-				jboard.white |= lands;
-				if (save_capture_info) {
-					cap[movelist->count].path[0] = *board;
-					cap[movelist->count].path[1] = jboard;
-					cap[movelist->count].path[1].black &= ~jumps;
-					cap[movelist->count].path[1].king &= ~jumps;
-				}
-				white_man_jump<save_capture_info>(&jboard, jumps, movelist, lands, 1, &largest_num_jumps, cap);
-			}
-		}
-
-		for (i = 0; i < ARRAY_SIZE(fwd_shift_counts); ++i) {
-			mask = (((wm << fwd_shift_counts[i]) & board->black) << fwd_shift_counts[i]) & free;
-
-			for ( ; mask; mask = mask & (mask - 1)) {
-
-				/* Peel off the lowest set bit in mask. */
-				lands = mask & -(SIGNED_BITBOARD)mask;
-				jumps = lands >> fwd_shift_counts[i];
-				from = jumps >> fwd_shift_counts[i];
-
-				/* Found a jump.  Log this part of the move,
-				 * and make the move on a copy of the board to be
-				 * passed along to the recursion function.
-				 * First clear the from square.
-				 */
-				jboard.white = board->white & ~from;
-				jboard.black = board->black;
-				jboard.king = board->king;
-
-				/* Put him on the square where he lands. */
-				jboard.white |= lands;
-				if (save_capture_info) {
-					cap[movelist->count].path[0] = *board;
-					cap[movelist->count].path[1] = jboard;
-					cap[movelist->count].path[1].black &= ~jumps;
-					cap[movelist->count].path[1].king &= ~jumps;
-				}
-				white_man_jump<save_capture_info>(&jboard, jumps, movelist, lands, 1, &largest_num_jumps, cap);
-			}
-		}
+		WHITE_MAN_JUMP(<<, >>, LEFT_FWD_SHIFT);
+		WHITE_MAN_JUMP(<<, >>, RIGHT_FWD_SHIFT);
+		WHITE_MAN_JUMP(>>, <<, LEFT_BACK_SHIFT);
+		WHITE_MAN_JUMP(>>, <<, RIGHT_BACK_SHIFT);
 
 		wk = board->white & board->king;
 		while (wk) {
@@ -1077,851 +1027,165 @@ int build_jump_list(BOARD *board, MOVELIST *movelist, int color, CAPTURE_INFO ca
 			from = wk & -(SIGNED_BITBOARD)wk;
 			wk &= ~from;
 			bitnum = LSB64(from);
+			local.free = free | from;
 
-			pdiag = diag_tbl[bitnum].lf;
-			len = diag_tbl[bitnum].lflen;
+			if (save_capture_info)
+				cap[movelist->count].path[0] = *board;
 
-			/* Move past free squares along the diagonal. */
-			for (i = 0; i < len - 2 && (pdiag[i] & free); ++i)
-				;
+			local.intermediate.white = board->white - from;
+			local.intermediate.king = board->king - from;
 
-			jumps = 0;
-			num_jumps = 0;
-			while (i < len - 1) {
-				if (pdiag[i] & board->black && (pdiag[i + 1] & free)) {
+			/* Get occupied squares along the lf diagonal. */
+			mask = (lf_diag << bitnum) & ~free;
 
-					/* Found a jump.  Log this part of the move,
-					 * and make the move on a copy of the board to be
-					 * passed along to the recursion function.
-					 * First clear the from square.
-					 */
-					jumps |= pdiag[i];
-					++num_jumps;
-					++i;
-					if (save_capture_info) {
-						lasti = i;
-						cap[movelist->count].path[0] = *board;
-					}
-					for ( ; i < len && (pdiag[i] & free); ++i) {
-						jboard.white = (board->white & ~from) | pdiag[i];
-						jboard.king = (board->king & ~from) | pdiag[i];
-						jboard.black = board->black;
-						if (save_capture_info) {
-							cap[movelist->count].path[num_jumps] = jboard;
-							cap[movelist->count].path[num_jumps].black &= ~jumps;
-							cap[movelist->count].path[num_jumps].king &= ~jumps;
+			/* Get closest occupied square. */
+			jumps = mask & -(SIGNED_BITBOARD)mask;
 
-							if (num_jumps > 1) {
-								if (i == lasti)
-									cap[movelist->count].path[num_jumps - 1] = immediately_behind;
-							}
-							if (i == lasti)
-								immediately_behind = cap[movelist->count].path[num_jumps];
-						}
-						white_king_jump<save_capture_info>(&jboard, jumps, movelist, pdiag[i], DIR_RFLB, num_jumps,
-								&largest_num_jumps, cap);
-					}
-				}
-				else
-					break;
-			}
+			/* Capture is possible if the next lf square is free. */
+			if (jumps & board->black & (free >> LEFT_FWD_SHIFT))
+				lf_king_capture<save_capture_info, WHITE>(jumps, jumps << LEFT_FWD_SHIFT, 1, &local);
 
-			pdiag = diag_tbl[bitnum].rf;
-			len = diag_tbl[bitnum].rflen;
+			/* Get occupied squares along the rf diagonal. */
+			mask = (rf_diag << bitnum) & ~free;
 
-			/* Move past free squares along the diagonal. */
-			for (i = 0; i < len - 2 && (pdiag[i] & free); ++i)
-				;
+			/* Get closest occupied square. */
+			jumps = mask & -(SIGNED_BITBOARD)mask;
 
-			jumps = 0;
-			num_jumps = 0;
-			while (i < len - 1) {
-				if (pdiag[i] & board->black && (pdiag[i + 1] & free)) {
+			/* Capture is possible if the next rf square is free. */
+			if (jumps & board->black & (free >> RIGHT_FWD_SHIFT))
+				rf_king_capture<save_capture_info, WHITE>(jumps, jumps << RIGHT_FWD_SHIFT, 1, &local);
 
-					/* Found a jump.  Log this part of the move,
-					 * and make the move on a copy of the board to be
-					 * passed along to the recursion function.
-					 * First clear the from square.
-					 */
-					jumps |= pdiag[i];
-					++num_jumps;
-					++i;
-					if (save_capture_info) {
-						lasti = i;
-						cap[movelist->count].path[0] = *board;
-					}
-					for ( ; i < len && (pdiag[i] & free); ++i) {
-						jboard.white = (board->white & ~from) | pdiag[i];
-						jboard.king = (board->king & ~from) | pdiag[i];
-						jboard.black = board->black;
-						if (save_capture_info) {
-							cap[movelist->count].path[num_jumps] = jboard;
-							cap[movelist->count].path[num_jumps].black &= ~jumps;
-							cap[movelist->count].path[num_jumps].king &= ~jumps;
+			/* Get occupied squares along the lb diagonal. */
+			mask = (lb_diag >> (S50_bit - bitnum)) & ~free;
 
-							if (num_jumps > 1) {
-								if (i == lasti)
-									cap[movelist->count].path[num_jumps - 1] = immediately_behind;
-							}
-							if (i == lasti)
-								immediately_behind = cap[movelist->count].path[num_jumps];
-						}
-						white_king_jump<save_capture_info>(&jboard, jumps, movelist, pdiag[i], DIR_LFRB, num_jumps,
-								&largest_num_jumps, cap);
-					}
-				}
-				else
-					break;
-			}
+			/* Get closest occupied square. */
+			jumps = (BITBOARD)1 << MSB64(mask);
 
-			pdiag = diag_tbl[bitnum].lb;
-			len = diag_tbl[bitnum].lblen;
+			/* Capture is possible if the next lb square is free. */
+			if (jumps & board->black & (free << LEFT_BACK_SHIFT))
+				lb_king_capture<save_capture_info, WHITE>(jumps, jumps >> LEFT_BACK_SHIFT, 1, &local);
 
-			/* Move past free squares along the diagonal. */
-			for (i = 0; i < len - 2 && (pdiag[i] & free); ++i)
-				;
+			/* Get occupied squares along the rb diagonal. */
+			mask = (rb_diag >> (S50_bit - bitnum)) & ~free;
 
-			jumps = 0;
-			num_jumps = 0;
-			while (i < len - 1) {
-				if (pdiag[i] & board->black && (pdiag[i + 1] & free)) {
+			/* Get closest occupied square. */
+			jumps = (BITBOARD)1 << MSB64(mask);
 
-					/* Found a jump.  Log this part of the move,
-					 * and make the move on a copy of the board to be
-					 * passed along to the recursion function.
-					 * First clear the from square.
-					 */
-					jumps |= pdiag[i];
-					++num_jumps;
-					++i;
-					if (save_capture_info) {
-						lasti = i;
-						cap[movelist->count].path[0] = *board;
-					}
-					for ( ; i < len && (pdiag[i] & free); ++i) {
-						jboard.white = (board->white & ~from) | pdiag[i];
-						jboard.king = (board->king & ~from) | pdiag[i];
-						jboard.black = board->black;
-						if (save_capture_info) {
-							cap[movelist->count].path[num_jumps] = jboard;
-							cap[movelist->count].path[num_jumps].black &= ~jumps;
-							cap[movelist->count].path[num_jumps].king &= ~jumps;
-
-							if (num_jumps > 1) {
-								if (i == lasti)
-									cap[movelist->count].path[num_jumps - 1] = immediately_behind;
-							}
-							if (i == lasti)
-								immediately_behind = cap[movelist->count].path[num_jumps];
-						}
-						white_king_jump<save_capture_info>(&jboard, jumps, movelist, pdiag[i], DIR_LFRB, num_jumps,
-								&largest_num_jumps, cap);
-					}
-				}
-				else
-					break;
-			}
-
-			pdiag = diag_tbl[bitnum].rb;
-			len = diag_tbl[bitnum].rblen;
-
-			/* Move past free squares along the diagonal. */
-			for (i = 0; i < len - 2 && (pdiag[i] & free); ++i)
-				;
-
-			jumps = 0;
-			num_jumps = 0;
-			while (i < len - 1) {
-				if (pdiag[i] & board->black && (pdiag[i + 1] & free)) {
-
-					/* Found a jump.  Log this part of the move,
-					 * and make the move on a copy of the board to be
-					 * passed along to the recursion function.
-					 * First clear the from square.
-					 */
-					jumps |= pdiag[i];
-					++num_jumps;
-					++i;
-					if (save_capture_info) {
-						lasti = i;
-						cap[movelist->count].path[0] = *board;
-					}
-					for ( ; i < len && (pdiag[i] & free); ++i) {
-						jboard.white = (board->white & ~from) | pdiag[i];
-						jboard.king = (board->king & ~from) | pdiag[i];
-						jboard.black = board->black;
-						if (save_capture_info) {
-							cap[movelist->count].path[num_jumps] = jboard;
-							cap[movelist->count].path[num_jumps].black &= ~jumps;
-							cap[movelist->count].path[num_jumps].king &= ~jumps;
-
-							if (num_jumps > 1) {
-								if (i == lasti)
-									cap[movelist->count].path[num_jumps - 1] = immediately_behind;
-							}
-							if (i == lasti)
-								immediately_behind = cap[movelist->count].path[num_jumps];
-						}
-						white_king_jump<save_capture_info>(&jboard, jumps, movelist, pdiag[i], DIR_RFLB, num_jumps,
-								&largest_num_jumps, cap);
-					}
-				}
-				else
-					break;
-			}
+			/* Capture is possible if the next rb square is free. */
+			if (jumps & board->black & (free << RIGHT_BACK_SHIFT))
+				rb_king_capture<save_capture_info, WHITE>(jumps, jumps >> RIGHT_BACK_SHIFT, 1, &local);
 		}	
 	}
 	return(movelist->count);
 }
-
-
-template <bool save_capture_info>
-static void black_king_jump(BOARD *board, BITBOARD all_jumped, MOVELIST *movelist, BITBOARD from,
-					 DIR dir, int num_jumps, int *largest_num_jumps,
-					 CAPTURE_INFO cap[])
-{
-	BITBOARD jumps;
-	BITBOARD free;
-	BITBOARD *pdiag;
-	int i, lasti, bitnum, len, local_num_jumps, found_jump;
-	BOARD jboard, immediately_behind;
-
-	found_jump = 0;
-	free = ~(board->black | board->white);
-	bitnum = LSB64(from);
-
-	if (dir == DIR_LFRB) {
-		pdiag = diag_tbl[bitnum].lf;
-		len = diag_tbl[bitnum].lflen;
-
-		/* Move past free squares along the diagonal. */
-		for (i = 0; i < len - 2 && (pdiag[i] & free); ++i)
-			;
-
-		jumps = 0;
-		local_num_jumps = 0;
-		while (i < len - 1) {
-			if ((pdiag[i] & board->white & ~all_jumped) && (pdiag[i + 1] & free)) {
-
-				/* Found a jump.  Log this part of the move,
-				 * and make the move on a copy of the board to be
-				 * passed along to the recursion function.
-				 * First clear the from square.
-				 */
-				found_jump = 1;
-				jumps |= pdiag[i];
-				++local_num_jumps;
-				++i;
-				if (save_capture_info)
-					lasti = i;
-
-				for ( ; i < len && (pdiag[i] & free); ++i) {
-					jboard.black = (board->black & ~from) | pdiag[i];
-					jboard.king = (board->king & ~from) | pdiag[i];
-					jboard.white = board->white;
-					if (save_capture_info) {
-						assign_black_jump_path(&jboard, all_jumped | jumps, cap, num_jumps + local_num_jumps, movelist->count);
-						if (local_num_jumps > 1) {
-							if (i == lasti)
-								cap[movelist->count].path[num_jumps + local_num_jumps - 1] = immediately_behind;
-						}
-						if (i == lasti)
-							immediately_behind = cap[movelist->count].path[num_jumps + local_num_jumps];
-					}
-
-					black_king_jump<save_capture_info>(&jboard, all_jumped | jumps, movelist, pdiag[i], DIR_RFLB,
-									num_jumps + local_num_jumps, largest_num_jumps, cap);
-				}
-			}
-			else
-				break;
-		}
-
-		pdiag = diag_tbl[bitnum].rb;
-		len = diag_tbl[bitnum].rblen;
-
-		/* Move past free squares along the diagonal. */
-		for (i = 0; i < len - 2 && (pdiag[i] & free); ++i)
-			;
-
-		jumps = 0;
-		local_num_jumps = 0;
-		while (i < len - 1) {
-			if ((pdiag[i] & board->white & ~all_jumped) && (pdiag[i + 1] & free)) {
-
-				/* Found a jump.  Log this part of the move,
-				 * and make the move on a copy of the board to be
-				 * passed along to the recursion function.
-				 * First clear the from square.
-				 */
-				found_jump = 1;
-				jumps |= pdiag[i];
-				++local_num_jumps;
-				++i;
-				if (save_capture_info)
-					lasti = i;
-
-				for ( ; i < len && (pdiag[i] & free); ++i) {
-					jboard.black = (board->black & ~from) | pdiag[i];
-					jboard.king = (board->king & ~from) | pdiag[i];
-					jboard.white = board->white;
-					if (save_capture_info) {
-						assign_black_jump_path(&jboard, all_jumped | jumps, cap, num_jumps + local_num_jumps, movelist->count);
-						if (local_num_jumps > 1) {
-							if (i == lasti)
-								cap[movelist->count].path[num_jumps + local_num_jumps - 1] = immediately_behind;
-						}
-						if (i == lasti)
-							immediately_behind = cap[movelist->count].path[num_jumps + local_num_jumps];
-					}
-
-					black_king_jump<save_capture_info>(&jboard, all_jumped | jumps, movelist, pdiag[i], DIR_RFLB,
-									num_jumps + local_num_jumps, largest_num_jumps, cap);
-				}
-			}
-			else
-				break;
-		}
-	}
-	else {
-		pdiag = diag_tbl[bitnum].rf;
-		len = diag_tbl[bitnum].rflen;
-
-		/* Move past free squares along the diagonal. */
-		for (i = 0; i < len - 2 && (pdiag[i] & free); ++i)
-			;
-
-		jumps = 0;
-		local_num_jumps = 0;
-		while (i < len - 1) {
-			if ((pdiag[i] & board->white & ~all_jumped) && (pdiag[i + 1] & free)) {
-
-				/* Found a jump.  Log this part of the move,
-				 * and make the move on a copy of the board to be
-				 * passed along to the recursion function.
-				 * First clear the from square.
-				 */
-				found_jump = 1;
-				jumps |= pdiag[i];
-				++local_num_jumps;
-				++i;
-				if (save_capture_info)
-					lasti = i;
-
-				for ( ; i < len && (pdiag[i] & free); ++i) {
-					jboard.black = (board->black & ~from) | pdiag[i];
-					jboard.king = (board->king & ~from) | pdiag[i];
-					jboard.white = board->white;
-					if (save_capture_info) {
-						assign_black_jump_path(&jboard, all_jumped | jumps, cap, num_jumps + local_num_jumps, movelist->count);
-						if (local_num_jumps > 1) {
-							if (i == lasti)
-								cap[movelist->count].path[num_jumps + local_num_jumps - 1] = immediately_behind;
-						}
-						if (i == lasti)
-							immediately_behind = cap[movelist->count].path[num_jumps + local_num_jumps];
-					}
-
-					black_king_jump<save_capture_info>(&jboard, all_jumped | jumps, movelist, pdiag[i], DIR_LFRB,
-									num_jumps + local_num_jumps, largest_num_jumps, cap);
-				}
-			}
-			else
-				break;
-		}
-
-		pdiag = diag_tbl[bitnum].lb;
-		len = diag_tbl[bitnum].lblen;
-
-		/* Move past free squares along the diagonal. */
-		for (i = 0; i < len - 2 && (pdiag[i] & free); ++i)
-			;
-
-		jumps = 0;
-		local_num_jumps = 0;
-		while (i < len - 1) {
-			if ((pdiag[i] & board->white & ~all_jumped) && (pdiag[i + 1] & free)) {
-
-				/* Found a jump.  Log this part of the move,
-				 * and make the move on a copy of the board to be
-				 * passed along to the recursion function.
-				 * First clear the from square.
-				 */
-				found_jump = 1;
-				jumps |= pdiag[i];
-				++local_num_jumps;
-				++i;
-				if (save_capture_info)
-					lasti = i;
-
-				for ( ; i < len && (pdiag[i] & free); ++i) {
-					jboard.black = (board->black & ~from) | pdiag[i];
-					jboard.king = (board->king & ~from) | pdiag[i];
-					jboard.white = board->white;
-					if (save_capture_info) {
-						assign_black_jump_path(&jboard, all_jumped | jumps, cap, num_jumps + local_num_jumps, movelist->count);
-						if (local_num_jumps > 1) {
-							if (i == lasti)
-								cap[movelist->count].path[num_jumps + local_num_jumps - 1] = immediately_behind;
-						}
-						if (i == lasti)
-							immediately_behind = cap[movelist->count].path[num_jumps + local_num_jumps];
-					}
-
-					black_king_jump<save_capture_info>(&jboard, all_jumped | jumps, movelist, pdiag[i], DIR_LFRB,
-									num_jumps + local_num_jumps, largest_num_jumps, cap);
-				}
-			}
-			else
-				break;
-		}
-	}
-
-	/* If we didn't find any move jumps, then add the board that was
-	 * passed in to the movelist.
-	 */
-	if (!found_jump) {
-		if (num_jumps >= *largest_num_jumps) {
-			if (num_jumps > *largest_num_jumps) {
-				if (save_capture_info)
-					std::memcpy(cap, cap + movelist->count, sizeof(cap[0]));
-				movelist->count = 0;
-				*largest_num_jumps = num_jumps;
-			}
-
-			movelist->board[movelist->count] = *board;
-			if (save_capture_info) {
-				cap[movelist->count].capture_count = num_jumps;
-
-				/* Copy the path to the next potential jump move. */
-				copy_path(cap, movelist);
-			}
-
-			/* Clear the board of white pieces that were jumped. */
-			movelist->board[movelist->count].white &= ~all_jumped;
-			movelist->board[movelist->count].king &= ~all_jumped;
-			if (num_jumps >= 4) {
-				for (i = 0; i < movelist->count; ++i)
-					if (memcmp(movelist->board + i, movelist->board + movelist->count, sizeof(BOARD)) == 0)
-						return;
-			}
-			movelist->count++;
-		}
-	}
-}
-
-
-template <bool save_capture_info>
-static void white_king_jump(BOARD *board, BITBOARD all_jumped, MOVELIST *movelist, BITBOARD from,
-					 DIR dir, int num_jumps, int *largest_num_jumps,
-					 CAPTURE_INFO cap[])
-{
-	BITBOARD jumps;
-	BITBOARD free;
-	BITBOARD *pdiag;
-	int i, lasti, bitnum, len, local_num_jumps, found_jump;
-	BOARD jboard, immediately_behind;
-
-	found_jump = 0;
-	free = ~(board->black | board->white);
-	bitnum = LSB64(from);
-
-	if (dir == DIR_LFRB) {
-		pdiag = diag_tbl[bitnum].lf;
-		len = diag_tbl[bitnum].lflen;
-
-		/* Move past free squares along the diagonal. */
-		for (i = 0; i < len - 2 && (pdiag[i] & free); ++i)
-			;
-
-		jumps = 0;
-		local_num_jumps = 0;
-		while (i < len - 1) {
-			if ((pdiag[i] & board->black & ~all_jumped) && (pdiag[i + 1] & free)) {
-
-				/* Found a jump.  Log this part of the move,
-				 * and make the move on a copy of the board to be
-				 * passed along to the recursion function.
-				 * First clear the from square.
-				 */
-				found_jump = 1;
-				jumps |= pdiag[i];
-				++local_num_jumps;
-				++i;
-				if (save_capture_info)
-					lasti = i;
-
-				for ( ; i < len && (pdiag[i] & free); ++i) {
-					jboard.white = (board->white & ~from) | pdiag[i];
-					jboard.king = (board->king & ~from) | pdiag[i];
-					jboard.black = board->black;
-					if (save_capture_info) {
-						assign_white_jump_path(&jboard, all_jumped | jumps, cap, num_jumps + local_num_jumps, movelist->count);
-						if (local_num_jumps > 1) {
-							if (i == lasti)
-								cap[movelist->count].path[num_jumps + local_num_jumps - 1] = immediately_behind;
-						}
-						if (i == lasti)
-							immediately_behind = cap[movelist->count].path[num_jumps + local_num_jumps];
-					}
-
-					white_king_jump<save_capture_info>(&jboard, all_jumped | jumps, movelist, pdiag[i], DIR_RFLB,
-									num_jumps + local_num_jumps, largest_num_jumps, cap);
-				}
-			}
-			else
-				break;
-		}
-
-		pdiag = diag_tbl[bitnum].rb;
-		len = diag_tbl[bitnum].rblen;
-
-		/* Move past free squares along the diagonal. */
-		for (i = 0; i < len - 2 && (pdiag[i] & free); ++i)
-			;
-
-		jumps = 0;
-		local_num_jumps = 0;
-		while (i < len - 1) {
-			if ((pdiag[i] & board->black & ~all_jumped) && (pdiag[i + 1] & free)) {
-
-				/* Found a jump.  Log this part of the move,
-				 * and make the move on a copy of the board to be
-				 * passed along to the recursion function.
-				 * First clear the from square.
-				 */
-				found_jump = 1;
-				jumps |= pdiag[i];
-				++local_num_jumps;
-				++i;
-				if (save_capture_info)
-					lasti = i;
-
-				for ( ; i < len && (pdiag[i] & free); ++i) {
-					jboard.white = (board->white & ~from) | pdiag[i];
-					jboard.king = (board->king & ~from) | pdiag[i];
-					jboard.black = board->black;
-					if (save_capture_info) {
-						assign_white_jump_path(&jboard, all_jumped | jumps, cap, num_jumps + local_num_jumps, movelist->count);
-						if (local_num_jumps > 1) {
-							if (i == lasti)
-								cap[movelist->count].path[num_jumps + local_num_jumps - 1] = immediately_behind;
-						}
-						if (i == lasti)
-							immediately_behind = cap[movelist->count].path[num_jumps + local_num_jumps];
-					}
-
-					white_king_jump<save_capture_info>(&jboard, all_jumped | jumps, movelist, pdiag[i], DIR_RFLB,
-									num_jumps + local_num_jumps, largest_num_jumps, cap);
-				}
-			}
-			else
-				break;
-		}
-	}
-	else {
-		pdiag = diag_tbl[bitnum].rf;
-		len = diag_tbl[bitnum].rflen;
-
-		/* Move past free squares along the diagonal. */
-		for (i = 0; i < len - 2 && (pdiag[i] & free); ++i)
-			;
-
-		jumps = 0;
-		local_num_jumps = 0;
-		while (i < len - 1) {
-			if ((pdiag[i] & board->black & ~all_jumped) && (pdiag[i + 1] & free)) {
-
-				/* Found a jump.  Log this part of the move,
-				 * and make the move on a copy of the board to be
-				 * passed along to the recursion function.
-				 * First clear the from square.
-				 */
-				found_jump = 1;
-				jumps |= pdiag[i];
-				++local_num_jumps;
-				++i;
-				if (save_capture_info)
-					lasti = i;
-
-				for ( ; i < len && (pdiag[i] & free); ++i) {
-					jboard.white = (board->white & ~from) | pdiag[i];
-					jboard.king = (board->king & ~from) | pdiag[i];
-					jboard.black = board->black;
-					if (save_capture_info) {
-						assign_white_jump_path(&jboard, all_jumped | jumps, cap, num_jumps + local_num_jumps, movelist->count);
-						if (local_num_jumps > 1) {
-							if (i == lasti)
-								cap[movelist->count].path[num_jumps + local_num_jumps - 1] = immediately_behind;
-						}
-						if (i == lasti)
-							immediately_behind = cap[movelist->count].path[num_jumps + local_num_jumps];
-					}
-
-					white_king_jump<save_capture_info>(&jboard, all_jumped | jumps, movelist, pdiag[i], DIR_LFRB,
-									num_jumps + local_num_jumps, largest_num_jumps, cap);
-				}
-			}
-			else
-				break;
-		}
-
-		pdiag = diag_tbl[bitnum].lb;
-		len = diag_tbl[bitnum].lblen;
-
-		/* Move past free squares along the diagonal. */
-		for (i = 0; i < len - 2 && (pdiag[i] & free); ++i)
-			;
-
-		jumps = 0;
-		local_num_jumps = 0;
-		while (i < len - 1) {
-			if ((pdiag[i] & board->black & ~all_jumped) && (pdiag[i + 1] & free)) {
-
-				/* Found a jump.  Log this part of the move,
-				 * and make the move on a copy of the board to be
-				 * passed along to the recursion function.
-				 * First clear the from square.
-				 */
-				found_jump = 1;
-				jumps |= pdiag[i];
-				++local_num_jumps;
-				++i;
-				if (save_capture_info)
-					lasti = i;
-
-				for ( ; i < len && (pdiag[i] & free); ++i) {
-					jboard.white = (board->white & ~from) | pdiag[i];
-					jboard.king = (board->king & ~from) | pdiag[i];
-					jboard.black = board->black;
-					if (save_capture_info) {
-						assign_white_jump_path(&jboard, all_jumped | jumps, cap, num_jumps + local_num_jumps, movelist->count);
-						if (local_num_jumps > 1) {
-							if (i == lasti)
-								cap[movelist->count].path[num_jumps + local_num_jumps - 1] = immediately_behind;
-						}
-						if (i == lasti)
-							immediately_behind = cap[movelist->count].path[num_jumps + local_num_jumps];
-					}
-
-					white_king_jump<save_capture_info>(&jboard, all_jumped | jumps, movelist, pdiag[i], DIR_LFRB,
-									num_jumps + local_num_jumps, largest_num_jumps, cap);
-				}
-			}
-			else
-				break;
-		}
-	}
-
-	/* If we didn't find any move jumps, then add the board that was
-	 * passed in to the movelist.
-	 */
-	if (!found_jump) {
-		if (num_jumps >= *largest_num_jumps) {
-			if (num_jumps > *largest_num_jumps) {
-				if (save_capture_info)
-					std::memcpy(cap, cap + movelist->count, sizeof(cap[0]));
-				movelist->count = 0;
-				*largest_num_jumps = num_jumps;
-			}
-
-			movelist->board[movelist->count] = *board;
-			if (save_capture_info) {
-				cap[movelist->count].capture_count = num_jumps;
-
-				/* Copy the path to the next potential jump move. */
-				copy_path(cap, movelist);
-			}
-
-			/* Clear the board of black pieces that were jumped. */
-			movelist->board[movelist->count].black &= ~all_jumped;
-			movelist->board[movelist->count].king &= ~all_jumped;
-			if (num_jumps >= 4) {
-				for (i = 0; i < movelist->count; ++i)
-					if (memcmp(movelist->board + i, movelist->board + movelist->count, sizeof(BOARD)) == 0)
-						return;
-			}
-			movelist->count++;
-		}
-	}
-}
-
-
-#define BLACK_MAN_JUMP(shift, shift_oper) \
-	jumps = (from shift_oper shift) & board->white & ~all_jumped; \
-	lands = (jumps shift_oper shift) & free; \
-	if (lands) { \
-\
-		/* Found a jump. \
-		 * Make the move on a copy of the board to be \
-		 * passed along to the recursion function. \
-		 * First clear the from square. \
-		 */ \
-		jboard.black = board->black & ~from; \
-		jboard.white = board->white; \
-		jboard.king = board->king; \
-\
-		/* Put him on the square where he lands. */ \
-		jboard.black |= lands; \
-\
-		if (save_capture_info) \
-			assign_black_jump_path(&jboard, all_jumped | jumps, cap, num_jumps + 1, movelist->count); \
-		black_man_jump<save_capture_info>(&jboard, all_jumped | jumps, movelist, lands, num_jumps + 1, largest_num_jumps, cap); \
-		found_jump = 1; \
-	}
-
 	
 	
 /*
- * We're in the middle of a jump.
+ * We're in the middle of a man jump.
  * If we've reached the end of the jump, then add this board to the movelist.
  * If not, call again recursively.
  */
-template <bool save_capture_info>
-static void black_man_jump(BOARD *board, BITBOARD all_jumped, MOVELIST *movelist, BITBOARD from,
-						 int num_jumps, int *largest_num_jumps, CAPTURE_INFO cap[])
+template <bool save_capture_info, int color>
+static void man_jump(BITBOARD jumped, MOVELIST *movelist, BITBOARD jumper, int num_jumps, Local *local)
 {
 	BITBOARD jumps;
 	BITBOARD lands;
-	BITBOARD free;
-	int found_jump;
-	BOARD jboard;
+	BITBOARD opponent;
 
-	found_jump = 0;
-	free = ~(board->black | board->white) & ALL_SQUARES;
+	if (save_capture_info) {
+		BOARD *board = local->cap[movelist->count].path + num_jumps;
+		if (color == BLACK) {
+			board->black = local->intermediate.black | jumper;
+			board->white = local->intermediate.white & ~jumped;
+			board->king = local->intermediate.king & ~jumped;
+		}
+		else {
+			board->white = local->intermediate.white | jumper;
+			board->black = local->intermediate.black & ~jumped;
+			board->king = local->intermediate.king & ~jumped;
+		}
+	}
 
-	BLACK_MAN_JUMP(LEFT_FWD_SHIFT, <<);
-	BLACK_MAN_JUMP(RIGHT_FWD_SHIFT, <<);
-	BLACK_MAN_JUMP(LEFT_BACK_SHIFT, >>);
-	BLACK_MAN_JUMP(RIGHT_BACK_SHIFT, >>);
+	if (color == BLACK)
+		opponent = local->intermediate.white & ~jumped;
+	else
+		opponent = local->intermediate.black & ~jumped;
+
+	jumps = (jumper << LEFT_FWD_SHIFT) & opponent;
+	lands = (jumps << LEFT_FWD_SHIFT) & local->free;
+	if (lands)
+		man_jump<save_capture_info, color>(jumped | jumps, movelist, lands, num_jumps + 1, local);
+
+	jumps = (jumper << RIGHT_FWD_SHIFT) & opponent;
+	lands = (jumps << RIGHT_FWD_SHIFT) & local->free;
+	if (lands)
+		man_jump<save_capture_info, color>(jumped | jumps, movelist, lands, num_jumps + 1, local);
+
+	jumps = (jumper >> LEFT_BACK_SHIFT) & opponent;
+	lands = (jumps >> LEFT_BACK_SHIFT) & local->free;
+	if (lands)
+		man_jump<save_capture_info, color>(jumped | jumps, movelist, lands, num_jumps + 1, local);
+
+	jumps = (jumper >> RIGHT_BACK_SHIFT) & opponent;
+	lands = (jumps >> RIGHT_BACK_SHIFT) & local->free;
+	if (lands)
+		man_jump<save_capture_info, color>(jumped | jumps, movelist, lands, num_jumps + 1, local);
 
 	/* If we didn't find any move jumps, then add the board that was
 	 * passed in to the movelist.
 	 */
-	if (!found_jump) {
-		if (num_jumps >= *largest_num_jumps) {
-			if (num_jumps > *largest_num_jumps) {
-				if (save_capture_info)
-					std::memcpy(cap, cap + movelist->count, sizeof(cap[0]));
-				movelist->count = 0;
-				*largest_num_jumps = num_jumps;
-			}
-
-			movelist->board[movelist->count] = *board;
+	if (num_jumps >= local->largest_num_jumps) {
+		if (num_jumps > local->largest_num_jumps) {
 			if (save_capture_info)
-				cap[movelist->count].capture_count = num_jumps;
-
-			if (from & BLACK_KING_RANK_MASK)
-				movelist->board[movelist->count].king |= from;
-
-			/* Copy the path to the next potential jump move. */
-			if (save_capture_info)
-				copy_path(cap, movelist);
-
-			/* Clear the board of white pieces that were jumped. */
-			movelist->board[movelist->count].white &= ~all_jumped;
-			movelist->board[movelist->count].king &= ~all_jumped;
-
-			/* Check for duplicates. */
-			if (num_jumps >= 4) {
-				int i;
-
-				for (i = 0; i < movelist->count; ++i)
-					if (memcmp(movelist->board + i, movelist->board + movelist->count, sizeof(BOARD)) == 0)
-						return;
-			}
-			movelist->count++;
+				std::memcpy(local->cap, local->cap + movelist->count, sizeof(local->cap[0]));
+			movelist->count = 0;
+			local->largest_num_jumps = num_jumps;
 		}
-	}
-}
 
+		movelist->board[movelist->count].white &= ~jumped;
+		movelist->board[movelist->count].king &= ~jumped;
+		if (save_capture_info)
+			local->cap[movelist->count].capture_count = num_jumps;
 
-#define WHITE_MAN_JUMP(shift, shift_oper) \
-	jumps = (from shift_oper shift) & board->black & ~all_jumped; \
-	lands = (jumps shift_oper shift) & free; \
-	if (lands) { \
-\
-		/* Found a jump. \
-		 * Make the move on a copy of the board to be \
-		 * passed along to the recursion function. \
-		 * First clear the from square. \
-		 */ \
-		jboard.white = board->white & ~from; \
-		jboard.black = board->black; \
-		jboard.king = board->king; \
-\
-		/* Put him on the square where he lands. */ \
-		jboard.white |= lands; \
-\
-		if (save_capture_info) \
-			assign_white_jump_path(&jboard, all_jumped | jumps, cap, num_jumps + 1, movelist->count); \
-		white_man_jump<save_capture_info>(&jboard, all_jumped | jumps, movelist, lands, num_jumps + 1, largest_num_jumps, cap); \
-		found_jump = 1; \
-	}
-
-
-/*
- * We're in the middle of a jump.
- * If we've reached the end of the jump, then add this board to the movelist.
- * If not, call again recursively.
- */
-template <bool save_capture_info>
-static void white_man_jump(BOARD *board, BITBOARD all_jumped, MOVELIST *movelist, BITBOARD from,
-						 int num_jumps, int *largest_num_jumps, CAPTURE_INFO cap[])
-{
-	BITBOARD jumps;
-	BITBOARD lands;
-	BITBOARD free;
-	int found_jump;
-	BOARD jboard;
-
-	found_jump = 0;
-	free = ~(board->black | board->white) & ALL_SQUARES;
-
-	WHITE_MAN_JUMP(LEFT_FWD_SHIFT, <<);
-	WHITE_MAN_JUMP(RIGHT_FWD_SHIFT, <<);
-	WHITE_MAN_JUMP(LEFT_BACK_SHIFT, >>);
-	WHITE_MAN_JUMP(RIGHT_BACK_SHIFT, >>);
-
-	/* If we didn't find any move jumps, then add the board that was
-	 * passed in to the movelist.
-	 */
-	if (!found_jump) {
-		if (num_jumps >= *largest_num_jumps) {
-			if (num_jumps > *largest_num_jumps) {
-				if (save_capture_info)
-					std::memcpy(cap, cap + movelist->count, sizeof(cap[0]));
-				movelist->count = 0;
-				*largest_num_jumps = num_jumps;
-			}
-
-			movelist->board[movelist->count] = *board;
-
-			/* See if this makes him a king. */
-			if (from & WHITE_KING_RANK_MASK)
-				movelist->board[movelist->count].king |= from;
-
-			if (save_capture_info) {
-				cap[movelist->count].capture_count = num_jumps;
-
-				/* Copy the path to the next potential jump move. */
-				copy_path(cap, movelist);
-			}
-
-			/* Clear the board of black pieces that were jumped. */
-			movelist->board[movelist->count].black &= ~all_jumped;
-			movelist->board[movelist->count].king &= ~all_jumped;
-
-			/* Check for duplicates. */
-			if (num_jumps >= 4) {
-				int i;
-
-				for (i = 0; i < movelist->count; ++i)
-					if (memcmp(movelist->board + i, movelist->board + movelist->count, sizeof(BOARD)) == 0)
-						return;
-			}
-			movelist->count++;
+		if (color == BLACK) {
+			movelist->board[movelist->count].black = local->intermediate.black | jumper;
+			movelist->board[movelist->count].white = local->intermediate.white & ~jumped;
+			movelist->board[movelist->count].king = local->intermediate.king & ~jumped;
+			if (jumper & BLACK_KING_RANK_MASK)
+				movelist->board[movelist->count].king |= jumper;
 		}
+		else {
+			movelist->board[movelist->count].white = local->intermediate.white | jumper;
+			movelist->board[movelist->count].black = local->intermediate.black & ~jumped;
+			movelist->board[movelist->count].king = local->intermediate.king & ~jumped;
+			if (jumper & WHITE_KING_RANK_MASK)
+				movelist->board[movelist->count].king |= jumper;
+		}
+
+		/* Copy the path to the next potential jump move. */
+		if (save_capture_info) {
+			copy_path(local->cap, movelist);
+
+			/* Test of capture makes a man a king. */
+			if (color == BLACK) {
+				if (jumper & BLACK_KING_RANK_MASK)
+					local->cap[movelist->count].path[num_jumps].king |= jumper;
+			}
+			else {
+				if (jumper & WHITE_KING_RANK_MASK)
+					local->cap[movelist->count].path[num_jumps].king |= jumper;
+			}
+		}
+
+		/* Check for duplicates. */
+		if (num_jumps >= 4) {
+			int i;
+
+			for (i = 0; i < movelist->count; ++i)
+				if (memcmp(movelist->board + i, movelist->board + movelist->count, sizeof(BOARD)) == 0)
+					return;
+		}
+		movelist->count++;
 	}
 }
 
