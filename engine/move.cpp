@@ -39,7 +39,6 @@ public:
 
 static init_move_tables_c init;
 
-extern DIAGS diag_tbl[NUM_BITBOARD_BITS];
 
 struct Local {
 	MOVELIST *movelist;
@@ -48,6 +47,27 @@ struct Local {
 	BOARD intermediate;
 	int largest_num_jumps;
 };
+
+const BITBOARD lf_diag = (S1 << LEFT_FWD_SHIFT) | (S1 << 2 * LEFT_FWD_SHIFT) |
+						(S1 << 3 * LEFT_FWD_SHIFT) | (S1 << 4 * LEFT_FWD_SHIFT) |
+						(S1 << 5 * LEFT_FWD_SHIFT) | (S1 << 6 * LEFT_FWD_SHIFT) |
+						(S1 << 7 * LEFT_FWD_SHIFT) | (S1 << 8 * LEFT_FWD_SHIFT);
+const BITBOARD rf_diag = (S1 << RIGHT_FWD_SHIFT) | (S1 << 2 * RIGHT_FWD_SHIFT) |
+						(S1 << 3 * RIGHT_FWD_SHIFT) | (S1 << 4 * RIGHT_FWD_SHIFT) |
+						(S1 << 5 * RIGHT_FWD_SHIFT) | (S1 << 6 * RIGHT_FWD_SHIFT) |
+						(S1 << 7 * RIGHT_FWD_SHIFT) | (S1 << 8 * RIGHT_FWD_SHIFT);
+const BITBOARD lb_diag = (S50 >> LEFT_BACK_SHIFT) | (S50 >> 2 * LEFT_BACK_SHIFT) |
+						(S50 >> 3 * LEFT_BACK_SHIFT) | (S50 >> 4 * LEFT_BACK_SHIFT) |
+						(S50 >> 5 * LEFT_BACK_SHIFT) | (S50 >> 6 * LEFT_BACK_SHIFT) |
+						(S50 >> 7 * LEFT_BACK_SHIFT) | (S50 >> 8 * LEFT_BACK_SHIFT);
+const BITBOARD rb_diag = (S50 >> RIGHT_BACK_SHIFT) | (S50 >> 2 * RIGHT_BACK_SHIFT) |
+						(S50 >> 3 * RIGHT_BACK_SHIFT) | (S50 >> 4 * RIGHT_BACK_SHIFT) |
+						(S50 >> 5 * RIGHT_BACK_SHIFT) | (S50 >> 6 * RIGHT_BACK_SHIFT) |
+						(S50 >> 7 * RIGHT_BACK_SHIFT) | (S50 >> 8 * RIGHT_BACK_SHIFT);
+
+/* A table of DIAGS indexed by bitnum. */
+DIAGS diag_tbl[NUM_BITBOARD_BITS];
+
 
 template <bool save_capture_info, int color>
 static void man_jump(BITBOARD all_jumped, MOVELIST *movelist, BITBOARD from, int num_jumps, Local *local);
@@ -350,26 +370,6 @@ static void copy_path(CAPTURE_INFO *cap, MOVELIST *movelist)
 	std::memcpy(cap[movelist->count + 1].path, cap[movelist->count].path, sizeof(cap[0].path));
 }
 
-
-const BITBOARD lf_diag = (S1 << LEFT_FWD_SHIFT) | (S1 << 2 * LEFT_FWD_SHIFT) |
-						(S1 << 3 * LEFT_FWD_SHIFT) | (S1 << 4 * LEFT_FWD_SHIFT) |
-						(S1 << 5 * LEFT_FWD_SHIFT) | (S1 << 6 * LEFT_FWD_SHIFT) |
-						(S1 << 7 * LEFT_FWD_SHIFT) | (S1 << 8 * LEFT_FWD_SHIFT);
-const BITBOARD rf_diag = (S1 << RIGHT_FWD_SHIFT) | (S1 << 2 * RIGHT_FWD_SHIFT) |
-						(S1 << 3 * RIGHT_FWD_SHIFT) | (S1 << 4 * RIGHT_FWD_SHIFT) |
-						(S1 << 5 * RIGHT_FWD_SHIFT) | (S1 << 6 * RIGHT_FWD_SHIFT) |
-						(S1 << 7 * RIGHT_FWD_SHIFT) | (S1 << 8 * RIGHT_FWD_SHIFT);
-const BITBOARD lb_diag = (S50 >> LEFT_BACK_SHIFT) | (S50 >> 2 * LEFT_BACK_SHIFT) |
-						(S50 >> 3 * LEFT_BACK_SHIFT) | (S50 >> 4 * LEFT_BACK_SHIFT) |
-						(S50 >> 5 * LEFT_BACK_SHIFT) | (S50 >> 6 * LEFT_BACK_SHIFT) |
-						(S50 >> 7 * LEFT_BACK_SHIFT) | (S50 >> 8 * LEFT_BACK_SHIFT);
-const BITBOARD rb_diag = (S50 >> RIGHT_BACK_SHIFT) | (S50 >> 2 * RIGHT_BACK_SHIFT) |
-						(S50 >> 3 * RIGHT_BACK_SHIFT) | (S50 >> 4 * RIGHT_BACK_SHIFT) |
-						(S50 >> 5 * RIGHT_BACK_SHIFT) | (S50 >> 6 * RIGHT_BACK_SHIFT) |
-						(S50 >> 7 * RIGHT_BACK_SHIFT) | (S50 >> 8 * RIGHT_BACK_SHIFT);
-
-/* A table of DIAGS indexed by bitnum. */
-DIAGS diag_tbl[NUM_BITBOARD_BITS];
 
 void add_diags(int *len, BITBOARD *table, int x, int y, int xincr, int yincr)
 {
@@ -705,9 +705,10 @@ int build_man_nonjump_list(BOARD *board, MOVELIST *movelist, int color)
 	BITBOARD from, to;
 	BOARD *mlp;
 
-	movelist->count = 0;
+	mlp = movelist->board;
 	free = ~(board->black | board->white) & ALL_SQUARES;
 	if (color == BLACK) {
+
 		/* Left forward moves. */
 		mask = ((board->black & ~board->king) << LEFT_FWD_SHIFT) & free;
 		for ( ; mask; mask = mask & (mask - 1)) {
@@ -716,18 +717,11 @@ int build_man_nonjump_list(BOARD *board, MOVELIST *movelist, int color)
 			to = mask & -(SIGNED_BITBOARD)mask;
 			from = to >> RIGHT_BACK_SHIFT;
 
-			/* Add it to the movelist. First clear the from square. */
-			mlp = movelist->board + movelist->count++;
-			mlp->black = board->black & ~from;
+			/* Add it to the movelist. */
+			mlp->black = (board->black & ~from) | to;
 			mlp->white = board->white;
-			mlp->king = board->king & ~from;
-
-			/* Put him on the square where he lands. */
-			mlp->black |= to;
-
-			/* See if this made him a king. */
-			if (to & BLACK_KING_RANK_MASK)
-				mlp->king |= to;
+			mlp->king = board->king | (to & BLACK_KING_RANK_MASK);
+			++mlp;
 		}
 
 		/* Right forward moves. */
@@ -738,18 +732,11 @@ int build_man_nonjump_list(BOARD *board, MOVELIST *movelist, int color)
 			to = mask & -(SIGNED_BITBOARD)mask;
 			from = to >> LEFT_BACK_SHIFT;
 
-			/* Add it to the movelist. First clear the from square. */
-			mlp = movelist->board + movelist->count++;
-			mlp->black = board->black & ~from;
+			/* Add it to the movelist. */
+			mlp->black = (board->black & ~from) | to;
 			mlp->white = board->white;
-			mlp->king = board->king & ~from;
-
-			/* Put him on the square where he lands. */
-			mlp->black |= to;
-
-			/* See if this made him a king. */
-			if (to & BLACK_KING_RANK_MASK)
-				mlp->king |= to;
+			mlp->king = board->king | (to & BLACK_KING_RANK_MASK);
+			++mlp;
 		}
 	}
 	else {
@@ -762,18 +749,11 @@ int build_man_nonjump_list(BOARD *board, MOVELIST *movelist, int color)
 			to = mask & -(SIGNED_BITBOARD)mask;
 			from = to << RIGHT_FWD_SHIFT;
 
-			/* Add it to the movelist. First clear the from square. */
-			mlp = movelist->board + movelist->count++;
-			mlp->white = board->white & ~from;
+			/* Add it to the movelist. */
+			mlp->white = (board->white & ~from) | to;
 			mlp->black = board->black;
-			mlp->king = board->king & ~from;
-
-			/* Put him on the square where he lands. */
-			mlp->white |= to;
-
-			/* See if this made him a king. */
-			if (to & WHITE_KING_RANK_MASK)
-				mlp->king |= to;
+			mlp->king = board->king | (to & WHITE_KING_RANK_MASK);
+			++mlp;
 		}
 
 		/* Right back moves. */
@@ -784,20 +764,14 @@ int build_man_nonjump_list(BOARD *board, MOVELIST *movelist, int color)
 			to = mask & -(SIGNED_BITBOARD)mask;
 			from = to << LEFT_FWD_SHIFT;
 
-			/* Add it to the movelist. First clear the from square. */
-			mlp = movelist->board + movelist->count++;
-			mlp->white = board->white & ~from;
+			/* Add it to the movelist. */
+			mlp->white = (board->white & ~from) | to;
 			mlp->black = board->black;
-			mlp->king = board->king & ~from;
-
-			/* Put him on the square where he lands. */
-			mlp->white |= to;
-
-			/* See if this made him a king. */
-			if (to & WHITE_KING_RANK_MASK)
-				mlp->king |= to;
+			mlp->king = board->king | (to & WHITE_KING_RANK_MASK);
+			++mlp;
 		}
 	}
+	movelist->count = (int)(mlp - movelist->board);
 	return(movelist->count);
 }
 
@@ -808,86 +782,37 @@ int build_man_nonjump_list(BOARD *board, MOVELIST *movelist, int color)
  */
 int build_king_nonjump_list(BOARD *board, MOVELIST *movelist, int color)
 {
-	int bitnum, i, len, opp_color;
 	BITBOARD free;
-	BITBOARD king, opponent;
-	BITBOARD from;
-	BITBOARD *pdiag;
+	BITBOARD mask;
+	BITBOARD bk, wk;
+	BITBOARD from, to;
 	BOARD *mlp;
 
-	movelist->count = 0;
-	free = ~(board->black | board->white);
-	king = board->pieces[color] & board->king;
-	opp_color = OTHER_COLOR(color);
-	opponent = board->pieces[opp_color];
+	mlp = movelist->board;
+	free = ~(board->black | board->white) & ALL_SQUARES;
+	if (color == BLACK) {
 
-	while (king) {
-
-		/* Strip off the next black king. */
-		from = king & -(SIGNED_BITBOARD)king;
-		king &= ~from;
-		bitnum = LSB64(from);
-
-		pdiag = diag_tbl[bitnum].lf;
-		len = diag_tbl[bitnum].lflen;
-		for (i = 0; i < len; ++i) {
-			if (pdiag[i] & free) {
-				mlp = movelist->board + movelist->count++;
-				mlp->pieces[opp_color] = board->pieces[opp_color];
-				mlp->pieces[color] = board->pieces[color] & ~from;
-				mlp->pieces[color] |= pdiag[i];
-				mlp->king = board->king & ~from;
-				mlp->king |= pdiag[i];
-			}
-			else
-				break;
-		}
-
-		pdiag = diag_tbl[bitnum].rf;
-		len = diag_tbl[bitnum].rflen;
-		for (i = 0; i < len; ++i) {
-			if (pdiag[i] & free) {
-				mlp = movelist->board + movelist->count++;
-				mlp->pieces[opp_color] = board->pieces[opp_color];
-				mlp->pieces[color] = board->pieces[color] & ~from;
-				mlp->pieces[color] |= pdiag[i];
-				mlp->king = board->king & ~from;
-				mlp->king |= pdiag[i];
-			}
-			else
-				break;
-		}
-
-		pdiag = diag_tbl[bitnum].lb;
-		len = diag_tbl[bitnum].lblen;
-		for (i = 0; i < len; ++i) {
-			if (pdiag[i] & free) {
-				mlp = movelist->board + movelist->count++;
-				mlp->pieces[opp_color] = board->pieces[opp_color];
-				mlp->pieces[color] = board->pieces[color] & ~from;
-				mlp->pieces[color] |= pdiag[i];
-				mlp->king = board->king & ~from;
-				mlp->king |= pdiag[i];
-			}
-			else
-				break;
-		}
-
-		pdiag = diag_tbl[bitnum].rb;
-		len = diag_tbl[bitnum].rblen;
-		for (i = 0; i < len; ++i) {
-			if (pdiag[i] & free) {
-				mlp = movelist->board + movelist->count++;
-				mlp->pieces[opp_color] = board->pieces[opp_color];
-				mlp->pieces[color] = board->pieces[color] & ~from;
-				mlp->pieces[color] |= pdiag[i];
-				mlp->king = board->king & ~from;
-				mlp->king |= pdiag[i];
-			}
-			else
-				break;
+		/* Black kings. */
+		bk = board->black & board->king;
+		if (bk) {
+			BLACK_KING_MOVE(<<, >>, LEFT_FWD_SHIFT);
+			BLACK_KING_MOVE(<<, >>, RIGHT_FWD_SHIFT);
+			BLACK_KING_MOVE(>>, <<, LEFT_BACK_SHIFT);
+			BLACK_KING_MOVE(>>, <<, RIGHT_BACK_SHIFT);
 		}
 	}
+	else {
+
+		/* White kings. */
+		wk = board->white & board->king;
+		if (wk) {
+			WHITE_KING_MOVE(<<, >>, LEFT_FWD_SHIFT);
+			WHITE_KING_MOVE(<<, >>, RIGHT_FWD_SHIFT);
+			WHITE_KING_MOVE(>>, <<, LEFT_BACK_SHIFT);
+			WHITE_KING_MOVE(>>, <<, RIGHT_BACK_SHIFT);
+		}
+	}
+	movelist->count = (int)(mlp - movelist->board);
 	return(movelist->count);
 }
 
