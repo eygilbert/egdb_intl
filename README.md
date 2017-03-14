@@ -2,6 +2,8 @@
 
 `egdb_intl` is a set of C++ source files with functions to access the Kingsrow international draughts endgame databases. This package can easily be integrated into existing C++ draughts programs. The source files are identical to those used in the Kingsrow draughts program.
 
+For Java users, Jan-Jaap van Horssen has created a Java Native Interface to the drivers. A zip file containing the binaries and sources can be downloaded here: http://edgilbert.org/InternationalDraughts/downloads/KingsrowEgdbJava.zip
+
 # Overview 
 
 The source code can be compiled for Windows using Microsoft Visual Studio 2015, and for Linux using g++ or Clang. The function `egdb_lookup()` to lookup the value of a position in the database is thread-safe and can be used in a multi-threaded search engine.
