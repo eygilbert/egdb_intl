@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="test.cpp" />
+    <ClCompile Include="..\engine\move.cpp">
+      <Filter>engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\engine\fen.cpp">
+      <Filter>engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\engine\bitcount.cpp">
+      <Filter>engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\engine\board.cpp">
+      <Filter>engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\egdb\slice.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\egdb_intl_dll.h" />
+    <ClInclude Include="..\engine\move.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\project.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\move_api.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\fen.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\bitcount.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\board.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\bool.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\config.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\egdb\slice.h">
+      <Filter>egdb</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="engine">
+      <UniqueIdentifier>{dcb0c526-8222-45a7-8346-d965aacace05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="egdb">
+      <UniqueIdentifier>{6d5b73aa-d156-4d94-8b6d-1f38184612ae}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

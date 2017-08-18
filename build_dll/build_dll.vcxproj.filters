@@ -1,0 +1,160 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="build_dll.cpp">
+      <Filter>build_dll</Filter>
+    </ClCompile>
+    <ClCompile Include="dllmain.cpp">
+      <Filter>build_dll</Filter>
+    </ClCompile>
+    <ClCompile Include="..\builddb\compression_tables.cpp">
+      <Filter>builddb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\builddb\indexing.cpp">
+      <Filter>builddb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\egdb\crc.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\egdb\egdb_common.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\egdb\egdb_identify.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\egdb\egdb_mtc_runlen.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\egdb\egdb_open.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\egdb\egdb_search.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\egdb\egdb_wld_huffman.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\egdb\egdb_wld_runlen.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\egdb\egdb_wld_tunstall_v1.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\egdb\egdb_wld_tunstall_v2.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\egdb\slice.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\engine\bicoef.cpp">
+      <Filter>engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\engine\bitcount.cpp">
+      <Filter>engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\engine\board.cpp">
+      <Filter>engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\engine\fen.cpp">
+      <Filter>engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\engine\move.cpp">
+      <Filter>engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\engine\reverse.cpp">
+      <Filter>engine</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="builddb">
+      <UniqueIdentifier>{18cd33a8-c06f-4562-8d15-c17f929ae06b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="build_dll">
+      <UniqueIdentifier>{e6517fed-5778-4de5-ba46-0836405ccc6a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="egdb">
+      <UniqueIdentifier>{69b5e632-c1ec-4b6d-aac8-88108328cb95}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="engine">
+      <UniqueIdentifier>{7615dc49-e548-4a08-937d-176c0678513d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\builddb\compression_tables.h">
+      <Filter>builddb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\builddb\indexing.h">
+      <Filter>builddb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\builddb\tunstall_decompress.h">
+      <Filter>builddb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\egdb\crc.h">
+      <Filter>egdb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\egdb\egdb_common.h">
+      <Filter>egdb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\egdb\egdb_intl.h">
+      <Filter>egdb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\egdb\egdb_search.h">
+      <Filter>egdb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\egdb\platform.h">
+      <Filter>egdb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\egdb\slice.h">
+      <Filter>egdb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\bicoef.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\bitcount.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\board.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\bool.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\config.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\fen.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\lock.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\move.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\move_api.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\project.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\reverse.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\egdb\huffman_decompress.txt">
+      <Filter>egdb</Filter>
+    </Text>
+    <Text Include="..\egdb\tunstall_decompress_v1.txt">
+      <Filter>egdb</Filter>
+    </Text>
+    <Text Include="..\egdb\tunstall_decompress_v2.txt">
+      <Filter>egdb</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="build_dll.def">
+      <Filter>build_dll</Filter>
+    </None>
+  </ItemGroup>
+</Project>
