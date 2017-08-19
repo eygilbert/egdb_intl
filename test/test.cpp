@@ -8,6 +8,17 @@
 #include "atlstr.h"
 #include "comutil.h"
 
+
+void test_names()
+{
+	HMODULE handle;
+	void *fnptr;
+
+	handle = LoadLibrary("egdb_intl32");
+	fnptr = GetProcAddress(handle, "egdb_identify");
+}
+
+
 int get_rand_int(int min, int max)
 {
 	int value;
@@ -128,6 +139,8 @@ void test_slice(int dbhandle, int nbm, int nbk, int nwm, int nwk)
 int main(int argc, char *argv[])
 {
 	int result, egdb_type, max_pieces, handle;
+
+test_names();
 
 	/* Test egdb_identify(). */
 	CComBSTR options("maxpieces=6");
