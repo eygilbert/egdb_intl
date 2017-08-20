@@ -5,8 +5,6 @@
 #include "egdb/egdb_intl.h"
 #include "egdb/slice.h"
 #include <Windows.h>
-#include "atlstr.h"
-#include "comutil.h"
 
 
 void test_names()
@@ -80,7 +78,6 @@ void verify_pos(int dbhandle, egdb_interface::BOARD *board, int color)
 {
 	int i, count, pval, val, bestval;
 	egdb_interface::MOVELIST movelist;
-	CComBSTR bstrfen;
 	char fen[100], pfen[100];
 
 	count = egdb_interface::build_jump_list<false>(board, &movelist, color);
@@ -89,15 +86,13 @@ void verify_pos(int dbhandle, egdb_interface::BOARD *board, int color)
 
 	/* Lookup the parent value. */
 	egdb_interface::print_fen(board, color, pfen);
-	bstrfen = pfen;
-	pval = egdb_lookup_fen_with_search(dbhandle, bstrfen);
+	pval = egdb_lookup_fen_with_search(dbhandle, pfen);
 
 	/* Lookup each successor. */
 	bestval = egdb_interface::EGDB_LOSS;
 	for (i = 0; i < count && bestval != egdb_interface::EGDB_WIN; ++i) {
 		egdb_interface::print_fen(movelist.board + i, OTHER_COLOR(color), fen);
-		bstrfen = fen;
-		val = egdb_lookup_fen_with_search(dbhandle, bstrfen);
+		val = egdb_lookup_fen_with_search(dbhandle, fen);
 		switch (val) {
 		case egdb_interface::EGDB_WIN:
 			break;
@@ -140,17 +135,12 @@ int main(int argc, char *argv[])
 {
 	int result, egdb_type, max_pieces, handle;
 
-test_names();
-
 	/* Test egdb_identify(). */
-	CComBSTR options("maxpieces=6");
-	CComBSTR directory("c:/db_intl/wld_v2");
-	CComBSTR filename("");
-	result = egdb_identify((BSTR)directory, &egdb_type, &max_pieces);
+	result = egdb_identify("c:/db_intl/wld_v2", &egdb_type, &max_pieces);
 
 	printf("result %d, type %d, max pieces %d\n", result, egdb_type, max_pieces);
 
-	handle = egdb_open(options, 1000, (BSTR)directory, filename);
+	handle = egdb_open("maxpieces=6", 1000, "c:/db_intl/wld_v2", "");
 	if (handle < 0)
 		printf("%d returned by egdb_open\n", handle);
 

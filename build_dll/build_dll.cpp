@@ -4,7 +4,6 @@
 #include "egdb/egdb_search.h"
 #include "../egdb_intl_dll.h"
 #include <Windows.h>
-#include <comutil.h>
 #include <stdio.h>
 
 
@@ -67,19 +66,14 @@ int check_handle(int handle)
 }
 
 
-extern "C" int __stdcall egdb_open(BSTR bstroptions,
+extern "C" int __stdcall egdb_open(char *options,
 			int cache_mb,
-			BSTR bstrdirectory,
-			BSTR bstrfilename)
+			char *directory,
+			char *filename)
 {
 	int i, max_pieces;
 	egdb_interface::EGDB_TYPE egdb_type;
-	char *options, *directory, *filename;
 	FILE *fp;
-
-	options = _com_util::ConvertBSTRToString(bstroptions);
-	directory = _com_util::ConvertBSTRToString(bstrdirectory);
-	filename = _com_util::ConvertBSTRToString(bstrfilename);
 
 	drivers[0].msg_fn = msg_fn0;
 	drivers[1].msg_fn = msg_fn1;
@@ -124,9 +118,6 @@ extern "C" int __stdcall egdb_open(BSTR bstroptions,
 	else
 		return(EGDB_OPEN_FAIL);
 
-	delete []options;
-	delete []directory;
-	delete []filename;
 	return(i);
 }
 
@@ -147,14 +138,13 @@ extern "C" int __stdcall egdb_close(int handle)
 }
 
 
-extern "C" int __stdcall egdb_identify(BSTR bstrdirectory, int *egdb_type, int *max_pieces)
+extern "C" int __stdcall egdb_identify(char *dir, int *egdb_type, int *max_pieces)
 {
 	egdb_interface::EGDB_TYPE db_type;
 	int result;
-	char *dir = _com_util::ConvertBSTRToString(bstrdirectory);
+
 	result = egdb_identify(dir, &db_type, max_pieces);
 	*egdb_type = db_type;
-	delete []dir;
 	if (result)
 		return(EGDB_IDENTIFY_FAIL);
 	else
@@ -162,18 +152,16 @@ extern "C" int __stdcall egdb_identify(BSTR bstrdirectory, int *egdb_type, int *
 }
 
 
-extern "C" int __stdcall egdb_lookup_fen(int handle, BSTR bstrfen, int cl)
+extern "C" int __stdcall egdb_lookup_fen(int handle, char *fen, int cl)
 {
 	int color, result;
 	egdb_interface::BOARD board;
-	char *fen = _com_util::ConvertBSTRToString(bstrfen);
 
 	result = check_handle(handle);
 	if (result)
 		return(result);
 
 	result = parse_fen(fen, &board, &color);
-	delete []fen;
 	if (result)
 		return(EGDB_FEN_ERROR);
 
@@ -182,18 +170,16 @@ extern "C" int __stdcall egdb_lookup_fen(int handle, BSTR bstrfen, int cl)
 }
 
 
-extern "C" int __stdcall egdb_lookup_fen_with_search(int handle, BSTR bstrfen)
+extern "C" int __stdcall egdb_lookup_fen_with_search(int handle, char *fen)
 {
 	int color, result;
 	egdb_interface::BOARD board;
-	char *fen = _com_util::ConvertBSTRToString(bstrfen);
 
 	result = check_handle(handle);
 	if (result)
 		return(result);
 
 	result = parse_fen(fen, &board, &color);
-	delete []fen;
 	if (result)
 		return(EGDB_FEN_ERROR);
 

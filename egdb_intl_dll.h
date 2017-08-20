@@ -13,11 +13,11 @@ enum RETURN_VALUE {
 	EGDB_FEN_ERROR = -106,
 };
 
-extern "C" int __stdcall egdb_open(BSTR options,
+extern "C" int __stdcall egdb_open(char *options,
 			int cache_mb,
-			BSTR directory,
-			BSTR filename);
+			char *directory,
+			char *filename);
 extern "C" int __stdcall egdb_close(int handle);
-extern "C" int __stdcall egdb_identify(BSTR directory, int *egdb_type, int *max_pieces);
-extern "C" int __stdcall egdb_lookup_fen(int handle, BSTR fen, int cl);
-extern "C" int __stdcall egdb_lookup_fen_with_search(int handle, BSTR fen);
+extern "C" int __stdcall egdb_identify(char *directory, int *egdb_type, int *max_pieces);
+extern "C" int __stdcall egdb_lookup_fen(int handle, char *fen, int cl);
+extern "C" int __stdcall egdb_lookup_fen_with_search(int handle, char *fen);
