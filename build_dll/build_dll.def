@@ -4,3 +4,13 @@ EXPORTS
 	egdb_identify
 	egdb_lookup_fen
 	egdb_lookup_fen_with_search
+	egdb_lookup_with_search
+	get_movelist
+	is_capture
+	getdatabasesize_slice
+	indextoposition
+	positiontoindex
+	is_sharp_win
+	move_string
+	positiontofen
+	fentoposition

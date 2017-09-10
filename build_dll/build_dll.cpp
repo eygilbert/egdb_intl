@@ -1,7 +1,11 @@
 #include "engine/project.h"
+#include "engine/board.h"
+#include "engine/move_api.h"
 #include "engine/fen.h"
+#include "engine/print_move.h"
 #include "egdb/egdb_intl.h"
 #include "egdb/egdb_search.h"
+#include "builddb/indexing.h"
 #include "../egdb_intl_dll.h"
 #include <Windows.h>
 #include <stdio.h>
@@ -188,3 +192,111 @@ extern "C" int __stdcall egdb_lookup_fen_with_search(int handle, char *fen)
 }
 
 
+extern "C" int __stdcall egdb_lookup_with_search(int handle, egdb_interface::BOARD *board, int color)
+{
+	int result;
+
+	result = check_handle(handle);
+	if (result)
+		return(result);
+
+	result = drivers[handle].db.lookup_with_search(board, color, 64, false);
+	return(result);
+}
+
+
+extern "C" int __stdcall get_movelist(egdb_interface::BOARD *board, int color, egdb_interface::BOARD *ml)
+{
+	int len;
+	egdb_interface::MOVELIST movelist;
+
+	len = build_movelist(board, color, &movelist);
+	memcpy(ml, movelist.board, len * sizeof(egdb_interface::BOARD));
+	return(len);
+}
+
+
+extern "C" int16_t __stdcall is_capture(egdb_interface::BOARD *board, int color)
+{
+	int value;
+
+	value = egdb_interface::canjump(board, color);
+	if (value)
+		return(-1);
+	else
+		return(0);
+}
+
+
+extern "C" int64_t __stdcall getdatabasesize_slice(int nbm, int nbk, int nwm, int nwk)
+{
+	int64_t size;
+
+	size = egdb_interface::getdatabasesize_slice(nbm, nbk, nwm, nwk);
+	return(size);
+}
+
+
+extern "C" void __stdcall indextoposition(int64_t index, egdb_interface::BOARD *pos, int nbm, int nbk, int nwm, int nwk)
+{
+	indextoposition_slice(index, (egdb_interface::EGDB_POSITION *)pos, nbm, nbk, nwm, nwk);
+}
+
+
+extern "C" int64_t __stdcall positiontoindex(egdb_interface::BOARD *pos, int nbm, int nbk, int nwm, int nwk)
+{
+	return(position_to_index_slice((egdb_interface::EGDB_POSITION *)pos, nbm, nbk, nwm, nwk));
+}
+
+
+extern "C" int16_t __stdcall is_sharp_win(int handle, egdb_interface::BOARD *board, int color, egdb_interface::BOARD *sharp_move_pos)
+{
+	int i, len, result, wincount;
+	egdb_interface::MOVELIST movelist;
+
+	result = check_handle(handle);
+	if (result)
+		return(result);
+
+	result = drivers[handle].db.lookup_with_search(board, color, 64, false);
+	if (result == egdb_interface::EGDB_WIN) {
+		len = build_movelist(board, color, &movelist);
+		for (i = 0, wincount = 0; i < len; ++i) {
+			result = drivers[handle].db.lookup_with_search(movelist.board + i, OTHER_COLOR(color), 64, false);
+			if (result == egdb_interface::EGDB_LOSS) {
+				++wincount;
+				if (wincount > 1)
+					return(0);
+
+				*sharp_move_pos = movelist.board[i];
+			}
+		}
+		if (wincount == 1)
+			return(-1);
+	}
+	return(0);
+}
+
+
+extern "C" int __stdcall move_string(egdb_interface::BOARD *last_board, egdb_interface::BOARD *new_board, int color, char *move)
+{
+	return(print_move(last_board, new_board, color, move));
+}
+
+
+extern "C" int __stdcall positiontofen(egdb_interface::BOARD *board, int color, char *fen)
+{
+	return(egdb_interface::print_fen(board, color, fen));
+}
+
+
+extern "C" int __stdcall fentoposition(char *fen, egdb_interface::BOARD *pos, int *color)
+{
+	int status;
+
+	status = egdb_interface::parse_fen(fen, pos, color);
+	if (status)
+		return(EGDB_FEN_ERROR);
+
+	return(0);
+}

@@ -184,6 +184,7 @@
     <ClCompile Include="..\engine\board.cpp" />
     <ClCompile Include="..\engine\fen.cpp" />
     <ClCompile Include="..\engine\move.cpp" />
+    <ClCompile Include="..\engine\print_move.cpp" />
     <ClCompile Include="..\engine\reverse.cpp" />
     <ClCompile Include="build_dll.cpp" />
     <ClCompile Include="dllmain.cpp">
@@ -220,6 +221,7 @@
     <ClInclude Include="..\engine\lock.h" />
     <ClInclude Include="..\engine\move.h" />
     <ClInclude Include="..\engine\move_api.h" />
+    <ClInclude Include="..\engine\print_move.h" />
     <ClInclude Include="..\engine\project.h" />
     <ClInclude Include="..\engine\reverse.h" />
   </ItemGroup>

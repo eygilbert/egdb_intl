@@ -64,6 +64,9 @@
     <ClCompile Include="..\engine\reverse.cpp">
       <Filter>engine</Filter>
     </ClCompile>
+    <ClCompile Include="..\engine\print_move.cpp">
+      <Filter>engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="builddb">
@@ -138,6 +141,9 @@
       <Filter>engine</Filter>
     </ClInclude>
     <ClInclude Include="..\engine\reverse.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\print_move.h">
       <Filter>engine</Filter>
     </ClInclude>
   </ItemGroup>
