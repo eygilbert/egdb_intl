@@ -73,8 +73,8 @@ int print_fen_header(BOARD *board, int color, char *buf, char const *line_termin
 
 
 /*
-    * Return non-zero if the text in buf does not seem to be a fen string.
-    */
+ * Return non-zero if the text in buf does not seem to be a fen string.
+ */
 int parse_fen(char *buf, BOARD *board, int *ret_color)
 {
     int square, square2, s;
