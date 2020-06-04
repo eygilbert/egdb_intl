@@ -14,7 +14,7 @@ using namespace egdb_interface;
  */
 int print_move(BOARD *last_board, BOARD *new_board, int color, char *buf)
 {
-	int i, len, move_index, count, jumpcount;
+	int i, len, move_index, count;
 	int fromsq0, tosq0;
 	char separator;
 	BITBOARD test_from, test_to;
@@ -23,12 +23,7 @@ int print_move(BOARD *last_board, BOARD *new_board, int color, char *buf)
 	CAPTURE_INFO cap[MAXMOVES];
 
 	/* Find this move in the kr movelist. */
-	if (!build_jump_list<true>(last_board, &movelist, color, cap)) {
-		build_nonjump_list(last_board, &movelist, color);
-		jumpcount = 0;
-	}
-	else
-		jumpcount = cap[0].capture_count;
+	build_movelist_path(last_board, color, &movelist, cap);
 
 	/* Find the move in the list. */
 	for (move_index = 0; move_index < movelist.count; ++move_index) {
@@ -42,10 +37,10 @@ int print_move(BOARD *last_board, BOARD *new_board, int color, char *buf)
 	}
 
 	/* Find the number of moves that match this from and to square. */
-	get_from_to(jumpcount, move_index, color, last_board, &movelist, cap, &from, &to);
+	get_fromto_bitboards(move_index, color, last_board, &movelist, cap, &from, &to);
 	count = 0;
 	for (i = 0; i < movelist.count; ++i) {
-		get_from_to(jumpcount, i, color, last_board, &movelist, cap, &test_from, &test_to);
+		get_fromto_bitboards(i, color, last_board, &movelist, cap, &test_from, &test_to);
 		if (test_from == from && test_to == to)
 			++count;
 	}
@@ -71,7 +66,7 @@ int print_move(BOARD *last_board, BOARD *new_board, int color, char *buf)
 		}
 	}
 	else {
-		if (jumpcount)
+		if (cap[0].capture_count)
 			separator = 'x';
 		else
 			separator = '-';
@@ -83,10 +78,100 @@ int print_move(BOARD *last_board, BOARD *new_board, int color, char *buf)
 
 
 /*
+ * Write the move and return the move string.
+ * If no move then an empty string is returned.
+ */
+std::string print_move(BOARD *last_board, BOARD *new_board, int color)
+{
+	int i, len, move_index, count;
+	int fromsq0, tosq0;
+	char separator;
+	BITBOARD test_from, test_to;
+	BITBOARD from, to;
+	MOVELIST movelist;
+	std::string move;
+	CAPTURE_INFO cap[MAXMOVES];
+
+	/* Find this move in the kr movelist. */
+	build_movelist_path(last_board, color, &movelist, cap);
+
+	/* Find the move in the list. */
+	for (move_index = 0; move_index < movelist.count; ++move_index) {
+		if (memcmp(new_board, movelist.board + move_index, sizeof(BOARD)) == 0)
+			break;
+	}
+
+	if (move_index >= movelist.count)
+		return(move);					/* Illegal move. */
+
+	/* Find the number of moves that match this from and to square. */
+	get_fromto_bitboards(move_index, color, last_board, &movelist, cap, &from, &to);
+	count = 0;
+	for (i = 0; i < movelist.count; ++i) {
+		get_fromto_bitboards(i, color, last_board, &movelist, cap, &test_from, &test_to);
+		if (test_from == from && test_to == to)
+			++count;
+	}
+
+	if (count == 0)
+		return(move);
+
+	if (count > 1) {
+		/* Need to use the full move notation. */
+		len = 0;
+		for (i = 0; i < cap[move_index].capture_count; ++i) {
+			if (color == WHITE)
+				get_fromto(cap[move_index].path[i].white, cap[move_index].path[i + 1].white, &fromsq0, &tosq0);
+			else
+				get_fromto(cap[move_index].path[i].black, cap[move_index].path[i + 1].black, &fromsq0, &tosq0);
+
+			if (i == 0)
+				move += std::to_string(1 + fromsq0) + 'x' + std::to_string(1 + tosq0);
+			else
+				move += 'x' + std::to_string(1 + tosq0);
+		}
+	}
+	else {
+		if (cap[0].capture_count)
+			separator = 'x';
+		else
+			separator = '-';
+		move = std::to_string(bitboard_to_square(from)) + separator + std::to_string(bitboard_to_square(to));
+	}
+
+	return(move);
+}
+
+
+/*
+ * Take a list of GAMEPOS positions and write a space-separated list of pdn moves.
+ * Return true if there were no legal moves anywhere in the poslist.
+ */
+bool poslist_to_moves(std::vector<egdb_interface::GAMEPOS> &poslist, std::string &moves)
+{
+	size_t i;
+	std::string move;
+
+	moves.clear();
+	for (i = 0; i < poslist.size() - 1; ++i) {
+		move = print_move(&poslist[i].board, &poslist[i + 1].board, poslist[i].color);
+		if (move.size() == 0)
+			return(true);
+
+		if (i > 0)
+			moves += ' ';
+
+		moves += move;
+	}
+	return(false);
+}
+
+
+/*
  * Given an old board and a new board, write a move string
  * of the form "9-13".
  */
-char *movestr(char *buf, BOARD *blast, BOARD *bnew)
+const char *movestr(char *buf, BOARD *blast, BOARD *bnew)
 {
 	int i, color;
 	char separator;
@@ -133,7 +218,7 @@ char *movestr(char *buf, BOARD *blast, BOARD *bnew)
 			if (!memcmp(bnew, movelist.board + i, sizeof(movelist.board[0]))) {
 
 				/* found the move. */
-				get_from_to(jump_info[0].capture_count, i, color, blast, &movelist, jump_info, &from, &to);
+				get_fromto_bitboards(i, color, blast, &movelist, jump_info, &from, &to);
 				fromsq = bitboard_to_square(from);
 				tosq = bitboard_to_square(to);
 				sprintf(buf, "%dx%d", fromsq, tosq);

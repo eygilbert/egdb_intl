@@ -7,61 +7,53 @@
 
 namespace egdb_interface {
 
-int print_fen(BOARD *board, int color, char *buf)
+void print_fen(const BOARD *board, int color, std::string &fenstr)
 {
-    int len, bitnum, square0;
-    BITBOARD mask, sq;
+    int bitnum, square0;
+    BITBOARD bb, sq;
 
-    len = std::sprintf(buf, "%c", color == BLACK ? 'B' : 'W');
+    fenstr = color == BLACK ? "B" : "W";
 
-    /* Print the white men and kings. */
-    len += std::sprintf(buf + len, ":W");
-    for (mask = board->white; mask; ) {
-
-        /* Peel off the lowest set bit in mask. */
-        sq = mask & -(int64_t)mask;
+    /* Add the white pieces. */
+    fenstr += ":W";
+    for (bb = board->white; bb; ) {
+        sq = get_lsb(bb);
         bitnum = LSB64(sq);
         square0 = bitnum_to_square0(bitnum);
         if (sq & board->king)
-            len += std::sprintf(buf + len, "K%d", square0 + 1);
-        else
-            len += std::sprintf(buf + len, "%d", square0 + 1);
-        mask = mask & (mask - 1);
-        if (mask)
-            len += std::sprintf(buf + len, ",");
+			fenstr += "K";
+		fenstr += std::to_string(square0 + 1);
+        bb = clear_lsb(bb);
+        if (bb)
+			fenstr += ",";
     }
 
-    /* Print the black men and kings. */
-    len += std::sprintf(buf + len, ":B");
-    for (mask = board->black; mask; ) {
-
-        /* Peel off the lowest set bit in mask. */
-        sq = mask & -(int64_t)mask;
-        bitnum = LSB64(sq);
-        square0 = bitnum_to_square0(bitnum);
-        if (sq & board->king)
-            len += std::sprintf(buf + len, "K%d", square0 + 1);
-        else
-            len += std::sprintf(buf + len, "%d", square0 + 1);
-        mask = mask & (mask - 1);
-        if (mask)
-            len += std::sprintf(buf + len, ",");
-    }
-    return(len);
+    /* Add the black pieces. */
+	fenstr += ":B";
+	for (bb = board->black; bb; ) {
+		sq = get_lsb(bb);
+		bitnum = LSB64(sq);
+		square0 = bitnum_to_square0(bitnum);
+		if (sq & board->king)
+			fenstr += "K";
+		fenstr += std::to_string(square0 + 1);
+		bb = clear_lsb(bb);
+		if (bb)
+			fenstr += ",";
+	}
 }
 
 
-int print_fen_with_newline(BOARD *board, int color, char *buf)
+int print_fen(const BOARD *board, int color, char *buf)
 {
-    int len;
-
-    len = print_fen(board, color, buf);
-    len += std::sprintf(buf + len, "\n");
-    return(len);
+	std::string fenstr;
+	print_fen(board, color, fenstr);
+	strcpy(buf, fenstr.c_str());
+	return((int)fenstr.size());
 }
 
 
-int print_fen_header(BOARD *board, int color, char *buf, char const *line_terminator)
+int print_fen_header(const BOARD *board, int color, char *buf, char const *line_terminator)
 {
     int len;
 
@@ -73,21 +65,18 @@ int print_fen_header(BOARD *board, int color, char *buf, char const *line_termin
 
 
 /*
- * Return non-zero if the text in buf does not seem to be a fen string.
+ * Return non-zero if the text in buf does not seem to be a fen setup.
  */
-int parse_fen(char *buf, BOARD *board, int *ret_color)
+int parse_fen(const char *buf, BOARD *board, int *ret_color)
 {
     int square, square2, s;
     int color = BLACK;	// prevent using unitialized memory
     int king;
-    char *lastp;
+    const char *lastp;
 
     while (std::isspace(*buf))
         ++buf;
     if (*buf == '"')
-        ++buf;
-
-    while (std::isspace(*buf))
         ++buf;
 
     /* Get the color. */
@@ -95,15 +84,16 @@ int parse_fen(char *buf, BOARD *board, int *ret_color)
         *ret_color = BLACK;
     else if (std::toupper(*buf) == 'W')
         *ret_color = WHITE;
-    else {
+    else
         return(1);
-    }
 
     std::memset(board, 0, sizeof(BOARD));
+	++buf;
 
-    /* Skip the colon. */
-    buf += 2;
+	if (*buf != ':')
+		return(1);
 
+	++buf;
     lastp = buf;
     while (*buf) {
         king = 0;
@@ -129,14 +119,14 @@ int parse_fen(char *buf, BOARD *board, int *ret_color)
             square = 10 * square + (*buf - '0');
 
         square2 = square;
-        if (*buf == ',' || *buf == ':' || *buf == '.' || std::isspace(*buf))
+        if (*buf == ',' || *buf == ':')
             ++buf;
 
         else if (*buf == '-' && std::isdigit(buf[1])) {
             ++buf;
             for (square2 = 0; std::isdigit(*buf); ++buf)
                 square2 = 10 * square2 + (*buf - '0');
-            if (*buf == ',' || *buf == ':' || *buf == '.' || std::isspace(*buf))
+            if (*buf == ',' || *buf == ':')
                 ++buf;
         }
 

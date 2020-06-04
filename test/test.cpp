@@ -1,12 +1,26 @@
 #include "../egdb_intl_dll.h"
+#include "egdb/distance.h"
+#include "egdb/egdb_intl.h"
+#include "egdb/slice.h"
+#include "engine/bitcount.h"
 #include "engine/fen.h"
 #include "engine/move.h"
 #include "engine/move_api.h"
-#include "egdb/egdb_intl.h"
-#include "egdb/slice.h"
-#include <Windows.h>
+#include "engine/project.h"
+#include <stdint.h>
+#include <algorithm>
+#include <vector>
+
+using namespace egdb_interface;
+
+const char *wld_path = "c:/db_intl/wld_v2";
+const char *dtw_path = "c:/db_intl/dtw";
+const char *mtc_path = "c:/db_intl/mtc";
 
 
+/*
+ * Verify that the function names are not decorated.
+ */
 void test_names()
 {
 	HMODULE handle;
@@ -14,6 +28,17 @@ void test_names()
 
 	handle = LoadLibrary("egdb_intl32");
 	fnptr = GetProcAddress(handle, "egdb_identify");
+	if (fnptr == nullptr) {
+		printf("GetProcAddress failed in test_names.\n");
+		exit(1);
+	}
+	FreeLibrary(handle);
+}
+
+
+void print_msgs(char const *msg)
+{
+	std::printf("%s", msg);
 }
 
 
@@ -29,17 +54,17 @@ int get_rand_int(int min, int max)
 }
 
 
-void get_rand_board(int nbm, int nbk, int nwm, int nwk, egdb_interface::BOARD *board)
+void get_rand_board(int nbm, int nbk, int nwm, int nwk, BOARD *board)
 {
 	int i, square;
-	egdb_interface::BITBOARD bb;
+	BITBOARD bb;
 
 	board->black = 0;
 	board->white = 0;
 	board->king = 0;
 	for (i = 0; i < nbm; ) {
 		square = get_rand_int(1, 45);
-		bb = egdb_interface::square0_to_bitboard(square - 1);
+		bb = square0_to_bitboard(square - 1);
 		if ((bb & board->black) == 0) {
 			board->black |= bb;
 			++i;
@@ -47,7 +72,7 @@ void get_rand_board(int nbm, int nbk, int nwm, int nwk, egdb_interface::BOARD *b
 	}
 	for (i = 0; i < nbk; ) {
 		square = get_rand_int(1, 50);
-		bb = egdb_interface::square0_to_bitboard(square - 1);
+		bb = square0_to_bitboard(square - 1);
 		if ((bb & (board->black | board->white)) == 0) {
 			board->black |= bb;
 			board->king |= bb;
@@ -56,7 +81,7 @@ void get_rand_board(int nbm, int nbk, int nwm, int nwk, egdb_interface::BOARD *b
 	}
 	for (i = 0; i < nwm; ) {
 		square = get_rand_int(6, 50);
-		bb = egdb_interface::square0_to_bitboard(square - 1);
+		bb = square0_to_bitboard(square - 1);
 		if ((bb & (board->black | board->white)) == 0) {
 			board->white |= bb;
 			++i;
@@ -64,7 +89,7 @@ void get_rand_board(int nbm, int nbk, int nwm, int nwk, egdb_interface::BOARD *b
 	}
 	for (i = 0; i < nwk; ) {
 		square = get_rand_int(1, 50);
-		bb = egdb_interface::square0_to_bitboard(square - 1);
+		bb = square0_to_bitboard(square - 1);
 		if ((bb & (board->black | board->white)) == 0) {
 			board->white |= bb;
 			board->king |= bb;
@@ -74,35 +99,33 @@ void get_rand_board(int nbm, int nbk, int nwm, int nwk, egdb_interface::BOARD *b
 }
 
 
-void verify_pos(int dbhandle, egdb_interface::BOARD *board, int color)
+void verify_pos(int dbhandle, BOARD *board, int color)
 {
-	int i, count, pval, val, bestval;
-	egdb_interface::MOVELIST movelist;
+	int i, pval, val, bestval;
+	MOVELIST movelist;
 	char fen[100], pfen[100];
 
-	count = egdb_interface::build_jump_list<false>(board, &movelist, color);
-	if (count == 0)
-		count = egdb_interface::build_nonjump_list(board, &movelist, color);
+	build_movelist(board, color, &movelist);
 
 	/* Lookup the parent value. */
-	egdb_interface::print_fen(board, color, pfen);
+	print_fen(board, color, pfen);
 	pval = egdb_lookup_fen_with_search(dbhandle, pfen);
 
 	/* Lookup each successor. */
-	bestval = egdb_interface::EGDB_LOSS;
-	for (i = 0; i < count && bestval != egdb_interface::EGDB_WIN; ++i) {
-		egdb_interface::print_fen(movelist.board + i, OTHER_COLOR(color), fen);
+	bestval = EGDB_LOSS;
+	for (i = 0; i < movelist.count && bestval != EGDB_WIN; ++i) {
+		print_fen(movelist.board + i, OTHER_COLOR(color), fen);
 		val = egdb_lookup_fen_with_search(dbhandle, fen);
 		switch (val) {
-		case egdb_interface::EGDB_WIN:
+		case EGDB_WIN:
 			break;
 
-		case egdb_interface::EGDB_DRAW:
-			bestval = egdb_interface::EGDB_DRAW;
+		case EGDB_DRAW:
+			bestval = EGDB_DRAW;
 			break;
 
-		case egdb_interface::EGDB_LOSS:
-			bestval = egdb_interface::EGDB_WIN;
+		case EGDB_LOSS:
+			bestval = EGDB_WIN;
 			break;
 
 		default:
@@ -120,7 +143,7 @@ void verify_pos(int dbhandle, egdb_interface::BOARD *board, int color)
 void test_slice(int dbhandle, int nbm, int nbk, int nwm, int nwk)
 {
 	int i, color;
-	egdb_interface::BOARD board;
+	BOARD board;
 
 	printf("testing db%d%d%d%d\n", nbm, nbk, nwm, nwk);
 	color = WHITE;
@@ -131,20 +154,266 @@ void test_slice(int dbhandle, int nbm, int nbk, int nwm, int nwk)
 }
 
 
+BOARD get_next_pos(BOARD &pos, int color, MOVELIST &movelist, const char *movestr)
+{
+	int from, to, mlfrom, mlto;
+	BOARD retboard;
+	sscanf(movestr, "%d%*c%d", &from, &to);
+
+	for (int i = 0; i < movelist.count; ++i) {
+		get_fromto(&pos, movelist.board + i, color, &mlfrom, &mlto);
+		if (from == 1 + mlfrom && to == 1 + mlto)
+			return(movelist.board[i]);
+	}
+	memset(&retboard, 0, sizeof(retboard));
+	return(retboard);
+}
+
+
+void dtw_test(Slice &slice, int wld_handle, int dtw_handle)
+{
+	int64_t size, index, incr, max_lookups;
+	int color, status, return_size;
+	BOARD pos;
+	std::string fenstr;
+	char moves[MAXMOVES][20];
+	int distances[MAXMOVES];
+
+	max_lookups = 30;
+	size = getdatabasesize_slice(slice.nbm(), slice.nbk(), slice.nwm(), slice.nwk());
+	if (max_lookups < 1)
+		incr = 1;
+	else
+		incr = (std::max)(size / max_lookups, (int64_t)1);
+
+	printf("Testing slice db%d-%d%d%d%d\n", slice.npieces(), slice.nbm(), slice.nbk(), slice.nwm(), slice.nwk());
+	color = BLACK;
+	for (index = 0; index < size; index += incr) {
+		int plies;
+		int value;
+		int64_t sidx;
+
+		for (sidx = index; sidx < size; ++sidx) {
+			indextoposition(sidx, &pos, slice.nbm(), slice.nbk(), slice.nwm(), slice.nwk());
+			value = egdb_lookup_with_search(wld_handle, &pos, color);
+			if (value == EGDB_WIN || value == EGDB_LOSS)
+				break;
+		}
+		if (sidx >= size)
+			break;
+
+		print_fen(&pos, color, fenstr);
+		status = egdb_lookup_distance(wld_handle, dtw_handle, fenstr.c_str(), &return_size, distances, moves);
+		if (status < 0 || return_size == 0) {
+			printf("dtw lookup timed out, status %d (not a bug)\n", status);
+			continue;
+		}
+
+		if (distances[0] < 2)
+			continue;
+
+		plies = distances[0];
+		while (plies > 1) {
+			MOVELIST movelist;
+			BOARD next;
+
+			build_movelist(&pos, color, &movelist);
+
+			/* Lookup dtw of the first best move. */
+			next = get_next_pos(pos, color, movelist, moves[0]);
+			color = OTHER_COLOR(color);
+			print_fen(&next, color, fenstr);
+			status = egdb_lookup_distance(wld_handle, dtw_handle, fenstr.c_str(), &return_size, distances, moves);
+			if (status < 0 || return_size == 0) {
+				printf("dtw lookup timed out, status %d (not a bug)\n", status);
+				break;
+			}
+
+			if (distances[0] != plies - 1) {
+				printf("dtw depth error, expected %d, got %d\n", plies - 1, distances[0]);
+				exit(1);
+			}
+			--plies;
+			pos = next;
+		}
+	}
+}
+
+
+void dtw_test(int wld_handle)
+{
+	int status, max_pieces;
+	int type;
+	Slice slice(2);
+	int dtw_handle;
+	const int most_pieces = 7;
+
+	std::printf("\nDTW test.\n");
+	status = egdb_identify(dtw_path, &type, &max_pieces);
+	if (status) {
+		std::printf("DTW db not found at %s\n", dtw_path);
+		std::exit(1);
+	}
+	if (type != EGDB_DTW) {
+		std::printf("Wrong db type, not DTW.\n");
+		std::exit(1);
+	}
+	if (max_pieces < most_pieces) {
+		std::printf("Need %d pieces DTW for test, only found %d.\n", most_pieces, max_pieces);
+		std::exit(1);
+	}
+
+	dtw_handle = egdb_open("maxpieces=7", 10, dtw_path, "");
+	if (!dtw_handle) {
+		std::printf("Cannot open DTW db at %s\n", dtw_path);
+		std::exit(1);
+	}
+	for (slice = Slice(2); slice.npieces() <= most_pieces; slice.increment()) {
+		dtw_test(slice, wld_handle, dtw_handle);
+	}
+
+	egdb_close(dtw_handle);
+}
+
+
+void test_best_mtc_successor(int wld_handle, int mtc_handle, BOARD &pos, int color)
+{
+	int status, return_size;
+	int plies;
+	MOVELIST movelist;
+	int distances[MAXMOVES];
+	char moves[MAXMOVES][20];
+	std::string fenstr;
+
+	build_movelist(&pos, color, &movelist);
+	print_fen(&pos, color, fenstr);
+	status = egdb_lookup_distance(wld_handle, mtc_handle, fenstr.c_str(), &return_size, distances, moves);
+
+	if (status < 0 || !return_size) {
+		printf("mtc_probe timed out (not a bug)\n");
+		return;
+	}
+
+	plies = distances[0];
+	while (plies > 10) {
+		MOVELIST movelist;
+		BOARD next;
+
+		build_movelist(&pos, color, &movelist);
+
+		/* Lookup dtc of the first best move. */
+		next = get_next_pos(pos, color, movelist, moves[0]);
+		color = OTHER_COLOR(color);
+		print_fen(&next, color, fenstr);
+		status = egdb_lookup_distance(wld_handle, mtc_handle, fenstr.c_str(), &return_size, distances, moves);
+		if (status < 0 || return_size == 0) {
+			printf("mtc lookup timed out, status %d (not a bug)\n", status);
+			break;
+		}
+		if (distances[0] != plies - 1) {
+			printf("mtc depth error, expected %d, got %d\n", plies - 1, distances[0]);
+			exit(1);
+		}
+		--plies;
+		pos = next;
+	}
+}
+
+
+/*
+* Read a file of the highest MTC positions in each db subdivision.
+* Lookup the MTC value of that position, and then descend into one of the
+* best successor positions. Keep going until there are no successors with
+* MTC values >= 12. Make sure that each position has a successor with either
+* the same MTC value or a value that is smaller by 2. MTC values are always even
+* because the db stores the real MTC value divided by 2.
+*/
+void mtc_test()
+{
+	int color, status, max_pieces, value;
+	FILE *fp;
+	int type;
+	char const *mtc_stats_filename = "test/10x10 HighMtc.txt";
+	char linebuf[120];
+	BOARD pos;
+
+	std::printf("\nMTC test.\n");
+	status = egdb_identify(mtc_path, &type, &max_pieces);
+	if (status) {
+		std::printf("MTC db not found at %s\n", mtc_path);
+		std::exit(1);
+	}
+	if (type != EGDB_MTC_RUNLEN) {
+		std::printf("Wrong db type, not MTC.\n");
+		std::exit(1);
+	}
+	if (max_pieces != 8) {
+		std::printf("Need 8 pieces MTC for test, only found %d.\n", max_pieces);
+		std::exit(1);
+	}
+
+	/* Open the endgame db drivers. */
+	int wld_handle = egdb_open("maxpieces=8", 1500, wld_path, "");
+	if (wld_handle < 0) {
+		std::printf("Cannot open tun v2 db\n");
+		std::exit(1);
+	}
+
+	int mtc_handle = egdb_open("maxpieces=8", 0, mtc_path, "");
+	if (mtc_handle < 0) {
+		std::printf("Cannot open MTC db\n");
+		std::exit(1);
+	}
+	fp = std::fopen(mtc_stats_filename, "r");
+	if (!fp) {
+		std::printf("Cannot open %s for reading\n", mtc_stats_filename);
+		std::exit(1);
+	}
+
+	for (int count = 0; ; ) {
+		if (!std::fgets(linebuf, ARRAY_SIZE(linebuf), fp))
+			break;
+		if (parse_fen(linebuf, &pos, &color))
+			continue;
+
+		/* For 7 and 8 pieces, only test every 128th position, to speed up the test. */
+		++count;
+		if (((count % 32) != 0) && (bitcount64(pos.black | pos.white) >= 7))
+			continue;
+
+		print_fen(&pos, color, linebuf);
+		std::printf("%s ", linebuf);
+		value = egdb_lookup_fen(mtc_handle, linebuf, 0);
+		if (value >= 12)
+			test_best_mtc_successor(wld_handle, mtc_handle, pos, color);
+
+		std::printf("mtc %d\n", value);
+	}
+	egdb_close(mtc_handle);
+	egdb_close(wld_handle);
+}
+
+
 int main(int argc, char *argv[])
 {
 	int result, egdb_type, max_pieces, handle;
 
+	init_bitcount();
+	void test_names();
+	mtc_test();
+
 	/* Test egdb_identify(). */
-	result = egdb_identify("c:/db_intl/wld_v2", &egdb_type, &max_pieces);
+	result = egdb_identify(wld_path, &egdb_type, &max_pieces);
 
 	printf("result %d, type %d, max pieces %d\n", result, egdb_type, max_pieces);
 
-	handle = egdb_open("maxpieces=6", 1000, "c:/db_intl/wld_v2", "");
+	handle = egdb_open("maxpieces=8", 1000, wld_path, "");
 	if (handle < 0)
 		printf("%d returned by egdb_open\n", handle);
 
-	for (egdb_interface::Slice first(2), last(7); first != last; first.increment())
+	dtw_test(handle);
+
+	for (Slice first(2), last(9); first != last; first.increment())
 		test_slice(handle, first.nbm(), first.nbk(), first.nwm(), first.nwk());
 
 	result = egdb_close(handle);

@@ -71,10 +71,20 @@ DIAGS diag_tbl[NUM_BITBOARD_BITS];
 
 template <bool save_capture_info, int color>
 static void man_jump(BITBOARD all_jumped, MOVELIST *movelist, BITBOARD from, int num_jumps, Local *local);
+template <bool save_capture_info, int color>
+void rf_king_capture(BITBOARD jumped, BITBOARD jumper, int num_jumps, Local *local);
+template <bool save_capture_info, int color>
+void lb_king_capture(BITBOARD jumped, BITBOARD jumper, int num_jumps, Local *local);
+template <bool save_capture_info, int color>
+void add_king_capture(BITBOARD jumper, BITBOARD jumped, int num_jumps, Local *local);
+template <bool save_capture_info, int color>
+void rb_king_capture(BITBOARD jumped, BITBOARD jumper, int num_jumps, Local *local);
+static void copy_path(CAPTURE_INFO *cap, MOVELIST *movelist);
 
 template <int color>
 void add_king_capture_path(int num_jumps, BITBOARD jumper, BITBOARD jumped, Local *local)
 {
+	assert(local->movelist->count < MAXMOVES);
 	BOARD *board = local->cap[local->movelist->count].path + num_jumps;
 	if (color == BLACK) {
 		board->black = local->intermediate.black | jumper;
@@ -335,6 +345,8 @@ void add_king_capture(BITBOARD jumper, BITBOARD jumped, int num_jumps, Local *lo
 			local->largest_num_jumps = num_jumps;
 		}
 
+		if (movelist->count >= MAXMOVES - 1)
+			return;
 		if (color == BLACK) {
 			movelist->board[movelist->count].black = local->intermediate.black | jumper;
 			movelist->board[movelist->count].white = local->intermediate.white & ~jumped;
@@ -601,7 +613,7 @@ int canjump(BOARD *board, int color)
  * Build a movelist of non-jump moves.
  * Return the number of moves in the list.
  */
-int build_nonjump_list(BOARD *board, MOVELIST *movelist, int color)
+int build_nonjump_list(const BOARD *board, MOVELIST *movelist, int color)
 {
 	BITBOARD free;
 	BITBOARD mask;
@@ -698,7 +710,7 @@ int build_nonjump_list(BOARD *board, MOVELIST *movelist, int color)
 }
 
 
-int build_man_nonjump_list(BOARD *board, MOVELIST *movelist, int color)
+int build_man_nonjump_list(const BOARD *board, MOVELIST *movelist, int color)
 {
 	BITBOARD free;
 	BITBOARD mask;
@@ -780,7 +792,7 @@ int build_man_nonjump_list(BOARD *board, MOVELIST *movelist, int color)
  * Build a movelist of non-jump moves.
  * Return the number of moves in the list.
  */
-int build_king_nonjump_list(BOARD *board, MOVELIST *movelist, int color)
+int build_king_nonjump_list(const BOARD *board, MOVELIST *movelist, int color)
 {
 	BITBOARD free;
 	BITBOARD mask;
@@ -849,7 +861,7 @@ int build_king_nonjump_list(BOARD *board, MOVELIST *movelist, int color)
  * Return the number of moves in the list.
  */
 template <bool save_capture_info>
-int build_jump_list(BOARD *board, MOVELIST *movelist, int color, CAPTURE_INFO cap[MAXMOVES])
+int build_jump_list(const BOARD *board, MOVELIST *movelist, int color, CAPTURE_INFO cap[MAXMOVES])
 {
 	int bitnum;
 	BITBOARD free;
@@ -861,6 +873,7 @@ int build_jump_list(BOARD *board, MOVELIST *movelist, int color, CAPTURE_INFO ca
 
 	if (save_capture_info) {
 		assert(cap != NULL);
+		cap[0].capture_count = 0;
 	}
 	movelist->count = 0;
 	local.largest_num_jumps = 0;
@@ -1117,26 +1130,26 @@ static void man_jump(BITBOARD jumped, MOVELIST *movelist, BITBOARD jumper, int n
 
 void get_jumped_square(int jumpi, int movei, int color, CAPTURE_INFO cap[], BITBOARD *jumped)
 {
-	if (color == BLACK)
-		*jumped = cap[movei].path[jumpi].white & ~cap[movei].path[jumpi + 1].white;
-	else
-		*jumped = cap[movei].path[jumpi].black & ~cap[movei].path[jumpi + 1].black;
+	int othercolor = OTHER_COLOR(color);
+	*jumped = cap[movei].path[jumpi].pieces[othercolor] & ~cap[movei].path[jumpi + 1].pieces[othercolor];
 }
 
 
 void get_landed_square(int jumpi, int movei, int color, CAPTURE_INFO cap[], BITBOARD *landed)
 {
-	if (color == BLACK)
-		*landed = ~cap[movei].path[jumpi].black & cap[movei].path[jumpi + 1].black;
-	else
-		*landed = ~cap[movei].path[jumpi].white & cap[movei].path[jumpi + 1].white;
+	*landed = ~cap[movei].path[jumpi].pieces[color] & cap[movei].path[jumpi + 1].pieces[color];
 }
 
 
-int has_jumped_square(int jumpcount, int movei, int color, CAPTURE_INFO cap[], BITBOARD jumped)
+int has_jumped_square(int movei, int color, CAPTURE_INFO cap[], BITBOARD jumped)
 {
-	int i;
+	int i, jumpcount;
 	BITBOARD thisjumped;
+
+	if (cap != nullptr && cap[0].capture_count > 0)
+		jumpcount = cap[movei].capture_count;
+	else
+		jumpcount = 0;
 
 	for (i = 0; i < jumpcount; ++i) {
 		get_jumped_square(i, movei, color, cap, &thisjumped);
@@ -1147,40 +1160,40 @@ int has_jumped_square(int jumpcount, int movei, int color, CAPTURE_INFO cap[], B
 }
 
 
-int has_landed_square(int jumpcount, int movei, int color, CAPTURE_INFO *cap, int jumpto_square)
+int has_landed_square(int movei, int color, CAPTURE_INFO *cap, int jumpto_square)
 {
-	int i;
+	int i, jumpcount;
+
+	if (cap != nullptr && cap[0].capture_count > 0)
+		jumpcount = cap[movei].capture_count;
+	else
+		jumpcount = 0;
 
 	for (i = 0; i < jumpcount - 1; ++i) {
-		if (match_jumpto_square(cap + movei, i, color, jumpto_square, jumpcount))
+		if (match_jumpto_square(cap + movei, i, color, jumpto_square))
 			return(1);
 	}
 	return(0);
 }
 
 
-void get_from_to(int jumpcount, int movei, int color, BOARD *board, MOVELIST *movelist,
+void get_fromto_bitboards(int movei, int color, const BOARD *board, MOVELIST *movelist,
 				 CAPTURE_INFO cap[], BITBOARD *from, BITBOARD *to)
 {
+	int jumpcount;
+
+	if (cap != nullptr && cap[0].capture_count > 0)
+		jumpcount = cap[movei].capture_count;
+	else
+		jumpcount = 0;
+
 	if (jumpcount) {
-		if (color == BLACK) {
-			*from = cap[movei].path[0].black & ~cap[movei].path[1].black;
-			*to = ~cap[movei].path[jumpcount - 1].black & cap[movei].path[jumpcount].black;
-		}
-		else {
-			*from = cap[movei].path[0].white & ~cap[movei].path[1].white;
-			*to = ~cap[movei].path[jumpcount - 1].white & cap[movei].path[jumpcount].white;
-		}
+		*from = cap[movei].path[0].pieces[color] & ~cap[movei].path[1].pieces[color];
+		*to = ~cap[movei].path[jumpcount - 1].pieces[color] & cap[movei].path[jumpcount].pieces[color];
 	}
 	else {
-		if (color == BLACK) {
-			*from = board->black & ~movelist->board[movei].black;
-			*to = ~board->black & movelist->board[movei].black;
-		}
-		else {
-			*from = board->white & ~movelist->board[movei].white;
-			*to = ~board->white & movelist->board[movei].white;
-		}
+		*from = board->pieces[color] & ~movelist->board[movei].pieces[color];
+		*to = ~board->pieces[color] & movelist->board[movei].pieces[color];
 	}
 }
 
@@ -1211,7 +1224,7 @@ DIR4 get_direction(int src_sq, int dest_sq)
 }
 
 
-int match_jumpto_square(CAPTURE_INFO *cap, int jumpindex, int color, int jumpto_square, int jumpcount)
+int match_jumpto_square(CAPTURE_INFO *cap, int jumpindex, int color, int jumpto_square)
 {
 	int fromsq0, tosq0, next_fromsq0, next_tosq0, shift;
 	DIR4 direction_this, direction_next;
@@ -1290,7 +1303,7 @@ int match_jumpto_square(CAPTURE_INFO *cap, int jumpindex, int color, int jumpto_
 }
 
 
-int build_movelist_path(BOARD *board, int color, MOVELIST *movelist, CAPTURE_INFO *path)
+int build_movelist_path(const BOARD *board, int color, MOVELIST *movelist, CAPTURE_INFO *path)
 {
 	int count;
 
@@ -1440,7 +1453,7 @@ BITBOARD white_safe_moveto(BOARD *board)
 }
 
 
-int build_movelist(BOARD *board, int color, MOVELIST *movelist)
+int build_movelist(const BOARD *board, int color, MOVELIST *movelist)
 {
 	int count;
 
@@ -1455,7 +1468,7 @@ void get_fromto(BITBOARD fromboard, BITBOARD toboard, int *fromsq, int *tosq)
 {
 	BITBOARD from, to;
 
-	from = fromboard &~toboard;
+	from = fromboard & ~toboard;
 	*fromsq = bitboard_to_square0(from);
 	to = ~fromboard & toboard;
 	*tosq = bitboard_to_square0(to);
@@ -1464,11 +1477,11 @@ void get_fromto(BITBOARD fromboard, BITBOARD toboard, int *fromsq, int *tosq)
 
 void get_fromto(BOARD *fromboard, BOARD *toboard, int color, int *fromsq, int *tosq)
 {
-	get_fromto(fromboard->pieces[color], toboard->pieces[color] , fromsq, tosq);
+	get_fromto(fromboard->pieces[color], toboard->pieces[color], fromsq, tosq);
 }
 
 
-bool is_conversion_move(BOARD *from, BOARD *to, int color)
+bool is_conversion_move(const BOARD *from, const BOARD *to)
 {
 	uint64_t from_bits, to_bits, moved_bits;
 
@@ -1480,10 +1493,10 @@ bool is_conversion_move(BOARD *from, BOARD *to, int color)
 
 	/* Return true if there is a man move. */
 	moved_bits = from_bits & ~to_bits;
-	if (moved_bits & from->king)
-		return(false);
-	else
+	if (moved_bits & ~from->king)
 		return(true);
+	else
+		return(false);
 }
 
 }   // namespace egdb_interface

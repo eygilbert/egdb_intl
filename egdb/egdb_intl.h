@@ -47,6 +47,7 @@ enum EGDB_TYPE {
 	EGDB_WLD_HUFFMAN,
 	EGDB_WLD_TUN_V1,
 	EGDB_WLD_TUN_V2,
+	EGDB_DTW,
 };
 
 struct EGDB_VERIFY_MSGS {
@@ -82,12 +83,16 @@ int egdb_close(EGDB_DRIVER *handle);
 /* Identify a db, get its size and type. */
 int egdb_identify(char const *directory, EGDB_TYPE *egdb_type, int *max_pieces);
 
-
 int egdb_verify(EGDB_DRIVER const *handle, void (*msg_fn)(char const *msg), int *abort, EGDB_VERIFY_MSGS *msgs);
-int egdb_get_pieces(EGDB_DRIVER const *handle, int *max_pieces, int *max_pieces_1side, int *max_9pc_kings, int *max_8pc_kings_1side);
+int egdb_get_pieces(EGDB_DRIVER const *handle, int *max_pieces, int *max_pieces_1side);
 
 void egdb_reset_stats(EGDB_DRIVER *handle);
 EGDB_STATS *egdb_get_stats(EGDB_DRIVER const *handle);
+EGDB_TYPE egdb_get_type(EGDB_DRIVER const *handle);
+bool is_wld(EGDB_DRIVER const *handle);
+bool is_dtw(EGDB_DRIVER const *handle);
+bool is_mtc(EGDB_DRIVER const *handle);
+
 
 }	// namespace egdb_interface
 

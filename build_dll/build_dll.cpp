@@ -3,21 +3,28 @@
 #include "engine/move_api.h"
 #include "engine/fen.h"
 #include "engine/print_move.h"
+#include "egdb/dtw_search.h"
 #include "egdb/egdb_intl.h"
-#include "egdb/egdb_search.h"
+#include "egdb/mtc_probe.h"
+#include "egdb/wld_search.h"
 #include "builddb/indexing.h"
 #include "../egdb_intl_dll.h"
 #include <Windows.h>
 #include <stdio.h>
 
+using namespace egdb_interface;
 
 typedef struct {
 	char filename[260];
 	void (*msg_fn)(char const *msg);
-	egdb_interface::EGDB_INFO db;
+	egdb_info db;
+	wld_search wld;
 } DRIVER_INFO;
 
 DRIVER_INFO drivers[4];
+
+int lookup_dtw(int handle_wld, int handle_dist, BOARD *board, int color, int *return_size, int *distances, char moves[MAXMOVES][20]);
+int lookup_mtc(int handle_wld, int handle_dist, BOARD *board, int color, int *return_size, int *distances, char moves[MAXMOVES][20]);
 
 void msg_fn(char *filename, char const *msg)
 {
@@ -70,13 +77,9 @@ int check_handle(int handle)
 }
 
 
-extern "C" int __stdcall egdb_open(char *options,
-			int cache_mb,
-			char *directory,
-			char *filename)
+extern "C" int __stdcall egdb_open(char *options, int cache_mb, const char *directory, const char *filename)
 {
-	int i, max_pieces;
-	egdb_interface::EGDB_TYPE egdb_type;
+	int i, max_pieces, max_pieces_1side;
 	FILE *fp;
 
 	drivers[0].msg_fn = msg_fn0;
@@ -102,22 +105,20 @@ extern "C" int __stdcall egdb_open(char *options,
 		fclose(fp);
 	}
 
-	drivers[i].db.handle = egdb_interface::egdb_open(options, cache_mb, directory, drivers[i].msg_fn);
+	drivers[i].db.handle = egdb_open(options, cache_mb, directory, drivers[i].msg_fn);
 	if (drivers[i].db.handle) {
 		int result;
 
-		result = egdb_interface::egdb_identify(directory, &egdb_type, &max_pieces);
+		result = egdb_get_pieces(drivers[i].db.handle, &max_pieces, &max_pieces_1side);
 		if (result)
-			return(EGDB_IDENTIFY_FAIL);
+			return(EGDB_FOPEN_FAIL);
 
-		if (egdb_type == egdb_interface::EGDB_WLD_TUN_V2)
-			drivers[i].db.egdb_excludes_some_nonside_caps = 1;
-		else
-			drivers[i].db.egdb_excludes_some_nonside_caps = 0;
-		drivers[i].db.dbpieces = max_pieces;
-		drivers[i].db.dbpieces_1side = 5;
-		drivers[i].db.db9_kings = 0;
-		drivers[i].db.db8_kings_1side = 5;
+		drivers[i].db.dbtype = egdb_get_type(drivers[i].db.handle);
+		drivers[i].db.max_pieces = max_pieces;
+		if (is_wld(drivers[i].db.handle)) {
+			drivers[i].wld = wld_search(drivers[i].db.handle);
+			drivers[i].wld.set_search_timeout(2000);
+		}
 	}
 	else
 		return(EGDB_OPEN_FAIL);
@@ -134,17 +135,18 @@ extern "C" int __stdcall egdb_close(int handle)
 	if (result)
 		return(result);
 
-	result = egdb_interface::egdb_close(drivers[handle].db.handle);
+	result = egdb_close(drivers[handle].db.handle);
 	drivers[handle].db.handle = nullptr;
 	drivers[handle].filename[0] = 0;
+	drivers[handle].wld.clear();
 
 	return(result);
 }
 
 
-extern "C" int __stdcall egdb_identify(char *dir, int *egdb_type, int *max_pieces)
+extern "C" int __stdcall egdb_identify(const char *dir, int *egdb_type, int *max_pieces)
 {
-	egdb_interface::EGDB_TYPE db_type;
+	EGDB_TYPE db_type;
 	int result;
 
 	result = egdb_identify(dir, &db_type, max_pieces);
@@ -159,7 +161,7 @@ extern "C" int __stdcall egdb_identify(char *dir, int *egdb_type, int *max_piece
 extern "C" int __stdcall egdb_lookup_fen(int handle, char *fen, int cl)
 {
 	int color, result;
-	egdb_interface::BOARD board;
+	BOARD board;
 
 	result = check_handle(handle);
 	if (result)
@@ -169,7 +171,7 @@ extern "C" int __stdcall egdb_lookup_fen(int handle, char *fen, int cl)
 	if (result)
 		return(EGDB_FEN_ERROR);
 
-	result = egdb_interface::egdb_lookup(drivers[handle].db.handle, (egdb_interface::EGDB_POSITION *)&board, color, cl);
+	result = egdb_lookup(drivers[handle].db.handle, (EGDB_POSITION *)&board, color, cl);
 	return(result);
 }
 
@@ -177,22 +179,25 @@ extern "C" int __stdcall egdb_lookup_fen(int handle, char *fen, int cl)
 extern "C" int __stdcall egdb_lookup_fen_with_search(int handle, char *fen)
 {
 	int color, result;
-	egdb_interface::BOARD board;
+	BOARD board;
 
 	result = check_handle(handle);
 	if (result)
 		return(result);
 
+	if (!is_wld(drivers[handle].db.handle))
+		return(EGDB_NOT_WLD_TYPE);
+
 	result = parse_fen(fen, &board, &color);
 	if (result)
 		return(EGDB_FEN_ERROR);
 
-	result = drivers[handle].db.lookup_with_search(&board, color, 64, false);
+	result = drivers[handle].wld.lookup_with_search(&board, color, false);
 	return(result);
 }
 
 
-extern "C" int __stdcall egdb_lookup_with_search(int handle, egdb_interface::BOARD *board, int color)
+extern "C" int __stdcall egdb_lookup_with_search(int handle, BOARD *board, int color)
 {
 	int result;
 
@@ -200,27 +205,69 @@ extern "C" int __stdcall egdb_lookup_with_search(int handle, egdb_interface::BOA
 	if (result)
 		return(result);
 
-	result = drivers[handle].db.lookup_with_search(board, color, 64, false);
+	if (!is_wld(drivers[handle].db.handle))
+		return(EGDB_NOT_WLD_TYPE);
+
+	result = drivers[handle].wld.lookup_with_search(board, color, false);
 	return(result);
 }
 
 
-extern "C" int __stdcall get_movelist(egdb_interface::BOARD *board, int color, egdb_interface::BOARD *ml)
+extern "C" int __stdcall egdb_lookup_distance(int handle_wld, int handle_dist, const char *fen, 
+											int *return_size, int distances[MAXMOVES], char moves[MAXMOVES][20])
+{
+	int color, result, npieces;
+	BOARD board;
+
+	*return_size = 0;
+	result = check_handle(handle_wld);
+	if (result)
+		return(result);
+
+	if (!is_wld(drivers[handle_wld].db.handle))
+		return(EGDB_NOT_WLD_TYPE);
+
+	result = check_handle(handle_dist);
+	if (result)
+		return(result);
+
+	result = parse_fen(fen, &board, &color);
+	if (result)
+		return(EGDB_FEN_ERROR);
+
+	npieces = bitcount64(board.black | board.white);
+	if (npieces > drivers[handle_wld].db.max_pieces || npieces > drivers[handle_dist].db.max_pieces)
+		return(EGDB_LOOKUP_NOT_POSSIBLE);
+
+	if (is_dtw(drivers[handle_dist].db.handle)) {
+		return(lookup_dtw(handle_wld, handle_dist, &board, color, return_size, distances, moves));
+		
+	}
+	else if (is_mtc(drivers[handle_dist].db.handle)) {
+		return(lookup_mtc(handle_wld, handle_dist, &board, color, return_size, distances, moves));
+	}
+	else
+		return(EGDB_NOT_DISTANCE_TYPE);
+
+}
+
+
+extern "C" int __stdcall get_movelist(BOARD *board, int color, BOARD *ml)
 {
 	int len;
-	egdb_interface::MOVELIST movelist;
+	MOVELIST movelist;
 
 	len = build_movelist(board, color, &movelist);
-	memcpy(ml, movelist.board, len * sizeof(egdb_interface::BOARD));
+	memcpy(ml, movelist.board, len * sizeof(BOARD));
 	return(len);
 }
 
 
-extern "C" int16_t __stdcall is_capture(egdb_interface::BOARD *board, int color)
+extern "C" int16_t __stdcall is_capture(BOARD *board, int color)
 {
 	int value;
 
-	value = egdb_interface::canjump(board, color);
+	value = canjump(board, color);
 	if (value)
 		return(-1);
 	else
@@ -237,33 +284,36 @@ extern "C" int64_t __stdcall getdatabasesize_slice(int nbm, int nbk, int nwm, in
 }
 
 
-extern "C" void __stdcall indextoposition(int64_t index, egdb_interface::BOARD *pos, int nbm, int nbk, int nwm, int nwk)
+extern "C" void __stdcall indextoposition(int64_t index, BOARD *pos, int nbm, int nbk, int nwm, int nwk)
 {
-	indextoposition_slice(index, (egdb_interface::EGDB_POSITION *)pos, nbm, nbk, nwm, nwk);
+	indextoposition_slice(index, (EGDB_POSITION *)pos, nbm, nbk, nwm, nwk);
 }
 
 
-extern "C" int64_t __stdcall positiontoindex(egdb_interface::BOARD *pos, int nbm, int nbk, int nwm, int nwk)
+extern "C" int64_t __stdcall positiontoindex(BOARD *pos, int nbm, int nbk, int nwm, int nwk)
 {
-	return(position_to_index_slice((egdb_interface::EGDB_POSITION *)pos, nbm, nbk, nwm, nwk));
+	return(position_to_index_slice((EGDB_POSITION *)pos, nbm, nbk, nwm, nwk));
 }
 
 
-extern "C" int16_t __stdcall is_sharp_win(int handle, egdb_interface::BOARD *board, int color, egdb_interface::BOARD *sharp_move_pos)
+extern "C" int16_t __stdcall is_sharp_win(int handle, BOARD *board, int color, BOARD *sharp_move_pos)
 {
 	int i, len, result, wincount;
-	egdb_interface::MOVELIST movelist;
+	MOVELIST movelist;
 
 	result = check_handle(handle);
 	if (result)
 		return(result);
 
-	result = drivers[handle].db.lookup_with_search(board, color, 64, false);
-	if (result == egdb_interface::EGDB_WIN) {
+	if (!is_wld(drivers[handle].db.handle))
+		return(EGDB_NOT_WLD_TYPE);
+
+	result = drivers[handle].wld.lookup_with_search(board, color, false);
+	if (result == EGDB_WIN) {
 		len = build_movelist(board, color, &movelist);
 		for (i = 0, wincount = 0; i < len; ++i) {
-			result = drivers[handle].db.lookup_with_search(movelist.board + i, OTHER_COLOR(color), 64, false);
-			if (result == egdb_interface::EGDB_LOSS) {
+			result = drivers[handle].wld.lookup_with_search(movelist.board + i, OTHER_COLOR(color), false);
+			if (result == EGDB_LOSS) {
 				++wincount;
 				if (wincount > 1)
 					return(0);
@@ -278,25 +328,89 @@ extern "C" int16_t __stdcall is_sharp_win(int handle, egdb_interface::BOARD *boa
 }
 
 
-extern "C" int __stdcall move_string(egdb_interface::BOARD *last_board, egdb_interface::BOARD *new_board, int color, char *move)
+extern "C" int __stdcall move_string(BOARD *last_board, BOARD *new_board, int color, char *move)
 {
 	return(print_move(last_board, new_board, color, move));
 }
 
 
-extern "C" int __stdcall positiontofen(egdb_interface::BOARD *board, int color, char *fen)
+extern "C" int __stdcall positiontofen(BOARD *board, int color, char *fen)
 {
-	return(egdb_interface::print_fen(board, color, fen));
+	return(print_fen(board, color, fen));
 }
 
 
-extern "C" int __stdcall fentoposition(char *fen, egdb_interface::BOARD *pos, int *color)
+extern "C" int __stdcall fentoposition(char *fen, BOARD *pos, int *color)
 {
 	int status;
 
-	status = egdb_interface::parse_fen(fen, pos, color);
+	status = parse_fen(fen, pos, color);
 	if (status)
 		return(EGDB_FEN_ERROR);
 
 	return(0);
 }
+
+
+int lookup_dtw(int handle_wld, int handle_dist, BOARD *board, int color, int *return_size, int *distances, char moves[MAXMOVES][20])
+{
+	int wld_value, status;
+	dtw_search dtw;
+	MOVELIST movelist;
+	std::vector<move_distance> dists;
+
+	wld_value = drivers[handle_wld].wld.lookup_with_search(board, color, false);
+	switch (wld_value) {
+	case EGDB_WIN:
+	case EGDB_LOSS:
+		dtw = dtw_search(drivers[handle_wld].wld, drivers[handle_dist].db.handle);
+		dtw.set_search_timeout(2000);
+		status = dtw.lookup_with_search(board, color, dists);
+		if (status <= 0)
+			return(EGDB_LOOKUP_NOT_POSSIBLE);
+		if (dists.size() == 0)
+			return(EGDB_LOOKUP_NOT_POSSIBLE);
+		build_movelist(board, color, &movelist);
+		for (size_t i = 0; i < dists.size(); ++i) {
+			distances[i] = dists[i].distance;
+			print_move(board, movelist.board + dists[i].move, color, moves[i]);
+		}
+		*return_size = (int)dists.size();
+		return(0);
+
+	default:
+		return(EGDB_LOOKUP_NOT_POSSIBLE);
+	}
+	return(EGDB_LOOKUP_NOT_POSSIBLE);
+}
+
+
+int lookup_mtc(int handle_wld, int handle_dist, BOARD *board, int color, int *return_size, int *distances, char moves[MAXMOVES][20])
+{
+	int wld_value, status;
+	MOVELIST movelist;
+	std::vector<move_distance> dists;
+
+	wld_value = drivers[handle_wld].wld.lookup_with_search(board, color, false);
+	switch (wld_value) {
+	case EGDB_WIN:
+	case EGDB_LOSS:
+		build_movelist(board, color, &movelist);
+		status = mtc_probe(drivers[handle_wld].wld, drivers[handle_dist].db.handle, board, color, &movelist, &wld_value, dists);
+		if (status == 0)
+			return(EGDB_LOOKUP_NOT_POSSIBLE);
+		if (dists.size() == 0)
+			return(EGDB_LOOKUP_NOT_POSSIBLE);
+		for (size_t i = 0; i < dists.size(); ++i) {
+			distances[i] = dists[i].distance;
+			print_move(board, movelist.board + dists[i].move, color, moves[i]);
+		}
+		*return_size = (int)dists.size();
+		return(0);
+
+	default:
+		return(EGDB_LOOKUP_NOT_POSSIBLE);
+	}
+	return(EGDB_LOOKUP_NOT_POSSIBLE);
+}
+

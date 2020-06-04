@@ -1,5 +1,5 @@
 #pragma once
-
+#include "engine/board.h"
 #include <Windows.h>
 #include <comutil.h>
 
@@ -11,17 +11,19 @@ enum RETURN_VALUE {
 	EGDB_BAD_HANDLE = -104,
 	EGDB_NULL_INTERNAL_HANDLE = -105,
 	EGDB_FEN_ERROR = -106,
+	EGDB_NOT_WLD_TYPE = -107,
+	EGDB_NOT_DISTANCE_TYPE = -108,
+	EGDB_LOOKUP_NOT_POSSIBLE = -109,
 };
 
-extern "C" int __stdcall egdb_open(char *options,
-			int cache_mb,
-			char *directory,
-			char *filename);
+extern "C" int __stdcall egdb_open(char *options, int cache_mb, const char *directory, const char *filename);
 extern "C" int __stdcall egdb_close(int handle);
-extern "C" int __stdcall egdb_identify(char *directory, int *egdb_type, int *max_pieces);
+extern "C" int __stdcall egdb_identify(const char *directory, int *egdb_type, int *max_pieces);
 extern "C" int __stdcall egdb_lookup_fen(int handle, char *fen, int cl);
 extern "C" int __stdcall egdb_lookup_fen_with_search(int handle, char *fen);
 extern "C" int __stdcall egdb_lookup_with_search(int handle, egdb_interface::BOARD *board, int color);
+extern "C" int __stdcall egdb_lookup_distance(int handle_wld, int handle_dist, const char *fen, 
+									int *return_size, int distances[MAXMOVES], char moves[MAXMOVES][20]);
 extern "C" int __stdcall get_movelist(egdb_interface::BOARD *board, int color, egdb_interface::BOARD *ml);
 extern "C" int16_t __stdcall is_capture(egdb_interface::BOARD *board, int color);
 extern "C" int64_t __stdcall getdatabasesize_slice(int nbm, int nbk, int nwm, int nwk);

@@ -5,6 +5,7 @@ EXPORTS
 	egdb_lookup_fen
 	egdb_lookup_fen_with_search
 	egdb_lookup_with_search
+	egdb_lookup_distance
 	get_movelist
 	is_capture
 	getdatabasesize_slice

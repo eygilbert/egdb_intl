@@ -22,32 +22,32 @@
     <ProjectGuid>{B9F9241B-CCB5-4FCF-AFAA-16E235755F79}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>build_dll</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
@@ -133,6 +133,7 @@
       <AdditionalIncludeDirectories>..\;</AdditionalIncludeDirectories>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -155,6 +156,7 @@
       <AdditionalIncludeDirectories>..\;</AdditionalIncludeDirectories>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -169,16 +171,18 @@
     <ClCompile Include="..\builddb\compression_tables.cpp" />
     <ClCompile Include="..\builddb\indexing.cpp" />
     <ClCompile Include="..\egdb\crc.cpp" />
+    <ClCompile Include="..\egdb\dtw_search.cpp" />
     <ClCompile Include="..\egdb\egdb_common.cpp" />
+    <ClCompile Include="..\egdb\egdb_dtw.cpp" />
     <ClCompile Include="..\egdb\egdb_identify.cpp" />
     <ClCompile Include="..\egdb\egdb_mtc_runlen.cpp" />
     <ClCompile Include="..\egdb\egdb_open.cpp" />
-    <ClCompile Include="..\egdb\egdb_search.cpp" />
-    <ClCompile Include="..\egdb\egdb_wld_huffman.cpp" />
     <ClCompile Include="..\egdb\egdb_wld_runlen.cpp" />
     <ClCompile Include="..\egdb\egdb_wld_tunstall_v1.cpp" />
     <ClCompile Include="..\egdb\egdb_wld_tunstall_v2.cpp" />
+    <ClCompile Include="..\egdb\mtc_probe.cpp" />
     <ClCompile Include="..\egdb\slice.cpp" />
+    <ClCompile Include="..\egdb\wld_search.cpp" />
     <ClCompile Include="..\engine\bicoef.cpp" />
     <ClCompile Include="..\engine\bitcount.cpp" />
     <ClCompile Include="..\engine\board.cpp" />
@@ -186,6 +190,9 @@
     <ClCompile Include="..\engine\move.cpp" />
     <ClCompile Include="..\engine\print_move.cpp" />
     <ClCompile Include="..\engine\reverse.cpp" />
+    <ClCompile Include="..\Huffman\bitbuf.cpp" />
+    <ClCompile Include="..\Huffman\huffman.cpp" />
+    <ClCompile Include="..\Re-pair\utils.cpp" />
     <ClCompile Include="build_dll.cpp" />
     <ClCompile Include="dllmain.cpp">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
@@ -207,11 +214,14 @@
     <ClInclude Include="..\builddb\indexing.h" />
     <ClInclude Include="..\builddb\tunstall_decompress.h" />
     <ClInclude Include="..\egdb\crc.h" />
+    <ClInclude Include="..\egdb\distance.h" />
+    <ClInclude Include="..\egdb\dtw_search.h" />
     <ClInclude Include="..\egdb\egdb_common.h" />
     <ClInclude Include="..\egdb\egdb_intl.h" />
-    <ClInclude Include="..\egdb\egdb_search.h" />
+    <ClInclude Include="..\egdb\mtc_probe.h" />
     <ClInclude Include="..\egdb\platform.h" />
     <ClInclude Include="..\egdb\slice.h" />
+    <ClInclude Include="..\egdb\wld_search.h" />
     <ClInclude Include="..\engine\bicoef.h" />
     <ClInclude Include="..\engine\bitcount.h" />
     <ClInclude Include="..\engine\board.h" />
@@ -224,6 +234,9 @@
     <ClInclude Include="..\engine\print_move.h" />
     <ClInclude Include="..\engine\project.h" />
     <ClInclude Include="..\engine\reverse.h" />
+    <ClInclude Include="..\Huffman\bitbuf.h" />
+    <ClInclude Include="..\Huffman\huffman.h" />
+    <ClInclude Include="..\Re-pair\repair.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\egdb\huffman_decompress.txt" />

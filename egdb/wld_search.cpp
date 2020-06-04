@@ -1,6 +1,5 @@
-#include "egdb/egdb_search.h"
+#include "egdb/wld_search.h"
 #include "egdb/egdb_intl.h"
-#include "engine/bicoef.h"
 #include "engine/bitcount.h"
 #include "engine/board.h"
 #include "engine/bool.h"
@@ -16,7 +15,7 @@
 
 namespace egdb_interface {
 
-bool EGDB_INFO::requires_nonside_capture_test(BOARD *p)
+bool wld_search::requires_nonside_capture_test(BOARD *p)
 {
 	int npieces, nkings;
 
@@ -37,46 +36,32 @@ bool EGDB_INFO::requires_nonside_capture_test(BOARD *p)
  * Return true if a db lookup is possible based only on the number of men and kings present
  * (ignoring capture restrictions).
  */
-bool EGDB_INFO::is_lookup_possible_pieces(MATERIAL *mat)
+bool wld_search::is_lookup_possible_pieces(MATERIAL *mat)
 {
-	if (mat->npieces <= dbpieces && mat->npieces_1_side <= dbpieces_1side) {
-		switch (mat->npieces) {
-		case 9:
-			if (mat->nbk + mat->nwk <= db9_kings)
-				return(true);
-			break;
-
-		case 8:
-			if (mat->nbk <= db8_kings_1side && mat->nwk <= db8_kings_1side)
-				return(true);
-			break;
-
-		default:
-			return(true);
-			break;
-		}
-	}
-	return(false);
+	if (mat->npieces <= dbpieces && mat->npieces_1_side <= dbpieces_1side)
+		return(true);
+	else
+		return(false);
 }
 
 
 /*
  * Use this function when you already have qualified the positions with is_lookup_possible_pieces().
  */
-bool EGDB_INFO::is_lookup_possible_with_nonside_caps(MATERIAL *mat)
+bool wld_search::is_lookup_possible_with_nonside_caps(MATERIAL *mat)
 {
-	assert(EGDB_INFO::is_lookup_possible_pieces(mat));
+	assert(wld_search::is_lookup_possible_pieces(mat));
 	if (egdb_excludes_some_nonside_caps == 0 || mat->npieces < 7)
 		return(true);
 
-	if ((mat->npieces < 9) && (mat->nbk + mat->nwk <= 1))
+	if (mat->nbk + mat->nwk <= 1)
 		return(true);
 
 	return(false);
 }
 
 
-bool EGDB_INFO::is_lookup_possible(BOARD *board, int color, MATERIAL *mat)
+bool wld_search::is_lookup_possible(BOARD *board, int color, MATERIAL *mat)
 {
 	if (!is_lookup_possible_pieces(mat))
 		return(false);
@@ -91,7 +76,7 @@ bool EGDB_INFO::is_lookup_possible(BOARD *board, int color, MATERIAL *mat)
 }
 
 
-int EGDB_INFO::negate(int value)
+int wld_search::negate(int value)
 {
 	if (value == EGDB_WIN)
 		return(EGDB_LOSS);
@@ -109,7 +94,7 @@ int EGDB_INFO::negate(int value)
 }
 
 
-bool EGDB_INFO::is_greater_or_equal(int left, int right)
+bool wld_search::is_greater_or_equal(int left, int right)
 {
 	if (right == EGDB_WIN) {
 		if (left == EGDB_WIN)
@@ -149,7 +134,7 @@ bool EGDB_INFO::is_greater_or_equal(int left, int right)
 }
 
 
-bool EGDB_INFO::is_greater(int left, int right)
+bool wld_search::is_greater(int left, int right)
 {
 	if (right == EGDB_WIN) {
 		return(false);
@@ -187,7 +172,7 @@ bool EGDB_INFO::is_greater(int left, int right)
 }
 
 
-int EGDB_INFO::bestvalue_improve(int value, int bestvalue)
+int wld_search::bestvalue_improve(int value, int bestvalue)
 {
 	if (bestvalue == EGDB_WIN) {
 		return(EGDB_WIN);
@@ -246,7 +231,7 @@ bool is_repetition(BOARD *history, BOARD *p, int depth)
 /*
  * Caution: this function is not thread-safe.
  */
-int EGDB_INFO::lookup_with_rep_check(BOARD *p, int color, int depth, int maxdepth, int alpha, int beta, bool force_root_search)
+int wld_search::lookup_with_rep_check(BOARD *p, int color, int depth, int maxdepth, int alpha, int beta, bool force_root_search)
 {
 	int i;
 	int movecount;
@@ -255,8 +240,15 @@ int EGDB_INFO::lookup_with_rep_check(BOARD *p, int color, int depth, int maxdept
 	MOVELIST movelist;
 
 	rep_check_positions[depth] = *p;
-	if (++nodes > maxnodes)
+	++nodes;
+	if (maxnodes && (nodes >= maxnodes))
 		longjmp(env, 1);
+
+	if (timeout && (nodes & 63) == 63) {
+		clock_t t1 = clock();
+		if ((t1 - t0) > timeout)
+			longjmp(env, 1);
+	}
 
 	/* Check for one side with no pieces. */
 	if (p->black == 0) {
@@ -337,22 +329,26 @@ int EGDB_INFO::lookup_with_rep_check(BOARD *p, int color, int depth, int maxdept
  * limits the depth of the lookup search, and there is also a maxnodes limit. If either of these limits are hit,
  * the search returns the value EGDB_UNKNOWN.
  */
-int EGDB_INFO::lookup_with_search(BOARD *p, int color, int maxdepth, bool force_root_search)
+int wld_search::lookup_with_search(BOARD *p, int color, bool force_root_search)
 {
 	int status, i;
 	int value = EGDB_UNKNOWN;	// prevent using unitialized memory
 
 	nodes = 0;
-	status = setjmp(env);	// NOTE: not in namespace std: http://stackoverflow.com/questions/7935913/why-isnt-setjmp-in-the-std-namespace-when-including-csetjmp
+	t0 = clock();
+	reset_maxdepth();
+
+	status = setjmp(env);
 	if (status) {
 		char buf[150];
 
-		print_fen_with_newline(p, color, buf);
-		std::printf("lookup max node count exceeded (not an error): %s", buf);
+		print_fen(p, color, buf);
+		std::printf("wld lookup max node count or time limit exceeded, nodes %d, time %.3f sec, (not an error): %s\n", 
+					nodes, (clock() - t0) / 1000.00, buf);
 		return(EGDB_UNKNOWN);
 	}
 
-	for (i = 1; i < maxdepth; ++i) {
+	for (i = 1; i < maxrepdepth; ++i) {
 		value = lookup_with_rep_check(p, color, 0, i, EGDB_LOSS, EGDB_WIN, force_root_search);
 		switch (value) {
 		case EGDB_WIN:
@@ -362,13 +358,11 @@ int EGDB_INFO::lookup_with_search(BOARD *p, int color, int maxdepth, bool force_
 		}
 	}
 
-    // if maxdepth <= 1, value will not have been initialized
-	assert(maxdepth > 1);
 	return(value);
 }
 
 
-void EGDB_INFO::log_tree(int value, int depth, int color)
+void wld_search::log_tree(int value, int depth, int color)
 {
 #if 0
 	int i;

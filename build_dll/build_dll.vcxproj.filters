@@ -28,12 +28,6 @@
     <ClCompile Include="..\egdb\egdb_open.cpp">
       <Filter>egdb</Filter>
     </ClCompile>
-    <ClCompile Include="..\egdb\egdb_search.cpp">
-      <Filter>egdb</Filter>
-    </ClCompile>
-    <ClCompile Include="..\egdb\egdb_wld_huffman.cpp">
-      <Filter>egdb</Filter>
-    </ClCompile>
     <ClCompile Include="..\egdb\egdb_wld_runlen.cpp">
       <Filter>egdb</Filter>
     </ClCompile>
@@ -67,6 +61,27 @@
     <ClCompile Include="..\engine\print_move.cpp">
       <Filter>engine</Filter>
     </ClCompile>
+    <ClCompile Include="..\egdb\wld_search.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\egdb\egdb_dtw.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Re-pair\utils.cpp">
+      <Filter>Re-pair</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Huffman\bitbuf.cpp">
+      <Filter>Huffman</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Huffman\huffman.cpp">
+      <Filter>Huffman</Filter>
+    </ClCompile>
+    <ClCompile Include="..\egdb\dtw_search.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\egdb\mtc_probe.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="builddb">
@@ -80,6 +95,12 @@
     </Filter>
     <Filter Include="engine">
       <UniqueIdentifier>{7615dc49-e548-4a08-937d-176c0678513d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Re-pair">
+      <UniqueIdentifier>{9ab27eb4-f806-47a9-8137-14ac3647b48d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Huffman">
+      <UniqueIdentifier>{70dad1bb-997b-4789-bd7e-39baa7d2a617}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -99,9 +120,6 @@
       <Filter>egdb</Filter>
     </ClInclude>
     <ClInclude Include="..\egdb\egdb_intl.h">
-      <Filter>egdb</Filter>
-    </ClInclude>
-    <ClInclude Include="..\egdb\egdb_search.h">
       <Filter>egdb</Filter>
     </ClInclude>
     <ClInclude Include="..\egdb\platform.h">
@@ -145,6 +163,27 @@
     </ClInclude>
     <ClInclude Include="..\engine\print_move.h">
       <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\egdb\wld_search.h">
+      <Filter>egdb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Re-pair\repair.h">
+      <Filter>Re-pair</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Huffman\huffman.h">
+      <Filter>Huffman</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Huffman\bitbuf.h">
+      <Filter>Huffman</Filter>
+    </ClInclude>
+    <ClInclude Include="..\egdb\dtw_search.h">
+      <Filter>egdb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\egdb\distance.h">
+      <Filter>egdb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\egdb\mtc_probe.h">
+      <Filter>egdb</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

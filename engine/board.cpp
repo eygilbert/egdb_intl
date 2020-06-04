@@ -33,15 +33,4 @@ int rank_to_rank0_shift_table[] = {
 };
 
 
-int bitboard_to_square0(BITBOARD bb)
-{
-	return(bitnum_to_square0(LSB64(bb)));
-}
-
-
-int bitboard_to_square(BITBOARD bb)
-{
-	return(1 + bitnum_to_square0(LSB64(bb)));
-}
-
 }	// namespace egdb_interface

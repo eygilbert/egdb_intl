@@ -11,7 +11,7 @@
 
 namespace egdb_interface {
 
-BITBOARD free_square_bitmask_fwd(int logical_square, BITBOARD occupied)
+BITBOARD free_square_bitboard_fwd(int logical_square, BITBOARD occupied)
 {
 	int skipcount;
 	BITBOARD bitboard, behind, empty_ahead;
@@ -31,7 +31,7 @@ BITBOARD free_square_bitmask_fwd(int logical_square, BITBOARD occupied)
 }
 
 
-BITBOARD free_square_bitmask_rev(int logical_square, BITBOARD occupied)
+BITBOARD free_square_bitboard_rev(int logical_square, BITBOARD occupied)
 {
 	int skipcount;
 	BITBOARD bitboard, ahead, behind, empty_ahead;
@@ -52,33 +52,7 @@ BITBOARD free_square_bitmask_rev(int logical_square, BITBOARD occupied)
 }
 
 
-BITBOARD free_square_bitmask(int logical_square, BITBOARD occupied)
-{
-	int skipcount;
-	BITBOARD bitboard, mask;
-
-	occupied |= ~ALL_SQUARES;		/* Add ghost squares. */
-	bitboard = (BITBOARD)1 << logical_square;
-	mask = bitboard - 1;
-	skipcount = bitcount64(mask & occupied);
-
-	/* Skip past occupied squares. */
-	while (bitboard & occupied)
-		bitboard <<= 1;
-
-	while (skipcount) {
-		--skipcount;
-		bitboard <<= 1;
-
-		/* Skip past occupied squares. */
-		while (bitboard & occupied)
-			bitboard <<= 1;
-	}
-	return(bitboard);
-}
-
-
-BITBOARD place_pieces_fwd_no_interferences(unsigned int index, int num_squares, int first_square, int num_pieces)
+BITBOARD index2bitboard_fwd(unsigned int index, int num_squares, int first_square, int num_pieces)
 {
 	int piece, logical_square;
 	BITBOARD bitboard;
@@ -107,7 +81,7 @@ BITBOARD index2bitboard_fwd(unsigned int index, int num_squares, int num_pieces,
 		while (choose(logical_square, piece) > index)
 			logical_square--;
 		index -= choose(logical_square, piece);
-		bitboard |= free_square_bitmask_fwd(logical_square, occupied);
+		bitboard |= free_square_bitboard_fwd(logical_square, occupied);
 	}
 	return(bitboard);
 }
@@ -125,7 +99,7 @@ BITBOARD index2bitboard_rev(unsigned int index, int num_squares, int num_pieces,
 		while (choose(logical_square, piece) > index)
 			logical_square--;
 		index -= choose(logical_square, piece);
-		bitboard |= free_square_bitmask_rev(logical_square, occupied);
+		bitboard |= free_square_bitboard_rev(logical_square, occupied);
 	}
 	return(bitboard);
 }
@@ -247,10 +221,10 @@ void indextoposition_slice(int64_t index, EGDB_POSITION *p, int bm, int bk, int 
 	wkindex = (uint32_t)(index);
 
 	/* Place black men, except those on rank0. */
-	bmmask = place_pieces_fwd_no_interferences(bmindex, MAXSQUARE - 2 * ROWSIZE, ROWSIZE, bm - bm0);
+	bmmask = index2bitboard_fwd(bmindex, MAXSQUARE - 2 * ROWSIZE, ROWSIZE, bm - bm0);
 
 	/* Place black men on rank0. */
-	bmmask |= place_pieces_fwd_no_interferences(bm0index, ROWSIZE, 0, bm0);
+	bmmask |= index2bitboard_fwd(bm0index, ROWSIZE, 0, bm0);
 
 	/* Place white men. */
 	wmmask = index2bitboard_rev(wmindex, MAXSQUARE - ROWSIZE, wm, bmmask);
@@ -300,8 +274,8 @@ int64_t getdatabasesize_slice(int bm, int bk, int wm, int wk)
 	int black_men_backrank;
 
 	/* Compute the number of men configurations first.  Place the black men, summing separately
-	* the contributions of 0, 1, 2, 3, 4, or 5 black men on the backrank.
-	*/
+	 * the contributions of 0, 1, 2, 3, 4, or 5 black men on the backrank.
+	 */
 	size = 0;
 	for (black_men_backrank = 0; black_men_backrank <= (std::min)(bm, ROWSIZE); ++black_men_backrank) {
 
@@ -323,6 +297,30 @@ int64_t getdatabasesize_slice(int bm, int bk, int wm, int wk)
 
 	return(size);
 }
+
+
+/*
+ * Return the size with gaps (ignore interferences between men) of a major slice.
+ */
+int64_t getslicesize_gaps(int bm, int bk, int wm, int wk)
+{
+	int64_t size;
+
+	/* Black men. */
+	size = choose(NUMSQUARES - ROWSIZE, bm);
+
+	/* White men. */
+	size *= choose(NUMSQUARES - ROWSIZE, wm);
+
+	/* Add the black kings. */
+	size *= choose(NUMSQUARES - bm - wm, bk);
+
+	/* Add the white kings. */
+	size *= choose(NUMSQUARES - bm - wm - bk, wk);
+
+	return(size);
+}
+
 
 }	// namespace egdb_interface {
 
