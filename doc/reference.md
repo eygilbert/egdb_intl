@@ -59,11 +59,10 @@
 
 **Notes**: enumerates integer values returned by `egdb_lookup()` on the WLD-database. The following values will be returned, depending on the position being queried:
 
-  - If the corresponding database was not found or initialized during `edgb_open()` (e.g. because of limitations set by the `maxpieces` or `maxkings_1side_8pcs` options),  `EGDB_SUBDB_UNAVAILABLE` will be returned.
+  - If the corresponding database was not found or initialized during `edgb_open()` (e.g. because of limitations set by the `maxpieces` option), `EGDB_SUBDB_UNAVAILABLE` will be returned.
   - If the conditional lookup argument `cl` was non-zero, `EGDB_NOT_IN_CACHE` might be returned. 
   - If the side-to-move of a 7 or 8 piece position is excluded from the database, `EGDB_UNKNOWN` will be returned. 
   - For all regular position, `EGDB_WIN`, `EGDB_LOSS`, or `EGDB_DRAW` will be returned. 
-  - For databases with incompete data, such as 5 men vs. 4 men, `EGDB_UNKNOWN`, `EGDB_DRAW_OR_LOSS`, or `EGDB_WIN_OR_DRAW` might also be returned. 
 
 
 Note that depending on the position and the database type, you sometimes cannot call lookup for non-side capture positions, and you can never call lookup for capture positions, because the value returned will not be correct except by random luck. See the section "Excluded positions" for more details.
@@ -98,7 +97,6 @@ Note that depending on the position and the database type, you sometimes cannot 
 **Parameters**: 
   - `options`:  a character string of optional open settings. The options are of the form `name = value`, with multiple options separated by a semicolon (`;`) and either a `NULL` pointer or an empty string (`""`) can be given for no options. The following options are currently defined: 
     - `maxpieces = N`: sets the maximum number of pieces for which the driver will lookup values. By default, all the database files found during `egdb_open()` will be used. This can also be queried using `egdb_identify()`. 
-    - `maxkings_1side_8pcs = N`: sets the maximum number of kings each side can have in 8-piece positions for which the driver will lookup values. By default, all 8-piece databases (if not otherwise restricted by `max_pieces`) will be used. 
   - `cache_mb`: the number of MiB (`2^20` bytes) of dynamically allocated memory that the driver will use for caching previously looked up positions. 
   - `directory`: the full path to the location of the database files.  
   - `msg_fn`: a function pointer that will receive status and error messages from the driver. 
@@ -186,14 +184,15 @@ Note that depending on the position and the database type, you sometimes cannot 
         EGDB_WLD_HUFFMAN,
         EGDB_WLD_TUN_V1,
         EGDB_WLD_TUN_V2,
+        EGDB_DTW,
     };
 
 **Notes**: there is a single version of the MTC-database, and several versions of WLD databases, each using a different compression technique:
   - `EGDB_WLD_RUNLEN`: [runlength encoding](https://en.wikipedia.org/wiki/Run-length_encoding). This original format was only distributed to a limited number of Kingsrow testers, and is now deprecated.
   - `EGDB_MTC_RUNLEN`: runlength encoding. There are no other formats for the MTC-datbase.
-  - `EGDB_WLD_HUFFMAN`: [Huffman coding](https://en.wikipedia.org/wiki/Huffman_coding). This experimental format used substantially less disk space at the expense of substantially more time during the engine search. For this reason, this version was never released.  
   - `EGDB_WLD_TUN_V1`: a mixture of [Tunstall coding](https://en.wikipedia.org/wiki/Tunstall_coding) and runlength encoding. The databases are 407gb of data, which includes a small subset of 9-piece positions: 5 men vs. 4 men. However, the 9-piece functionality is disabled in this driver because on average it turns out to be less effective during an engine search than not using it. From 2010 to 2014, these databases were bundled with the commercially available Kingsrow program, and distributed on a portable external hard drive. See also [this thread](http://laatste.info/bb3/viewtopic.php?t=2905) on the FMJD forum.
   - `EGDB_WLD_TUN_V2`: an optimized version of Tunstall coding, and also excluding more positions. The databases are 56gb of data. From 2014 onwards, these databases have been available for download from a file server. 
+  - `EGDB_DTW`: uses Re-pair and Huffman compression.
 
 ---
 
@@ -250,9 +249,7 @@ Note that depending on the position and the database type, you sometimes cannot 
     int egdb_get_pieces(
         EGDB_DRIVER const *handle, 
         int *max_pieces, 
-        int *max_pieces_1side, 
-        int *max_9pc_kings, 
-        int *max_8pc_kings_1side
+        int *max_pieces_1side
     );
 
 `"get_pieces"` is a way to query some attributes of an open database.

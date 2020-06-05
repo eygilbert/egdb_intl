@@ -2,13 +2,17 @@
 
 `egdb_intl` is a set of C++ source files with functions to access the Kingsrow international draughts endgame databases. This package can easily be integrated into existing C++ draughts programs. The source files are identical to those used in the Kingsrow draughts program.
 
+For Java users, Jan-Jaap van Horssen has created a Java Native Interface to the drivers. A zip file containing the binaries and sources can be downloaded here: http://edgilbert.org/InternationalDraughts/downloads/KingsrowEgdbJava.zip
+
+For other languages, see the repository branch named `dll`. There is a DLL interface to the drivers that can be used in many Windows environments. There are also several files that can be included in a VBA project in the folder VBA_test.
+
 # Overview 
 
-The source code can be compiled for Windows using Microsoft Visual Studio 2015, and for Linux using g++ or Clang. The function `egdb_lookup()` to lookup the value of a position in the database is thread-safe and can be used in a multi-threaded search engine.
+The source code can be compiled for Windows using Microsoft Visual Studio 2019, and for Linux using g++ or Clang. The function `egdb_lookup()` to lookup the value of a position in the database is thread-safe and can be used in a multi-threaded search engine.
 
-The code can be used to access 2 versions of the win, loss, draw (WLD) database, and a single version of the moves-to-conversion (MTC) database. These databases have information for positions with up to 8 pieces and with up to 5 pieces on one side.
+The code can be used to access 2 versions of the win, loss, draw (WLD) database, a distance-to-win (DTW) database, and a distance-to-conversion (MTC) database. With the exception of the DTW db, these databases have information for positions with up to 8 pieces and with up to 5 pieces on one side. The DTW db has information for position with up to 7 pieces.
 
-From 2010 to 2014 I distributed version 1 of the databases on a portable external hard drive. This database is 407gb of data, which includes a small subset of 9-piece positions, 5 men vs. 4 men (I disabled the 9-piece functionality in this driver because I found through testing that on average it was less effective than not using it). In 2014, I created version 2 by re-compressing the database using better compression techniques, and excluding more positions to make the compression work better. Version 2 is 56gb of data, and is available for download from a file server. See link below.
+From 2010 to 2014 I distributed version 1 of the WLD databases on a portable external hard drive. This database is 407gb of data, which includes a small subset of 9-piece positions, 5 men vs. 4 men (I disabled the 9-piece functionality in this driver because I found through testing that on average it was less effective than not using it). In 2014, I created version 2 by re-compressing the database using better compression techniques, and excluding more positions to make the compression work better. Version 2 is 56gb of data, and is available for download from a file server. See link below.
 
 You can contact me at [eygilbert@gmail.com](eygilbert@gmail.com) if you have questions or comments about these drivers.
 
@@ -22,7 +26,7 @@ The databases are standalone and do not depend on the Kingsrow draughts program.
 
 Because the driver does not modify any of the databases, it is possible to re-use the databases of an existing installation of the Kingsrow draughts program.
 
-  - On Windows: simply use the paths such as `C:/Program Files/Kingsrow International/wld_database` or `C:/Program Files/Kingsrow International/mtc_database` when opening the databases. 
+  - On Windows: simply use the paths such as `C:/Program Files/Kingsrow International/wld_database`, `C:/Program Files/Kingsrow International/mtc_database`, or `C:/Program Files/Kingsrow International/dtw_database` when opening the databases. 
   - On Linux: for dual-boot or virtual machine Linux installations this typically involves mounting the filepath to e.g. `/media` and adding your username to the group with access to the mounted media (such as `vboxsf` for the [VirtualBox](https://www.virtualbox.org/wiki/Downloads) virtual machines). Consult your own particular Linux system reference on how to access Windows files on such hybrid setups (it might require installation of support packages such as VirtualBox guest additions). 
 
 **Obtaining the driver**
@@ -34,7 +38,7 @@ The source code of this driver can be downloaded or cloned from GitHub
 **System requirements**
 
 The minimum requirements depend on the operating system in use (Windows or Linux), whether the system is 32-bit or 64-bit, and whether it is used in a single-threaded or a multi-threaded program.
-  - On Windows: the Microsoft Visual C++ 2015 (for which there is a free [Community Edition](https://www.visualstudio.com/)) and higher. It is possible that earlier versions of Microsoft Visual C++ are also compatible. This is not supported however.
+  - On Windows: the Microsoft Visual C++ 2019 (for which there is a free [Community Edition](https://www.visualstudio.com/)) and higher. It is possible that earlier versions of Microsoft Visual C++ are also compatible. This is not supported however.
     - For 32-bit systems, the macro `USE_WIN_API` must have been defined.
     - For 64-bit systems, the macro `USE_WIN_API` can be used to switch between the Windows API and the C++ Standard Library.
   - On Linux: a 64-bit system and
@@ -43,7 +47,7 @@ The minimum requirements depend on the operating system in use (Windows or Linux
 
 **Compiling the driver**
 
-  - On Windows: The `example` directory includes a project file for Microsoft Visual Studio 2015. Alternatively, one can use the CMake GUI for Windows to automatically generate a Visual Studio project file. To run the example, edit the macro `DB_PATH` near the top of `example/main.cpp` to point it to the location of your db files, then compile and run without arguments. When integrating the driver into your own Visual Studio projects, be aware that the driver uses C standard library functions that VS2015 will give warnings about. A simple way to turn off these warnings is by adding the preprocessor definition _CRT_SECURE_NO_WARNINGS to the project file. 
+  - On Windows: The `example` directory includes a project file for Microsoft Visual Studio 2019. Alternatively, one can use the CMake GUI for Windows to automatically generate a Visual Studio project file. To run the example, edit the macro `DB_PATH` near the top of `example/main.cpp` to point it to the location of your db files, then compile and run without arguments. When integrating the driver into your own Visual Studio projects, be aware that the driver uses C standard library functions that VS2019 will give warnings about. A simple way to turn off these warnings is by adding the preprocessor definition _CRT_SECURE_NO_WARNINGS to the project file. 
   - On Linux: do the usual CMake incantations for an out-of-tree build:
 
 
@@ -121,6 +125,9 @@ The MTC database is identified as type `EGDB_MTC_RUNLEN`. It has filenames with 
 **Guideline**: before querying an MTC value you should first use a WLD database to determine that the position is a win or a loss. 
 
 ---
+The WLD database is identified as type `EGDB_DTW`. It has filenames with suffixes ".cpr_dtw" and ".idx_dtw". This database has data for positions with up to 7 pieces. It does not have data for positions that are draws, or positions that are captures. The return value from `egdb_lookup()` is the (distance to win or loss) / 2. To get the actual distances, multiply the return value by 2, and if the position is a win, add 1.
+
+---
 
 # Reference documentation
 
@@ -132,7 +139,7 @@ Rein Halbersma ported the code to Linux and improved it in other ways also. Than
 
 # License
 
-    Original work Copyright (C) 2007-2016 Ed Gilbert
+    Original work Copyright (C) 2007-2020 Ed Gilbert
     Linux port Copyright (C) 2016 Rein Halbersma and Ed Gilbert
 
 Distributed under the Boost Software License, Version 1.0.
