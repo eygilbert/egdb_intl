@@ -1,7 +1,9 @@
 #include "builddb/indexing.h"
+#include "egdb/dtw_search.h"
 #include "egdb/egdb_intl.h"
+#include "Egdb/mtc_probe.h"
 #include "egdb/slice.h"
-#include "egdb/egdb_search.h"
+#include "egdb/wld_search.h"
 #include "engine/bitcount.h"
 #include "engine/board.h"
 #include "engine/fen.h"
@@ -10,12 +12,12 @@
 #include "engine/project.h"	// ARRAY_SIZE
 #include <algorithm>
 #include <cctype>
-#include <inttypes.h>
 #include <stdint.h>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
+#include <inttypes.h>
 #include <mutex>
 
 #ifdef USE_MULTI_THREADING
@@ -25,6 +27,7 @@
 using namespace egdb_interface;
 
 #define FAST_TEST_MULT 1		/* Set to 5 to speed up the tests. */
+#define HAVE_TUN_V1 0
 
 #define EYG
 #ifdef EYG
@@ -40,7 +43,8 @@ using namespace egdb_interface;
 #define DB_RUNLEN C_DRIVE "db_intl/wld_runlen"	/* Need 6 pieces for test. */
 #define DB_TUN_V1 E_DRIVE "db_intl/wld_v1"		/* Need 7 pieces for test. */
 #define DB_TUN_V2 C_DRIVE "db_intl/wld_v2"		/* Need 8 pieces for test. */
-#define DB_MTC E_DRIVE "db_intl/mtc"	/* Need 8 pieces for test. */
+#define DB_MTC C_DRIVE "db_intl/mtc"			/* Need 8 pieces for test. */
+#define DB_DTW C_DRIVE "db_intl/dtw"
 const int maxpieces = 8;
 #endif
 
@@ -162,7 +166,7 @@ void verify(DB_INFO *db1, DB_INFO *db2, Slice const& slice, int64_t max_lookups)
 }
 
 
-void self_verify(EGDB_INFO *db, Slice const& slice, int64_t max_lookups)
+void self_verify(wld_search *db, Slice const& slice, int64_t max_lookups)
 {
 	int64_t size, index, incr;
 	int value1, value2;
@@ -206,7 +210,7 @@ void self_verify(EGDB_INFO *db, Slice const& slice, int64_t max_lookups)
 		}
 		if (black_ok && !canjump((BOARD *)&pos, BLACK)) {
 			value1 = egdb_lookup(db->handle, &pos, BLACK, 0);
-			value2 = db->lookup_with_search((BOARD *)&pos, BLACK, 64, true);
+			value2 = db->lookup_with_search((BOARD *)&pos, BLACK, true);
 			if (value1 != value2 && value2 != EGDB_UNKNOWN) {
 				std::printf("Verify error.%" PRId64 "color BLACK, v1 %d, v2 %d\n", index, value1, value2);
 				std::exit(1);
@@ -215,7 +219,7 @@ void self_verify(EGDB_INFO *db, Slice const& slice, int64_t max_lookups)
 
 		if (white_ok && !canjump((BOARD *)&pos, WHITE)) {
 			value1 = egdb_lookup(db->handle, &pos, WHITE, 0);
-			value2 = db->lookup_with_search((BOARD *)&pos, WHITE, 64, true);
+			value2 = db->lookup_with_search((BOARD *)&pos, WHITE, true);
 			if (value1 != value2 && value2 != EGDB_UNKNOWN) {
 				std::printf("Verify error.%" PRId64 "color WHITE, v1 %d, v2 %d\n", index, value1, value2);
 				std::exit(1);
@@ -268,78 +272,37 @@ int identify(char const *dir, DB_INFO *db)
 }
 
 
-void test_best_mtc_successor(EGDB_INFO *wld, EGDB_DRIVER *mtc, BOARD *pos, int color)
+void test_best_mtc_successor(wld_search *wld, EGDB_DRIVER *mtc, BOARD &pos, int color)
 {
-	int fromsq, tosq;
-	int i, value, mtc_value, parent_value, parent_mtc_value, best_movei, best_mtc_value;
+	int status;
+	int wld_value, plies;
 	MOVELIST movelist;
-	char fenbuf[120];
+	std::vector<move_distance> dists;
 
-	parent_value = wld->lookup_with_search(pos, color, MAXREPDEPTH, false);
-	if (parent_value == EGDB_WIN)
-		best_mtc_value = 1000;
-	else if (parent_value == EGDB_LOSS)
-		best_mtc_value = 0;
-	else if (parent_value == EGDB_UNKNOWN)
-		return;
-	else {
-		std::printf("bad wld value, %d, in test_best_mtc_successor\n", parent_value);
+	build_movelist(&pos, color, &movelist);
+	status = mtc_probe(*wld, mtc, &pos, color, &movelist, &wld_value, dists);
+	if (!status || !dists.size()) {
+		printf("mtc_probe timed out (not a bug)\n");
 		return;
 	}
-	parent_mtc_value = egdb_lookup(mtc, (EGDB_POSITION *)pos, color, 0);
 
-	build_movelist(pos, color, &movelist);
-	best_movei = 0;
-	for (i = 0; i < movelist.count; ++i) {
+	plies = dists[0].distance;
+	while (plies > 10) {
 
-		/* We're not going to take a conversion move if in a loss, because that's a terrible
-		 * move. We already know that the parent position is at least 10 ply from a conversion by some path,
-		 * and being in a loss we want to delay a conversion as long as possible,
-		 * so there is a better choice than a conversion move.
-		 */
-		if (parent_value == EGDB_LOSS) {
-			if (is_conversion_move(pos, movelist.board + i, color))
-				continue;
-		}
-		value = wld->lookup_with_search((movelist.board + i), OTHER_COLOR(color), MAXREPDEPTH, false);
-		if (value == EGDB_UNKNOWN)
+		/* Lookup dtc of the first best move. */
+		pos = movelist.board[dists[0].move];
+		color = OTHER_COLOR(color);
+		build_movelist(&pos, color, &movelist);
+		status = mtc_probe(*wld, mtc, &pos, color, &movelist, &wld_value, dists);
+		if (!status || !dists.size()) {
+			printf("mtc_probe timed out (not a bug)\n");
 			return;
-		if (parent_value == EGDB_WIN)
-			if (value != EGDB_LOSS)
-				continue;
-		mtc_value = egdb_lookup(mtc, (EGDB_POSITION *)(movelist.board + i), OTHER_COLOR(color), 0);
-		if (mtc_value != MTC_LESS_THAN_THRESHOLD) {
-			if (parent_value == EGDB_WIN) {
-				if (value == EGDB_LOSS) {
-					if (mtc_value < best_mtc_value) {
-						best_mtc_value = mtc_value;
-						best_movei = i;
-					}
-				}
-			}
-			else {
-				if (parent_value == EGDB_LOSS) {
-					if (value == EGDB_WIN) {
-						if (mtc_value > best_mtc_value) {
-							best_mtc_value = mtc_value;
-							best_movei = i;
-						}
-					}
-				}
-			}
 		}
-	}
-	get_fromto(pos, movelist.board + best_movei, color, &fromsq, &tosq);
-	if (parent_mtc_value >= 12) {
-		if (best_mtc_value == parent_mtc_value || best_mtc_value == parent_mtc_value - 2) {
-			test_best_mtc_successor(wld, mtc, movelist.board + best_movei, OTHER_COLOR(color));
+		if (dists[0].distance != plies - 1) {
+			printf("DTC depth error, expected %d, got %d\n", plies - 1, dists[0].distance);
+			exit(1);
 		}
-		else {
-			print_fen(movelist.board + best_movei, OTHER_COLOR(color), fenbuf);
-			std::printf("move %d-%d, parent mtc value %d, best successor mtc value %d\n",
-					1 + fromsq, 1 + tosq, parent_mtc_value, best_mtc_value);
-			std::exit(1);
-		}
+		--plies;
 	}
 }
 
@@ -354,13 +317,13 @@ void test_best_mtc_successor(EGDB_INFO *wld, EGDB_DRIVER *mtc, BOARD *pos, int c
  */
 void mtc_test()
 {
-	int color, status, max_pieces, value, max_pieces_1side, max_9pc_kings, max_8pc_kings_1side;
+	int color, status, max_pieces, value;
 	FILE *fp;
 	EGDB_TYPE type;
 	char const *mtc_stats_filename = "../egdb_test/10x10 HighMtc.txt"; // consistent with out-of-tree CMake builds
 	char linebuf[120];
 	BOARD pos;
-	EGDB_INFO wld;
+	wld_search wld;
 
 	std::printf("\nMTC test.\n");
 	status = egdb_identify(DB_MTC, &type, &max_pieces);
@@ -378,18 +341,15 @@ void mtc_test()
 	}
 
 	/* Open the endgame db drivers. */
-	wld.handle = egdb_open("maxpieces=8", 3000, DB_TUN_V2, print_msgs);
-	if (!wld.handle) {
+	EGDB_DRIVER *wld_handle = egdb_open("maxpieces=8", 3000, DB_TUN_V2, print_msgs);
+	if (!wld_handle) {
 		std::printf("Cannot open tun v2 db\n");
 		std::exit(1);
 	}
-	egdb_get_pieces(wld.handle, &max_pieces, &max_pieces_1side, &max_9pc_kings, &max_8pc_kings_1side);
-	wld.dbpieces = max_pieces;
-	wld.dbpieces_1side = max_pieces_1side;
-	wld.db8_kings_1side = max_8pc_kings_1side;
-	wld.egdb_excludes_some_nonside_caps = true;
+	wld = wld_search(wld_handle);
+	wld.set_search_timeout(5000);
 
-	EGDB_DRIVER* mtc = egdb_open("maxpieces=8", 100, DB_MTC, print_msgs);
+	EGDB_DRIVER *mtc = egdb_open("maxpieces=8", 100, DB_MTC, print_msgs);
 	if (!mtc) {
 		std::printf("Cannot open MTC db\n");
 		std::exit(1);
@@ -408,15 +368,14 @@ void mtc_test()
 
 		/* For 7 and 8 pieces, only test every 10th position, to speed up the test. */
 		++count;
-		if ((count % (10 * FAST_TEST_MULT)) && bitcount64(pos.black | pos.white) >= 7)
+		if (((count % 32) != 0) && (bitcount64(pos.black | pos.white) >= 7))
 			continue;
 
 		print_fen(&pos, color, linebuf);
 		std::printf("%s ", linebuf);
 		value = egdb_lookup(mtc, (EGDB_POSITION *)&pos, color, 0);
-		if (value >= 12) {
-			test_best_mtc_successor(&wld, mtc, &pos, color);
-		}
+		if (value >= 12)
+			test_best_mtc_successor(&wld, mtc, pos, color);
 
 		std::printf("mtc %d\n", value);
 	}
@@ -430,52 +389,26 @@ void open_options_test(void)
 	int value1, value2;
 	EGDB_POSITION pos;
 
-	{
-		/* Verify that no slices with more than 2 kings on a side are loaded. */
-		std::printf("\nTesting open options.\n");
-		EGDB_DRIVER *db = egdb_open("maxpieces = 8; maxkings_1side_8pcs = 2", 500, DB_TUN_V2, print_msgs);
-		if (!db) {
-			std::printf("Cannot open db at %s\n", DB_TUN_V2);
-			std::exit(1);
-		}
-		indextoposition_slice(0, &pos, 2, 2, 2, 2);
-		value1 = egdb_lookup(db, &pos, BLACK, 0);
-		if (value1 != EGDB_WIN && value1 != EGDB_DRAW && value1 != EGDB_LOSS) {
-			std::printf("bad value returned from lookup() in options test.\n");
-			std::exit(1);
-		}
-		indextoposition_slice(0, &pos, 1, 3, 2, 2);
-		value1 = egdb_lookup(db, &pos, BLACK, 0);
-		value2 = egdb_lookup(db, &pos, WHITE, 0);
-		if (value1 != EGDB_SUBDB_UNAVAILABLE || value2 != EGDB_SUBDB_UNAVAILABLE) {
-			std::printf("bad value returned from lookup() in options test.\n");
-			std::exit(1);
-		}
-		egdb_close(db);
+	/* Verify that no slices with more than 6 pieces are loaded. */
+	EGDB_DRIVER *db = egdb_open("maxpieces = 6", 500, DB_TUN_V2, print_msgs);
+	if (!db) {
+		std::printf("Cannot open db at %s\n", DB_TUN_V2);
+		std::exit(1);
 	}
-
-	{
-		/* Verify that no slices with more than 6 pieces are loaded. */
-		EGDB_DRIVER *db = egdb_open("maxpieces = 6", 500, DB_TUN_V2, print_msgs);
-		if (!db) {
-			std::printf("Cannot open db at %s\n", DB_TUN_V2);
-			std::exit(1);
-		}
-		indextoposition_slice(0, &pos, 2, 1, 3, 0);
-		value1 = egdb_lookup(db, &pos, BLACK, 0);
-		if (value1 != EGDB_WIN && value1 != EGDB_DRAW && value1 != EGDB_LOSS) {
-			std::printf("bad value returned from lookup() in options test.\n");
-			std::exit(1);
-		}
-		indextoposition_slice(0, &pos, 4, 0, 3, 0);
-		value1 = egdb_lookup(db, &pos, BLACK, 0);
-		value2 = egdb_lookup(db, &pos, WHITE, 0);
-		if (value1 != EGDB_SUBDB_UNAVAILABLE || value2 != EGDB_SUBDB_UNAVAILABLE) {
-			std::printf("bad value returned from lookup() in options test.\n");
-			std::exit(1);
-		}
-		egdb_close(db);
+	indextoposition_slice(0, &pos, 2, 1, 3, 0);
+	value1 = egdb_lookup(db, &pos, BLACK, 0);
+	if (value1 != EGDB_WIN && value1 != EGDB_DRAW && value1 != EGDB_LOSS) {
+		std::printf("bad value returned from lookup() in options test.\n");
+		std::exit(1);
 	}
+	indextoposition_slice(0, &pos, 4, 0, 3, 0);
+	value1 = egdb_lookup(db, &pos, BLACK, 0);
+	value2 = egdb_lookup(db, &pos, WHITE, 0);
+	if (value1 != EGDB_SUBDB_UNAVAILABLE || value2 != EGDB_SUBDB_UNAVAILABLE) {
+		std::printf("bad value returned from lookup() in options test.\n");
+		std::exit(1);
+	}
+	egdb_close(db);
 }
 
 
@@ -541,16 +474,156 @@ void parallel_read(EGDB_DRIVER *db, int &value)
 	
 #endif
 
+void dtw_test(Slice &slice, wld_search &wld, dtw_search &dtw, double &sum_times, int64_t &sum_nodes,
+	int64_t &nsamples, int &max_nodes, int &max_time)
+{
+	int64_t size, index, incr, max_lookups;
+	int color;
+	BOARD pos;
+	std::vector<move_distance> dists;
+
+	max_lookups = 30;
+	size = getdatabasesize_slice(slice.nbm(), slice.nbk(), slice.nwm(), slice.nwk());
+	if (max_lookups < 1)
+		incr = 1;
+	else
+		incr = (std::max)(size / max_lookups, (int64_t)1);
+
+	printf("Testing slice db%d-%d%d%d%d\n", slice.npieces(), slice.nbm(), slice.nbk(), slice.nwm(), slice.nwk());
+	color = BLACK;
+	for (index = 0; index < size; index += incr) {
+		int plies;
+		int value;
+		int64_t sidx;
+
+		for (sidx = index; sidx < size; ++sidx) {
+			indextoposition_slice(sidx, (EGDB_POSITION *)&pos, slice.nbm(), slice.nbk(), slice.nwm(), slice.nwk());
+			value = wld.lookup_with_search(&pos, color, false);
+			if (value == EGDB_WIN || value == EGDB_LOSS)
+				break;
+		}
+		if (sidx >= size)
+			break;
+
+		value = dtw.lookup_with_search(&pos, color, dists);
+		if (value < 0) {
+			printf("dtw lookup timed out, time %.3f sec (not a bug)\n", dtw.get_time() / 1000.0);
+			continue;
+		}
+
+		if (value < 2)
+			continue;
+
+		plies = dists[0].distance;
+		while (plies > 1) {
+			MOVELIST movelist;
+
+			sum_nodes += dtw.get_nodes();
+			sum_times += dtw.get_time();
+			if (dtw.get_time() > max_time)
+				max_time = dtw.get_time();
+			if (dtw.get_nodes() > max_nodes)
+				max_nodes = dtw.get_nodes();
+			++nsamples;
+			if (dtw.get_time() > (4 * max_time) / 5 || dtw.get_nodes() > (4 * max_nodes) / 5)
+				printf("time %.3f sec, maxdepth %d, nodes %d\n", dtw.get_time() / 1000.0, dtw.get_maxdepth(), dtw.get_nodes());
+
+			build_movelist(&pos, color, &movelist);
+
+			/* Lookup dtw of the first best move. */
+			pos = movelist.board[dists[0].move];
+			color = OTHER_COLOR(color);
+			value = dtw.lookup_with_search(&pos, color, dists);
+			if (value == dtw_search::dtw_draw) {
+				printf("Unexpected value %d from dtw lookup.\n", value);
+				exit(1);
+			}
+			if (value < 0) {
+				printf("dtw lookup timed out, time %.3f sec (not a bug)\n", dtw.get_time() / 1000.0);
+				break;
+			}
+
+			if (dists[0].distance != plies - 1) {
+				printf("DTW depth error, expected %d, got %d\n", plies - 1, dists[0].distance);
+				exit(1);
+			}
+			--plies;
+		}
+	}
+	if (nsamples)
+		printf("dtw avg lookup time %.2f msec, avg nodes %I64d\n", sum_times / nsamples, sum_nodes / nsamples);
+}
+
+
+void dtw_test(void)
+{
+	int status, max_pieces;
+	int max_nodes, max_time;
+	int64_t sum_nodes, nsamples;
+	double sum_times;
+	EGDB_TYPE type;
+	Slice slice(2);
+	wld_search wld;
+	EGDB_DRIVER *wld_handle, *dtw_handle;
+	const int most_pieces = 7;
+
+	std::printf("\nDTW test.\n");
+	status = egdb_identify(DB_DTW, &type, &max_pieces);
+	if (status) {
+		std::printf("DTW db not found at %s\n", DB_DTW);
+		std::exit(1);
+	}
+	if (type != EGDB_DTW) {
+		std::printf("Wrong db type, not DTW.\n");
+		std::exit(1);
+	}
+	if (max_pieces < most_pieces) {
+		std::printf("Need %d pieces DTW for test, only found %d.\n", most_pieces, max_pieces);
+		std::exit(1);
+	}
+
+	/* Open the endgame db drivers. */
+	wld_handle = egdb_open("maxpieces=7", 1500, DB_TUN_V2, print_msgs);
+	if (!wld_handle) {
+		std::printf("Cannot open db at %s\n", DB_TUN_V2);
+		std::exit(1);
+	}
+	wld = wld_search(wld_handle);
+
+	dtw_handle = egdb_open("maxpieces=7", 10, DB_DTW, print_msgs);
+	if (!dtw_handle) {
+		std::printf("Cannot open DTW db at %s\n", DB_DTW);
+		std::exit(1);
+	}
+	dtw_search dtw(wld, dtw_handle);
+	dtw.set_search_timeout(8000);
+	max_nodes = 0;
+	max_time = 0;
+	sum_nodes = 0;
+	sum_times = 0;
+	nsamples = 0;
+	for (slice = Slice(2); slice.npieces() <= most_pieces; slice.increment()) {
+		dtw_test(slice, wld, dtw, sum_times, sum_nodes, nsamples, max_nodes, max_time);
+	}
+
+	printf("max time %d msec, max nodes %d\n", max_time, max_nodes);
+	egdb_close(dtw_handle);
+	egdb_close(wld_handle);
+}
+
+
 int main(int argc, char *argv[])
 {
 	DB_INFO db1, db2;
 	clock_t t0;
 
+	dtw_test();
 	if (identify(DB_TUN_V2, &db1))
 		return(1);
+#if HAVE_TUN_V1
 	if (identify(DB_TUN_V1, &db2))
 		return(1);
-
+#endif
 	// Open the endgame db drivers.
 	char opt[50];
 	std::sprintf(opt, "maxpieces=%d", maxpieces);
@@ -559,12 +632,13 @@ int main(int argc, char *argv[])
 		std::printf("Cannot open tun v2 db\n");
 		return(1);
 	}
+#if HAVE_TUN_V1
 	db2.handle = egdb_open(opt, 2000, DB_TUN_V1, print_msgs);
 	if (!db2.handle) {
 		std::printf("Cannot open tun v1 db\n");
 		return(1);
 	}
-
+#endif
 	// Do a quick verification of the indexing functions.
 	t0 = std::clock();
 	std::printf("\nTesting indexing round trip\n");
@@ -573,6 +647,7 @@ int main(int argc, char *argv[])
 	}
 	std::printf("%.2fsec: index test completed\n", TDIFF(t0));
 
+#if HAVE_TUN_V1
 	std::printf("\nVerifying WLD Tunstall v1 against Tunstall v2 (up to 7 pieces).\n");
 	t0 = std::clock();
 	for (Slice first(2), last(maxpieces + 1); first != last; first.increment()) {
@@ -582,7 +657,7 @@ int main(int argc, char *argv[])
 
 	// Close db2, leave db1 open for the next test.
 	egdb_close(db2.handle);
-
+#endif
 	std::printf("\nVerifying WLD runlen against WLD Tunstall v2 (up to 6 pieces).\n");
 	if (identify(DB_RUNLEN, &db2))
 		return(1);
@@ -612,12 +687,8 @@ int main(int argc, char *argv[])
 		return(1);
 	}
 
-	EGDB_INFO db;
-	db.dbpieces = db1.max_pieces;
-	db.handle = db1.handle;
-	db.dbpieces_1side = 5;
-	db.db8_kings_1side = 5;
-	db.egdb_excludes_some_nonside_caps = true;
+	wld_search db(db1.handle);
+	db.set_search_timeout(5000);
 	t0 = std::clock();
 	for (Slice first(2), last(9); first != last; first.increment()) {
 		std::printf("%.2fsec: ", TDIFF(t0));
@@ -628,11 +699,15 @@ int main(int argc, char *argv[])
 	mtc_test();
 	open_options_test();
 
+#if HAVE_TUN_V1
 	crc_verify_test(DB_TUN_V1);
+#endif
 	crc_verify_test(DB_TUN_V2);
 
 #ifdef USE_MULTI_THREADING
+#if HAVE_TUN_V1
 	test_mutual_exclusion(DB_TUN_V1, get_tun_v1_lock());
+#endif
 	test_mutual_exclusion(DB_TUN_V2, get_tun_v2_lock());
 #endif
 }

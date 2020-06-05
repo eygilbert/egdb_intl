@@ -24,9 +24,9 @@ int egdb_verify(EGDB_DRIVER const *handle, void (*msg_fn)(char const *msg), int 
 	return handle->verify(handle, msg_fn, abort, msgs);
 }
 
-int egdb_get_pieces(EGDB_DRIVER const *handle, int *max_pieces, int *max_pieces_1side, int *max_9pc_kings, int *max_8pc_kings_1side)
+int egdb_get_pieces(EGDB_DRIVER const *handle, int *max_pieces, int *max_pieces_1side)
 {
-	return handle->get_pieces(const_cast<EGDB_DRIVER*>(handle), max_pieces, max_pieces_1side, max_9pc_kings, max_8pc_kings_1side);
+	return handle->get_pieces(const_cast<EGDB_DRIVER*>(handle), max_pieces, max_pieces_1side);
 }
 
 void egdb_reset_stats(EGDB_DRIVER *handle)
@@ -39,15 +39,47 @@ EGDB_STATS *egdb_get_stats(EGDB_DRIVER const *handle)
 	return handle->get_stats(const_cast<EGDB_DRIVER*>(handle));
 }
 
-int get_num_subslices(int nbm, int nbk, int nwm, int nwk)
+EGDB_TYPE egdb_get_type(EGDB_DRIVER const *handle)
+{
+	return handle->get_type(const_cast<EGDB_DRIVER *>(handle));
+}
+
+bool is_wld(EGDB_DRIVER const *handle)
+{
+	EGDB_TYPE type = egdb_get_type(handle);
+	if (type == EGDB_WLD_RUNLEN || type == EGDB_WLD_TUN_V1 || type == EGDB_WLD_TUN_V2)
+		return(true);
+	else
+		return(false);
+}
+
+bool is_dtw(EGDB_DRIVER const *handle)
+{
+	EGDB_TYPE type = egdb_get_type(handle);
+	if (type == EGDB_DTW)
+		return(true);
+	else
+		return(false);
+}
+
+bool is_mtc(EGDB_DRIVER const *handle)
+{
+	EGDB_TYPE type = egdb_get_type(handle);
+	if (type == EGDB_MTC_RUNLEN)
+		return(true);
+	else
+		return(false);
+}
+
+int get_num_subslices(int bm, int bk, int wm, int wk, uint32_t subslice_size)
 {
 	int64_t size, last;
 	int num_subslices;
 
-	size = getdatabasesize_slice(nbm, nbk, nwm, nwk);
-	if (size > MAX_SUBSLICE_INDICES) {
-		num_subslices = (int)(size / (int64_t)MAX_SUBSLICE_INDICES);
-		last = size - (int64_t)num_subslices * (int64_t)MAX_SUBSLICE_INDICES;
+	size = getdatabasesize_slice(bm, bk, wm, wk);
+	if (size > subslice_size) {
+		num_subslices = (int)(size / (int64_t)subslice_size);
+		last = size - (int64_t)num_subslices * (int64_t)subslice_size;
 		if (last)
 			++num_subslices;
 	}

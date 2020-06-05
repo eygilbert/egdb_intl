@@ -111,7 +111,6 @@ typedef struct {
 	EGDB_TYPE db_type;
 	char db_filepath[MAXFILENAME];	/* Path to database files. */
 	int dbpieces;
-	int kings_1side_8pcs;			/* limit, >= 0 */
 	int cacheblocks;				/* Total number of db cache blocks. */
 	int cache_ht_size;				/* Number of cache hashtable nodes. */
 	CACHE_HASHTABLE_NODE *cache_ht_nodes_base;
@@ -126,11 +125,6 @@ typedef struct {
 	DBFILE *files_autoload_order[MAXFILES];
 	EGDB_STATS lookup_stats;
 } DBHANDLE;
-
-typedef struct {
-	char const *filename;
-	unsigned int crc;
-} DBCRC;
 
 static LOCK_TYPE egdb_lock;
 
@@ -1046,7 +1040,7 @@ static CPRSUBDB *find_first_subdb(DBHANDLE *hdat, DBFILE *file, int blocknumnum)
  * A non-zero return value means some kind of error occurred.  The nature of
  * any errors are communicated through the msg_fn.
  */
-static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int cache_mb, char const *filepath, void (*msg_fn)(char const*))
+static int initdblookup(DBHANDLE *hdat, int pieces, int cache_mb, char const *filepath, void (*msg_fn)(char const*))
 {
 	int i, j, blocknumnum, stat;
 	int t0, t1, t2, t3;
@@ -1074,7 +1068,6 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int kings_1side_8pcs, int ca
 		strcat(hdat->db_filepath, "/");
 
 	hdat->dbpieces = pieces;
-	hdat->kings_1side_8pcs = kings_1side_8pcs;
 	hdat->log_msg_fn = msg_fn;
 	allocated_bytes = 0;
 	autoload_bytes = 0;
@@ -1481,7 +1474,7 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64_t *allocated_bytes)
 		 * do it now.
 		 */
 		if (!dbp->subdb) {
-			dbp->num_subslices = get_num_subslices(bm, bk, wm, wk);
+			dbp->num_subslices = get_num_subslices(bm, bk, wm, wk, MAX_SUBSLICE_INDICES);
 			dbp->subdb = (CPRSUBDB *)std::calloc(dbp->num_subslices, sizeof(CPRSUBDB));
 			*allocated_bytes += dbp->num_subslices * sizeof(CPRSUBDB);
 			if (!dbp->subdb) {
@@ -1701,11 +1694,7 @@ static void build_file_table(DBHANDLE *hdat)
 						if (nbm + nbk == nwm + nwk && nwk > nbk)
 							continue;
 
-						if (hdat->kings_1side_8pcs >= 0 && npieces == 8)
-							if (nbk > hdat->kings_1side_8pcs || nwk > hdat->kings_1side_8pcs)
-								continue;
-						std::sprintf(hdat->dbfiles[count].name, "db%d-%d%d%d%d",
-									npieces, nbm, nbk, nwm, nwk);
+						std::sprintf(hdat->dbfiles[count].name, "db%d-%d%d%d%d", npieces, nbm, nbk, nwm, nwk);
 						hdat->dbfiles[count].pieces = npieces;
 						hdat->dbfiles[count].max_pieces_1side = nbm + nbk;
 						++count;
@@ -1909,16 +1898,14 @@ static int verify_crc(EGDB_DRIVER const *handle, void (*msg_fn)(char const*), in
 }
 
 
-static int get_pieces(EGDB_DRIVER const *handle, int *max_pieces, int *max_pieces_1side, int *max_9pc_kings, int *max_8pc_kings_1side)
+static int get_pieces(EGDB_DRIVER const *handle, int *max_pieces, int *max_pieces_1side)
 {
 	int i;
 	DBFILE *f;
-	DBP *p;
 	DBHANDLE *hdat = (DBHANDLE *)handle->internal_data;
 
 	*max_pieces = 0;
 	*max_pieces_1side = 0;
-	*max_9pc_kings = 0;
 	if (!handle) 
 		return(0);
 
@@ -1933,48 +1920,19 @@ static int get_pieces(EGDB_DRIVER const *handle, int *max_pieces, int *max_piece
 		if (f->max_pieces_1side > *max_pieces_1side)
 			*max_pieces_1side = f->max_pieces_1side;
 	}
-	if (*max_pieces >= 9) {
-		p = hdat->cprsubdatabase + DBOFFSET(4, 1, 4, 0, EGDB_BLACK);
-		if (p && p->subdb != NULL)
-			*max_9pc_kings = 1;
-		p = hdat->cprsubdatabase + DBOFFSET(5, 0, 3, 1, EGDB_BLACK);
-		if (p && p->subdb != NULL)
-			*max_9pc_kings = 1;
-	}
-	if (*max_pieces >= 8) {
-		p = hdat->cprsubdatabase + DBOFFSET(0, 5, 3, 0, EGDB_BLACK);
-		if (p && p->subdb != NULL)
-			*max_8pc_kings_1side = 5;
-		else {
-			p = hdat->cprsubdatabase + DBOFFSET(0, 4, 4, 0, EGDB_BLACK);
-			if (p && p->subdb != NULL)
-				*max_8pc_kings_1side = 4;
-			else {
-				p = hdat->cprsubdatabase + DBOFFSET(1, 3, 4, 0, EGDB_BLACK);
-				if (p && p->subdb != NULL)
-					*max_8pc_kings_1side = 3;
-				else {
-					p = hdat->cprsubdatabase + DBOFFSET(2, 2, 4, 0, EGDB_BLACK);
-					if (p && p->subdb != NULL)
-						*max_8pc_kings_1side = 2;
-					else {
-						p = hdat->cprsubdatabase + DBOFFSET(3, 1, 4, 0, EGDB_BLACK);
-						if (p && p->subdb != NULL)
-							*max_8pc_kings_1side = 1;
-						else
-							*max_8pc_kings_1side = 0;
-					}
-				}
-			}
-		}
-	}
 	return(0);
+}
+
+
+static EGDB_TYPE get_type(EGDB_DRIVER const *handle)
+{
+	DBHANDLE *hdat = (DBHANDLE *)handle->internal_data;
+	return(hdat->db_type);
 }
 
 }	// namespace detail
 
-EGDB_DRIVER *egdb_open_wld_tun_v1(int pieces, int kings_1side_8pcs,
-				int cache_mb, char const *directory, void (*msg_fn)(char const*), EGDB_TYPE db_type)
+EGDB_DRIVER *egdb_open_wld_tun_v1(int pieces, int cache_mb, char const *directory, void (*msg_fn)(char const*), EGDB_TYPE db_type)
 {
 	int status;
 	EGDB_DRIVER *handle;
@@ -1991,7 +1949,7 @@ EGDB_DRIVER *egdb_open_wld_tun_v1(int pieces, int kings_1side_8pcs,
 		return(0);
 	}
 	((DBHANDLE *)(handle->internal_data))->db_type = db_type;
-	status = initdblookup((DBHANDLE *)handle->internal_data, pieces, kings_1side_8pcs, cache_mb, directory, msg_fn);
+	status = initdblookup((DBHANDLE *)handle->internal_data, pieces, cache_mb, directory, msg_fn);
 	if (status) {
 		egdb_close(handle);
 		return(0);
@@ -2004,6 +1962,7 @@ EGDB_DRIVER *egdb_open_wld_tun_v1(int pieces, int kings_1side_8pcs,
 	handle->verify = detail::verify_crc;
 	handle->close = detail::egdb_close;
 	handle->get_pieces = detail::get_pieces;
+	handle->get_type = detail::get_type;
 	return(handle);
 }
 

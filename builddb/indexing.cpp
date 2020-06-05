@@ -4,6 +4,7 @@
 #include "engine/bitcount.h"
 #include "engine/board.h"
 #include "engine/bool.h"
+#include "engine/project.h"
 #include <algorithm>
 #include <stdint.h>
 #include <cstdio>
@@ -11,7 +12,10 @@
 
 namespace egdb_interface {
 
-BITBOARD free_square_bitmask_fwd(int logical_square, BITBOARD occupied)
+static bool did_build_man_index_base;
+
+
+BITBOARD free_square_bitboard_fwd(int logical_square, BITBOARD occupied)
 {
 	int skipcount;
 	BITBOARD bitboard, behind, empty_ahead;
@@ -31,7 +35,7 @@ BITBOARD free_square_bitmask_fwd(int logical_square, BITBOARD occupied)
 }
 
 
-BITBOARD free_square_bitmask_rev(int logical_square, BITBOARD occupied)
+BITBOARD free_square_bitboard_rev(int logical_square, BITBOARD occupied)
 {
 	int skipcount;
 	BITBOARD bitboard, ahead, behind, empty_ahead;
@@ -52,33 +56,7 @@ BITBOARD free_square_bitmask_rev(int logical_square, BITBOARD occupied)
 }
 
 
-BITBOARD free_square_bitmask(int logical_square, BITBOARD occupied)
-{
-	int skipcount;
-	BITBOARD bitboard, mask;
-
-	occupied |= ~ALL_SQUARES;		/* Add ghost squares. */
-	bitboard = (BITBOARD)1 << logical_square;
-	mask = bitboard - 1;
-	skipcount = bitcount64(mask & occupied);
-
-	/* Skip past occupied squares. */
-	while (bitboard & occupied)
-		bitboard <<= 1;
-
-	while (skipcount) {
-		--skipcount;
-		bitboard <<= 1;
-
-		/* Skip past occupied squares. */
-		while (bitboard & occupied)
-			bitboard <<= 1;
-	}
-	return(bitboard);
-}
-
-
-BITBOARD place_pieces_fwd_no_interferences(unsigned int index, int num_squares, int first_square, int num_pieces)
+BITBOARD index2bitboard_fwd(unsigned int index, int num_squares, int first_square, int num_pieces)
 {
 	int piece, logical_square;
 	BITBOARD bitboard;
@@ -107,7 +85,7 @@ BITBOARD index2bitboard_fwd(unsigned int index, int num_squares, int num_pieces,
 		while (choose(logical_square, piece) > index)
 			logical_square--;
 		index -= choose(logical_square, piece);
-		bitboard |= free_square_bitmask_fwd(logical_square, occupied);
+		bitboard |= free_square_bitboard_fwd(logical_square, occupied);
 	}
 	return(bitboard);
 }
@@ -125,7 +103,7 @@ BITBOARD index2bitboard_rev(unsigned int index, int num_squares, int num_pieces,
 		while (choose(logical_square, piece) > index)
 			logical_square--;
 		index -= choose(logical_square, piece);
-		bitboard |= free_square_bitmask_rev(logical_square, occupied);
+		bitboard |= free_square_bitboard_rev(logical_square, occupied);
 	}
 	return(bitboard);
 }
@@ -152,6 +130,7 @@ int64_t position_to_index_slice(EGDB_POSITION const *p, int bm, int bk, int wm, 
 	/* Indices in this subdb are assigned with index 0 having the highest
 	 * number of black men on rank0, ...
 	 */
+	assert(did_build_man_index_base);
 	checker_index_base = man_index_base[bm][wm][bm0];
 
 	/* Set the index for the black men that are not on rank0. */
@@ -195,6 +174,66 @@ int64_t position_to_index_slice(EGDB_POSITION const *p, int bm, int bk, int wm, 
 }
 
 
+int64_t mirror_position_to_index_slice(EGDB_POSITION const *p, int bm, int bk, int wm, int wk)
+{
+	BITBOARD wm0_mask;
+	BITBOARD bmmask, bkmask, wmmask, wkmask;
+	int wm0;
+	uint32_t bmindex, bkindex, wmindex, wkindex, wm0index;
+	uint32_t wmrange, wm0range, bkrange, wkrange;
+	int64_t index64;
+	int64_t checker_index_base, checker_index;
+
+	wmmask = p->white & ~p->king;
+	wm0_mask = wmmask & ROW9;
+	wm0 = bitcount64(wm0_mask);
+
+	/* Indices in this subdb are assigned with index 0 having the highest
+	 * number of white men on rank9, ...
+	 */
+	checker_index_base = man_index_base[wm][bm][wm0];
+
+	/* Set the index for the white men that are not on rank9. */
+	wmindex = index_pieces_1_type_reverse(wmmask ^ wm0_mask, ROW9);
+
+	/* Set the index for the white men that are on rank9. */
+	wm0index = index_pieces_1_type_reverse(wm0_mask, 0);
+
+	/* Set the index for the black men,
+	 * accounting for any interferences from the white men.
+	 */
+	bmmask = p->black & ~p->king;
+	bmindex = index_pieces_1_type(bmmask, wmmask);
+
+	/* Set the index for the white kings, accounting for any interferences
+	 * from the black men and white men.
+	 */
+	wkmask = p->white & p->king;
+	wkindex = index_pieces_1_type_reverse(wkmask, bmmask | wmmask);
+
+	/* Set the index for the black kings, accounting for any interferences
+	 * from the black men, white men, and white kings.
+	 */
+	bkmask = p->black & p->king;
+	bkindex = index_pieces_1_type_reverse(bkmask, bmmask | wmmask | wkmask);
+
+	wmrange = choose(MAXSQUARE - 2 * ROWSIZE, wm - wm0);
+	wm0range = choose(ROWSIZE, wm0);
+	wkrange = choose(MAXSQUARE - bm - wm, wk);
+	bkrange = choose(MAXSQUARE - bm - wm - wk, bk);
+
+	/* Calculate the checker (man) index. */
+	checker_index = wm0index + checker_index_base +
+					wmindex * wm0range +
+					(int64_t)bmindex * (int64_t)wm0range * (int64_t)wmrange;
+
+	index64 = (int64_t)bkindex + 
+				(int64_t)wkindex * (int64_t)bkrange +
+				(int64_t)(checker_index) * (int64_t)wkrange * (int64_t)bkrange;
+	return(index64);
+}
+
+
 void indextoposition_slice(int64_t index, EGDB_POSITION *p, int bm, int bk, int wm, int wk)
 {
 	int bm0;
@@ -220,6 +259,7 @@ void indextoposition_slice(int64_t index, EGDB_POSITION *p, int bm, int bk, int 
 	index -= checker_index * multiplier;
 
 	/* Find bm0. */
+	assert(did_build_man_index_base);
 	for (bm0 = (std::min)(bm, ROWSIZE); bm0 > 0; --bm0)
 		if (man_index_base[bm][wm][bm0 - 1] > checker_index)
 			break;
@@ -247,10 +287,10 @@ void indextoposition_slice(int64_t index, EGDB_POSITION *p, int bm, int bk, int 
 	wkindex = (uint32_t)(index);
 
 	/* Place black men, except those on rank0. */
-	bmmask = place_pieces_fwd_no_interferences(bmindex, MAXSQUARE - 2 * ROWSIZE, ROWSIZE, bm - bm0);
+	bmmask = index2bitboard_fwd(bmindex, MAXSQUARE - 2 * ROWSIZE, ROWSIZE, bm - bm0);
 
 	/* Place black men on rank0. */
-	bmmask |= place_pieces_fwd_no_interferences(bm0index, ROWSIZE, 0, bm0);
+	bmmask |= index2bitboard_fwd(bm0index, ROWSIZE, 0, bm0);
 
 	/* Place white men. */
 	wmmask = index2bitboard_rev(wmindex, MAXSQUARE - ROWSIZE, wm, bmmask);
@@ -287,6 +327,7 @@ void build_man_index_base()
 			}
 		}
 	}
+	did_build_man_index_base = true;
 }
 
 
@@ -300,8 +341,8 @@ int64_t getdatabasesize_slice(int bm, int bk, int wm, int wk)
 	int black_men_backrank;
 
 	/* Compute the number of men configurations first.  Place the black men, summing separately
-	* the contributions of 0, 1, 2, 3, 4, or 5 black men on the backrank.
-	*/
+	 * the contributions of 0, 1, 2, 3, 4, or 5 black men on the backrank.
+	 */
 	size = 0;
 	for (black_men_backrank = 0; black_men_backrank <= (std::min)(bm, ROWSIZE); ++black_men_backrank) {
 
@@ -323,6 +364,30 @@ int64_t getdatabasesize_slice(int bm, int bk, int wm, int wk)
 
 	return(size);
 }
+
+
+/*
+ * Return the size with gaps (ignore interferences between men) of a major slice.
+ */
+int64_t getslicesize_gaps(int bm, int bk, int wm, int wk)
+{
+	int64_t size;
+
+	/* Black men. */
+	size = choose(NUMSQUARES - ROWSIZE, bm);
+
+	/* White men. */
+	size *= choose(NUMSQUARES - ROWSIZE, wm);
+
+	/* Add the black kings. */
+	size *= choose(NUMSQUARES - bm - wm, bk);
+
+	/* Add the white kings. */
+	size *= choose(NUMSQUARES - bm - wm - bk, wk);
+
+	return(size);
+}
+
 
 }	// namespace egdb_interface {
 

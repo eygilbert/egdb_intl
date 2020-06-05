@@ -13,6 +13,12 @@
     <Filter Include="builddb">
       <UniqueIdentifier>{9a34bbe1-c505-4459-9c2a-95c2602b462b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Huffman">
+      <UniqueIdentifier>{8480aa92-5bae-45c3-bdce-544f7823e69d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Re-pair">
+      <UniqueIdentifier>{1f936cd1-2d25-4e6d-9ccd-ce1058dbda96}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -45,9 +51,6 @@
     <ClCompile Include="..\egdb\egdb_mtc_runlen.cpp">
       <Filter>egdb</Filter>
     </ClCompile>
-    <ClCompile Include="..\egdb\egdb_wld_huffman.cpp">
-      <Filter>egdb</Filter>
-    </ClCompile>
     <ClCompile Include="..\egdb\egdb_wld_runlen.cpp">
       <Filter>egdb</Filter>
     </ClCompile>
@@ -69,10 +72,28 @@
     <ClCompile Include="..\egdb\egdb_open.cpp">
       <Filter>egdb</Filter>
     </ClCompile>
-    <ClCompile Include="..\egdb\egdb_search.cpp">
+    <ClCompile Include="..\egdb\crc.cpp">
       <Filter>egdb</Filter>
     </ClCompile>
-    <ClCompile Include="..\egdb\crc.cpp">
+    <ClCompile Include="..\Egdb\egdb_dtw.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Huffman\bitbuf.cpp">
+      <Filter>Huffman</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Huffman\huffman.cpp">
+      <Filter>Huffman</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Re-pair\utils.cpp">
+      <Filter>Re-pair</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Egdb\dtw_search.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Egdb\wld_search.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Egdb\mtc_probe.cpp">
       <Filter>egdb</Filter>
     </ClCompile>
   </ItemGroup>
@@ -119,9 +140,6 @@
     <ClInclude Include="..\egdb\egdb_intl.h">
       <Filter>egdb</Filter>
     </ClInclude>
-    <ClInclude Include="..\egdb\egdb_search.h">
-      <Filter>egdb</Filter>
-    </ClInclude>
     <ClInclude Include="..\egdb\platform.h">
       <Filter>egdb</Filter>
     </ClInclude>
@@ -134,14 +152,29 @@
     <ClInclude Include="..\egdb\crc.h">
       <Filter>egdb</Filter>
     </ClInclude>
+    <ClInclude Include="..\Huffman\bitbuf.h">
+      <Filter>Huffman</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Huffman\huffman.h">
+      <Filter>Huffman</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Re-pair\repair.h">
+      <Filter>Re-pair</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Egdb\dtw_search.h">
+      <Filter>egdb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Egdb\wld_search.h">
+      <Filter>egdb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Egdb\mtc_probe.h">
+      <Filter>egdb</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\Readme.md" />
     <Text Include="10x10 HighMtc.txt">
       <Filter>egdb_test</Filter>
-    </Text>
-    <Text Include="..\egdb\huffman_decompress.txt">
-      <Filter>egdb</Filter>
     </Text>
     <Text Include="..\egdb\tunstall_decompress_v1.txt">
       <Filter>egdb</Filter>
