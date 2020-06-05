@@ -1,6 +1,7 @@
 #include "../egdb_intl_dll.h"
 #include "egdb/distance.h"
 #include "egdb/egdb_intl.h"
+#include "egdb/platform.h"
 #include "egdb/slice.h"
 #include "engine/bitcount.h"
 #include "engine/fen.h"
@@ -26,7 +27,11 @@ void test_names()
 	HMODULE handle;
 	void *fnptr;
 
+#ifdef ENVIRONMENT64
+	handle = LoadLibrary("egdb_intl64");
+#else
 	handle = LoadLibrary("egdb_intl32");
+#endif
 	fnptr = GetProcAddress(handle, "egdb_identify");
 	if (fnptr == nullptr) {
 		printf("GetProcAddress failed in test_names.\n");

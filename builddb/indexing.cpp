@@ -4,12 +4,16 @@
 #include "engine/bitcount.h"
 #include "engine/board.h"
 #include "engine/bool.h"
+#include "engine/project.h"
 #include <algorithm>
 #include <stdint.h>
 #include <cstdio>
 #include <cstdlib>
 
 namespace egdb_interface {
+
+static bool did_build_man_index_base;
+
 
 BITBOARD free_square_bitboard_fwd(int logical_square, BITBOARD occupied)
 {
@@ -126,6 +130,7 @@ int64_t position_to_index_slice(EGDB_POSITION const *p, int bm, int bk, int wm, 
 	/* Indices in this subdb are assigned with index 0 having the highest
 	 * number of black men on rank0, ...
 	 */
+	assert(did_build_man_index_base);
 	checker_index_base = man_index_base[bm][wm][bm0];
 
 	/* Set the index for the black men that are not on rank0. */
@@ -169,6 +174,66 @@ int64_t position_to_index_slice(EGDB_POSITION const *p, int bm, int bk, int wm, 
 }
 
 
+int64_t mirror_position_to_index_slice(EGDB_POSITION const *p, int bm, int bk, int wm, int wk)
+{
+	BITBOARD wm0_mask;
+	BITBOARD bmmask, bkmask, wmmask, wkmask;
+	int wm0;
+	uint32_t bmindex, bkindex, wmindex, wkindex, wm0index;
+	uint32_t wmrange, wm0range, bkrange, wkrange;
+	int64_t index64;
+	int64_t checker_index_base, checker_index;
+
+	wmmask = p->white & ~p->king;
+	wm0_mask = wmmask & ROW9;
+	wm0 = bitcount64(wm0_mask);
+
+	/* Indices in this subdb are assigned with index 0 having the highest
+	 * number of white men on rank9, ...
+	 */
+	checker_index_base = man_index_base[wm][bm][wm0];
+
+	/* Set the index for the white men that are not on rank9. */
+	wmindex = index_pieces_1_type_reverse(wmmask ^ wm0_mask, ROW9);
+
+	/* Set the index for the white men that are on rank9. */
+	wm0index = index_pieces_1_type_reverse(wm0_mask, 0);
+
+	/* Set the index for the black men,
+	 * accounting for any interferences from the white men.
+	 */
+	bmmask = p->black & ~p->king;
+	bmindex = index_pieces_1_type(bmmask, wmmask);
+
+	/* Set the index for the white kings, accounting for any interferences
+	 * from the black men and white men.
+	 */
+	wkmask = p->white & p->king;
+	wkindex = index_pieces_1_type_reverse(wkmask, bmmask | wmmask);
+
+	/* Set the index for the black kings, accounting for any interferences
+	 * from the black men, white men, and white kings.
+	 */
+	bkmask = p->black & p->king;
+	bkindex = index_pieces_1_type_reverse(bkmask, bmmask | wmmask | wkmask);
+
+	wmrange = choose(MAXSQUARE - 2 * ROWSIZE, wm - wm0);
+	wm0range = choose(ROWSIZE, wm0);
+	wkrange = choose(MAXSQUARE - bm - wm, wk);
+	bkrange = choose(MAXSQUARE - bm - wm - wk, bk);
+
+	/* Calculate the checker (man) index. */
+	checker_index = wm0index + checker_index_base +
+					wmindex * wm0range +
+					(int64_t)bmindex * (int64_t)wm0range * (int64_t)wmrange;
+
+	index64 = (int64_t)bkindex + 
+				(int64_t)wkindex * (int64_t)bkrange +
+				(int64_t)(checker_index) * (int64_t)wkrange * (int64_t)bkrange;
+	return(index64);
+}
+
+
 void indextoposition_slice(int64_t index, EGDB_POSITION *p, int bm, int bk, int wm, int wk)
 {
 	int bm0;
@@ -194,6 +259,7 @@ void indextoposition_slice(int64_t index, EGDB_POSITION *p, int bm, int bk, int 
 	index -= checker_index * multiplier;
 
 	/* Find bm0. */
+	assert(did_build_man_index_base);
 	for (bm0 = (std::min)(bm, ROWSIZE); bm0 > 0; --bm0)
 		if (man_index_base[bm][wm][bm0 - 1] > checker_index)
 			break;
@@ -261,6 +327,7 @@ void build_man_index_base()
 			}
 		}
 	}
+	did_build_man_index_base = true;
 }
 
 

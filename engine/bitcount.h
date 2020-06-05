@@ -4,6 +4,7 @@
 
 namespace egdb_interface {
 
+extern bool did_init_bitcount;
 extern bool cpu_has_popcount;
 extern char bitcount_table[0x10000];
 
@@ -24,6 +25,7 @@ inline int bitcount32_emul(uint32_t n)
 
 inline int bitcount16(uint16_t n)
 {
+	assert(did_init_bitcount);
 #ifdef ENVIRONMENT64
 	if (cpu_has_popcount)
 		return(bit_pop_count(n));
@@ -35,6 +37,7 @@ inline int bitcount16(uint16_t n)
 
 inline int bitcount(uint32_t n)
 {
+	assert(did_init_bitcount);
 #ifdef ENVIRONMENT64
 	if (cpu_has_popcount)
 		return(bit_pop_count(n));
@@ -48,6 +51,7 @@ inline int bitcount(uint32_t n)
 
 inline int bitcount64(uint64_t n)
 {
+	assert(did_init_bitcount);
 	if (cpu_has_popcount)
 		return((int)bit_pop_count64(n));
 	else
@@ -58,6 +62,7 @@ inline int bitcount64(uint64_t n)
 
 inline int bitcount64(uint64_t n)
 {
+	assert(did_init_bitcount);
 	return(bitcount32_emul((uint32_t)(n & 0xffffffff)) + bitcount32_emul((uint32_t)(n >> 32) & 0xffffffff));
 }
 
