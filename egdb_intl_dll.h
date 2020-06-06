@@ -31,5 +31,5 @@ extern "C" void __stdcall indextoposition(int64_t index, egdb_interface::BOARD *
 extern "C" int64_t __stdcall positiontoindex(egdb_interface::BOARD *pos, int nbm, int nbk, int nwm, int nwk);
 extern "C" int16_t __stdcall is_sharp_win(int handle, egdb_interface::BOARD *board, int color, egdb_interface::BOARD *sharp_move_pos);
 extern "C" int __stdcall move_string(egdb_interface::BOARD *last_board, egdb_interface::BOARD *new_board, int color, char *move);
-extern "C" int __stdcall positiontofen(egdb_interface::BOARD *last_board, int color, char *move);
+extern "C" int __stdcall positiontofen(egdb_interface::BOARD *board, int color, char *fen);
 extern "C" int __stdcall fentoposition(char *fen, egdb_interface::BOARD *pos, int *color);
