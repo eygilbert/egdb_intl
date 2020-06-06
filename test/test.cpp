@@ -404,7 +404,7 @@ int main(int argc, char *argv[])
 	int result, egdb_type, max_pieces, handle;
 
 	init_bitcount();
-	void test_names();
+	test_names();
 	mtc_test();
 
 	/* Test egdb_identify(). */
