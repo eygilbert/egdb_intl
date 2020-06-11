@@ -1,4 +1,5 @@
 #include "../egdb_intl_dll.h"
+#include "build_dll/posconv.h"
 #include "egdb/distance.h"
 #include "egdb/egdb_intl.h"
 #include "egdb/platform.h"
@@ -13,10 +14,12 @@
 #include <vector>
 
 using namespace egdb_interface;
+using namespace egdb_dll;
 
 const char *wld_path = "c:/db_intl/wld_v2";
 const char *dtw_path = "c:/db_intl/dtw";
 const char *mtc_path = "c:/db_intl/mtc";
+
 
 
 /*
@@ -144,10 +147,11 @@ void verify_pos(int dbhandle, BOARD *board, int color)
 	}
 
 	/* Test dll function egdb_lookup() if possible. */
-	if (!is_capture(board, color)) {
+	Position dllpos = board_to_dllpos(*board);
+	if (!is_capture(&dllpos, color)) {
 		int npieces = bitcount64(board->black | board->white);
-		if (npieces < 7 || !is_capture(board, OTHER_COLOR(color))) {
-			int value = egdb_lookup(dbhandle, board, color, 0);
+		if (npieces < 7 || !is_capture(&dllpos, OTHER_COLOR(color))) {
+			int value = egdb_lookup(dbhandle, &dllpos, color, 0);
 			if (value > 0) {
 				if (value != pval) {
 					printf("%s: egdb_lookup returned value %d, expected %d\n", pfen, value, pval);
@@ -197,7 +201,7 @@ BOARD get_next_pos(BOARD &pos, int color, MOVELIST &movelist, const char *movest
 void dtw_test(Slice &slice, int wld_handle, int dtw_handle)
 {
 	int64_t size, index, incr, max_lookups;
-	int color, status, return_size;
+	int color, status;
 	BOARD pos;
 	std::string fenstr;
 	char moves[MAXMOVES][20];
@@ -216,19 +220,21 @@ void dtw_test(Slice &slice, int wld_handle, int dtw_handle)
 		int plies;
 		int value;
 		int64_t sidx;
+		Position dllpos;
 
 		for (sidx = index; sidx < size; ++sidx) {
-			indextoposition(sidx, &pos, slice.nbm(), slice.nbk(), slice.nwm(), slice.nwk());
-			value = egdb_lookup_with_search(wld_handle, &pos, color);
+			egdb_dll::indextoposition(sidx, &dllpos, slice.nbm(), slice.nbk(), slice.nwm(), slice.nwk());
+			value = egdb_lookup_with_search(wld_handle, &dllpos, color);
 			if (value == EGDB_WIN || value == EGDB_LOSS)
 				break;
 		}
 		if (sidx >= size)
 			break;
 
+		pos = dllpos_to_board(dllpos);
 		print_fen(&pos, color, fenstr);
-		status = egdb_lookup_distance(wld_handle, dtw_handle, fenstr.c_str(), &return_size, distances, moves);
-		if (status < 0 || return_size == 0) {
+		status = egdb_lookup_distance(wld_handle, dtw_handle, fenstr.c_str(), distances, moves);
+		if (status <= 0) {
 			printf("dtw lookup timed out, status %d (not a bug)\n", status);
 			continue;
 		}
@@ -247,8 +253,8 @@ void dtw_test(Slice &slice, int wld_handle, int dtw_handle)
 			next = get_next_pos(pos, color, movelist, moves[0]);
 			color = OTHER_COLOR(color);
 			print_fen(&next, color, fenstr);
-			status = egdb_lookup_distance(wld_handle, dtw_handle, fenstr.c_str(), &return_size, distances, moves);
-			if (status < 0 || return_size == 0) {
+			status = egdb_lookup_distance(wld_handle, dtw_handle, fenstr.c_str(), distances, moves);
+			if (status <= 0) {
 				printf("dtw lookup timed out, status %d (not a bug)\n", status);
 				break;
 			}
@@ -302,7 +308,7 @@ void dtw_test(int wld_handle)
 
 void test_best_mtc_successor(int wld_handle, int mtc_handle, BOARD &pos, int color)
 {
-	int status, return_size;
+	int status;
 	int plies;
 	MOVELIST movelist;
 	int distances[MAXMOVES];
@@ -311,9 +317,9 @@ void test_best_mtc_successor(int wld_handle, int mtc_handle, BOARD &pos, int col
 
 	build_movelist(&pos, color, &movelist);
 	print_fen(&pos, color, fenstr);
-	status = egdb_lookup_distance(wld_handle, mtc_handle, fenstr.c_str(), &return_size, distances, moves);
+	status = egdb_lookup_distance(wld_handle, mtc_handle, fenstr.c_str(), distances, moves);
 
-	if (status < 0 || !return_size) {
+	if (status <= 0) {
 		printf("mtc_probe timed out (not a bug)\n");
 		return;
 	}
@@ -329,8 +335,8 @@ void test_best_mtc_successor(int wld_handle, int mtc_handle, BOARD &pos, int col
 		next = get_next_pos(pos, color, movelist, moves[0]);
 		color = OTHER_COLOR(color);
 		print_fen(&next, color, fenstr);
-		status = egdb_lookup_distance(wld_handle, mtc_handle, fenstr.c_str(), &return_size, distances, moves);
-		if (status < 0 || return_size == 0) {
+		status = egdb_lookup_distance(wld_handle, mtc_handle, fenstr.c_str(), distances, moves);
+		if (status <= 0) {
 			printf("mtc lookup timed out, status %d (not a bug)\n", status);
 			break;
 		}

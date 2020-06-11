@@ -17,6 +17,9 @@
     <ClCompile Include="..\egdb\slice.cpp">
       <Filter>egdb</Filter>
     </ClCompile>
+    <ClCompile Include="..\build_dll\posconv.cpp">
+      <Filter>build_dll</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\egdb_intl_dll.h" />
@@ -47,6 +50,9 @@
     <ClInclude Include="..\egdb\slice.h">
       <Filter>egdb</Filter>
     </ClInclude>
+    <ClInclude Include="..\build_dll\posconv.h">
+      <Filter>build_dll</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="engine">
@@ -54,6 +60,9 @@
     </Filter>
     <Filter Include="egdb">
       <UniqueIdentifier>{6d5b73aa-d156-4d94-8b6d-1f38184612ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="build_dll">
+      <UniqueIdentifier>{1b407fd9-0e49-4eb8-83fc-ac4831370b7a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

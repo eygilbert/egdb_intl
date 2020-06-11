@@ -7,11 +7,12 @@
 #include "egdb/egdb_intl.h"
 #include "egdb/mtc_probe.h"
 #include "egdb/wld_search.h"
+#include "build_dll/posconv.h"
 #include "builddb/indexing.h"
 #include "../egdb_intl_dll.h"
-#include <Windows.h>
 #include <stdio.h>
 
+using namespace egdb_dll;
 using namespace egdb_interface;
 
 typedef struct {
@@ -23,8 +24,9 @@ typedef struct {
 
 DRIVER_INFO drivers[4];
 
-int lookup_dtw(int handle_wld, int handle_dist, BOARD *board, int color, int *return_size, int *distances, char moves[MAXMOVES][20]);
-int lookup_mtc(int handle_wld, int handle_dist, BOARD *board, int color, int *return_size, int *distances, char moves[MAXMOVES][20]);
+int lookup_dtw(int handle_wld, int handle_dist, BOARD *board, int color, int *distances, char moves[maxmoves][20]);
+int lookup_mtc(int handle_wld, int handle_dist, BOARD *board, int color, int *distances, char moves[maxmoves][20]);
+
 
 void msg_fn(char *filename, char const *msg)
 {
@@ -158,19 +160,15 @@ extern "C" int __stdcall egdb_identify(const char *dir, int *egdb_type, int *max
 }
 
 
-extern "C" int __stdcall egdb_lookup(int handle, BOARD *board, int color, int cl)
+extern "C" int __stdcall egdb_lookup(int handle, Position *board, int color, int cl)
 {
 	int result;
-	EGDB_POSITION pos;
 
 	result = check_handle(handle);
 	if (result)
 		return(result);
 
-	pos.black = board->black;
-	pos.white = board->white;
-	pos.king = board->king;
-	result = egdb_lookup(drivers[handle].db.handle, &pos, color, cl);
+	result = egdb_lookup(drivers[handle].db.handle, (EGDB_POSITION *)board, color, cl);
 	return(result);
 }
 
@@ -214,7 +212,7 @@ extern "C" int __stdcall egdb_lookup_fen_with_search(int handle, char *fen)
 }
 
 
-extern "C" int __stdcall egdb_lookup_with_search(int handle, BOARD *board, int color)
+extern "C" int __stdcall egdb_lookup_with_search(int handle, Position *pos, int color)
 {
 	int result;
 
@@ -225,18 +223,18 @@ extern "C" int __stdcall egdb_lookup_with_search(int handle, BOARD *board, int c
 	if (!is_wld(drivers[handle].db.handle))
 		return(EGDB_NOT_WLD_TYPE);
 
-	result = drivers[handle].wld.lookup_with_search(board, color, false);
+	BOARD board = dllpos_to_board(*pos);
+	result = drivers[handle].wld.lookup_with_search(&board, color, false);
 	return(result);
 }
 
 
 extern "C" int __stdcall egdb_lookup_distance(int handle_wld, int handle_dist, const char *fen, 
-											int *return_size, int distances[MAXMOVES], char moves[MAXMOVES][20])
+											int distances[maxmoves], char moves[maxmoves][20])
 {
 	int color, result, npieces;
 	BOARD board;
 
-	*return_size = 0;
 	result = check_handle(handle_wld);
 	if (result)
 		return(result);
@@ -257,11 +255,11 @@ extern "C" int __stdcall egdb_lookup_distance(int handle_wld, int handle_dist, c
 		return(EGDB_LOOKUP_NOT_POSSIBLE);
 
 	if (is_dtw(drivers[handle_dist].db.handle)) {
-		return(lookup_dtw(handle_wld, handle_dist, &board, color, return_size, distances, moves));
+		return(lookup_dtw(handle_wld, handle_dist, &board, color, distances, moves));
 		
 	}
 	else if (is_mtc(drivers[handle_dist].db.handle)) {
-		return(lookup_mtc(handle_wld, handle_dist, &board, color, return_size, distances, moves));
+		return(lookup_mtc(handle_wld, handle_dist, &board, color, distances, moves));
 	}
 	else
 		return(EGDB_NOT_DISTANCE_TYPE);
@@ -269,22 +267,24 @@ extern "C" int __stdcall egdb_lookup_distance(int handle_wld, int handle_dist, c
 }
 
 
-extern "C" int __stdcall get_movelist(BOARD *board, int color, BOARD *ml)
+extern "C" int __stdcall get_movelist(Position *pos, int color, Position *ml)
 {
-	int len;
+	BOARD board = dllpos_to_board(*pos);
 	MOVELIST movelist;
 
-	len = build_movelist(board, color, &movelist);
-	memcpy(ml, movelist.board, len * sizeof(BOARD));
-	return(len);
+	build_movelist(&board, color, &movelist);
+	for (int i = 0; i < movelist.count; ++i)
+		ml[i] = board_to_dllpos(movelist.board[i]);
+	return(movelist.count);
 }
 
 
-extern "C" int16_t __stdcall is_capture(BOARD *board, int color)
+extern "C" int16_t __stdcall is_capture(Position *pos, int color)
 {
 	int value;
+	BOARD board = dllpos_to_board(*pos);
 
-	value = canjump(board, color);
+	value = canjump(&board, color);
 	if (value)
 		return(-1);
 	else
@@ -301,21 +301,22 @@ extern "C" int64_t __stdcall getdatabasesize_slice(int nbm, int nbk, int nwm, in
 }
 
 
-extern "C" void __stdcall indextoposition(int64_t index, BOARD *pos, int nbm, int nbk, int nwm, int nwk)
+extern "C" void __stdcall indextoposition(int64_t index, Position *pos, int nbm, int nbk, int nwm, int nwk)
 {
 	indextoposition_slice(index, (EGDB_POSITION *)pos, nbm, nbk, nwm, nwk);
 }
 
 
-extern "C" int64_t __stdcall positiontoindex(BOARD *pos, int nbm, int nbk, int nwm, int nwk)
+extern "C" int64_t __stdcall positiontoindex(Position *pos, int nbm, int nbk, int nwm, int nwk)
 {
 	return(position_to_index_slice((EGDB_POSITION *)pos, nbm, nbk, nwm, nwk));
 }
 
 
-extern "C" int16_t __stdcall is_sharp_win(int handle, BOARD *board, int color, BOARD *sharp_move_pos)
+extern "C" int16_t __stdcall is_sharp_win(int handle, Position *pos, int color, Position *sharp_move_pos)
 {
 	int i, len, result, wincount;
+	BOARD board;
 	MOVELIST movelist;
 
 	result = check_handle(handle);
@@ -325,9 +326,10 @@ extern "C" int16_t __stdcall is_sharp_win(int handle, BOARD *board, int color, B
 	if (!is_wld(drivers[handle].db.handle))
 		return(EGDB_NOT_WLD_TYPE);
 
-	result = drivers[handle].wld.lookup_with_search(board, color, false);
+	board = dllpos_to_board(*pos);
+	result = drivers[handle].wld.lookup_with_search(&board, color, false);
 	if (result == EGDB_WIN) {
-		len = build_movelist(board, color, &movelist);
+		len = build_movelist(&board, color, &movelist);
 		for (i = 0, wincount = 0; i < len; ++i) {
 			result = drivers[handle].wld.lookup_with_search(movelist.board + i, OTHER_COLOR(color), false);
 			if (result == EGDB_LOSS) {
@@ -335,7 +337,7 @@ extern "C" int16_t __stdcall is_sharp_win(int handle, BOARD *board, int color, B
 				if (wincount > 1)
 					return(0);
 
-				*sharp_move_pos = movelist.board[i];
+				*sharp_move_pos = board_to_dllpos(movelist.board[i]);
 			}
 		}
 		if (wincount == 1)
@@ -345,23 +347,30 @@ extern "C" int16_t __stdcall is_sharp_win(int handle, BOARD *board, int color, B
 }
 
 
-extern "C" int __stdcall move_string(BOARD *last_board, BOARD *new_board, int color, char *move)
+extern "C" int __stdcall move_string(Position *last_pos, Position *new_pos, int color, char *move)
 {
-	return(print_move(last_board, new_board, color, move));
+	BOARD lastb, newb;
+
+	lastb = dllpos_to_board(*last_pos);
+	newb = dllpos_to_board(*new_pos);
+
+	return(print_move(&lastb, &newb, color, move));
 }
 
 
-extern "C" int __stdcall positiontofen(BOARD *board, int color, char *fen)
+extern "C" int __stdcall positiontofen(Position *pos, int color, char *fen)
 {
-	return(print_fen(board, color, fen));
+	BOARD board = dllpos_to_board(*pos);
+	return(print_fen(&board, color, fen));
 }
 
 
-extern "C" int __stdcall fentoposition(char *fen, BOARD *pos, int *color)
+extern "C" int __stdcall fentoposition(char *fen, Position *pos, int *color)
 {
 	int status;
+	BOARD board = dllpos_to_board(*pos);
 
-	status = parse_fen(fen, pos, color);
+	status = parse_fen(fen, &board, color);
 	if (status)
 		return(EGDB_FEN_ERROR);
 
@@ -369,7 +378,7 @@ extern "C" int __stdcall fentoposition(char *fen, BOARD *pos, int *color)
 }
 
 
-int lookup_dtw(int handle_wld, int handle_dist, BOARD *board, int color, int *return_size, int *distances, char moves[MAXMOVES][20])
+int lookup_dtw(int handle_wld, int handle_dist, BOARD *board, int color, int *distances, char moves[MAXMOVES][20])
 {
 	int wld_value, status;
 	dtw_search dtw;
@@ -392,8 +401,7 @@ int lookup_dtw(int handle_wld, int handle_dist, BOARD *board, int color, int *re
 			distances[i] = dists[i].distance;
 			print_move(board, movelist.board + dists[i].move, color, moves[i]);
 		}
-		*return_size = (int)dists.size();
-		return(0);
+		return((int)dists.size());
 
 	default:
 		return(EGDB_LOOKUP_NOT_POSSIBLE);
@@ -402,7 +410,7 @@ int lookup_dtw(int handle_wld, int handle_dist, BOARD *board, int color, int *re
 }
 
 
-int lookup_mtc(int handle_wld, int handle_dist, BOARD *board, int color, int *return_size, int *distances, char moves[MAXMOVES][20])
+int lookup_mtc(int handle_wld, int handle_dist, BOARD *board, int color, int *distances, char moves[MAXMOVES][20])
 {
 	int wld_value, status;
 	MOVELIST movelist;
@@ -422,7 +430,7 @@ int lookup_mtc(int handle_wld, int handle_dist, BOARD *board, int color, int *re
 			distances[i] = dists[i].distance;
 			print_move(board, movelist.board + dists[i].move, color, moves[i]);
 		}
-		*return_size = (int)dists.size();
+		return((int)dists.size());
 		return(0);
 
 	default:
