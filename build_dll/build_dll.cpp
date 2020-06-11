@@ -158,6 +158,23 @@ extern "C" int __stdcall egdb_identify(const char *dir, int *egdb_type, int *max
 }
 
 
+extern "C" int __stdcall egdb_lookup(int handle, BOARD *board, int color, int cl)
+{
+	int result;
+	EGDB_POSITION pos;
+
+	result = check_handle(handle);
+	if (result)
+		return(result);
+
+	pos.black = board->black;
+	pos.white = board->white;
+	pos.king = board->king;
+	result = egdb_lookup(drivers[handle].db.handle, &pos, color, cl);
+	return(result);
+}
+
+
 extern "C" int __stdcall egdb_lookup_fen(int handle, char *fen, int cl)
 {
 	int color, result;

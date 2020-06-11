@@ -2,6 +2,7 @@ EXPORTS
 	egdb_open
 	egdb_close
 	egdb_identify
+	egdb_lookup
 	egdb_lookup_fen
 	egdb_lookup_fen_with_search
 	egdb_lookup_with_search

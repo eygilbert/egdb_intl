@@ -142,6 +142,25 @@ void verify_pos(int dbhandle, BOARD *board, int color)
 	if (pval != bestval) {
 		printf("%s: value mismatch, parent %d, successors %d\n", pfen, pval, bestval);
 	}
+
+	/* Test dll function egdb_lookup() if possible. */
+	if (!is_capture(board, color)) {
+		int npieces = bitcount64(board->black | board->white);
+		if (npieces < 7 || !is_capture(board, OTHER_COLOR(color))) {
+			int value = egdb_lookup(dbhandle, board, color, 0);
+			if (value > 0) {
+				if (value != pval) {
+					printf("%s: egdb_lookup returned value %d, expected %d\n", pfen, value, pval);
+					exit(1);
+				}
+				value = egdb_lookup_fen(dbhandle, pfen, 0);
+				if (value != pval) {
+					printf("%s: egdb_lookup_fen returned value %d, expected %d\n", pfen, value, pval);
+					exit(1);
+				}
+			}
+		}
+	}
 }
 
 
@@ -399,12 +418,31 @@ void mtc_test()
 }
 
 
+void test_fen()
+{
+	const char *fentbl[] = {
+		"W:W31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50:B1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20",
+		"W:WK36,K37,K48,49,K50:BK1,K2,K3,9,10,11,12"
+	};
+	BOARD board;
+	int color;
+	std::string fenstr;
+
+	for (int i = 0; i < ARRAY_SIZE(fentbl); ++i) {
+		parse_fen(fentbl[i], &board, &color);
+		print_fen(&board, color, fenstr);
+		printf("%s\n", fenstr.c_str());
+	}
+}
+
+
 int main(int argc, char *argv[])
 {
 	int result, egdb_type, max_pieces, handle;
 
 	init_bitcount();
 	test_names();
+	test_fen();
 	mtc_test();
 
 	/* Test egdb_identify(). */
