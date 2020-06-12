@@ -20,6 +20,9 @@
     <ClCompile Include="..\build_dll\posconv.cpp">
       <Filter>build_dll</Filter>
     </ClCompile>
+    <ClCompile Include="..\engine\print_move.cpp">
+      <Filter>engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\egdb_intl_dll.h" />
@@ -52,6 +55,9 @@
     </ClInclude>
     <ClInclude Include="..\build_dll\posconv.h">
       <Filter>build_dll</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\print_move.h">
+      <Filter>engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -145,7 +145,7 @@
       <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeader>
       </PrecompiledHeader>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -170,6 +170,7 @@
     <ClCompile Include="..\engine\board.cpp" />
     <ClCompile Include="..\engine\fen.cpp" />
     <ClCompile Include="..\engine\move.cpp" />
+    <ClCompile Include="..\engine\print_move.cpp" />
     <ClCompile Include="test.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -183,6 +184,7 @@
     <ClInclude Include="..\engine\fen.h" />
     <ClInclude Include="..\engine\move.h" />
     <ClInclude Include="..\engine\move_api.h" />
+    <ClInclude Include="..\engine\print_move.h" />
     <ClInclude Include="..\engine\project.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

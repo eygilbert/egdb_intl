@@ -223,8 +223,7 @@ extern "C" int __stdcall egdb_lookup_with_search(int handle, Position *pos, int 
 	if (!is_wld(drivers[handle].db.handle))
 		return(EGDB_NOT_WLD_TYPE);
 
-	BOARD board = dllpos_to_board(*pos);
-	result = drivers[handle].wld.lookup_with_search(&board, color, false);
+	result = drivers[handle].wld.lookup_with_search((BOARD *)pos, color, false);
 	return(result);
 }
 
@@ -328,11 +327,11 @@ extern "C" int16_t __stdcall is_sharp_win(int handle, Position *pos, int color, 
 
 	board = dllpos_to_board(*pos);
 	result = drivers[handle].wld.lookup_with_search(&board, color, false);
-	if (result == EGDB_WIN) {
+	if (result == egdb_dll::EGDB_WIN) {
 		len = build_movelist(&board, color, &movelist);
 		for (i = 0, wincount = 0; i < len; ++i) {
 			result = drivers[handle].wld.lookup_with_search(movelist.board + i, OTHER_COLOR(color), false);
-			if (result == EGDB_LOSS) {
+			if (result == egdb_dll::EGDB_LOSS) {
 				++wincount;
 				if (wincount > 1)
 					return(0);
@@ -358,7 +357,7 @@ extern "C" int __stdcall move_string(Position *last_pos, Position *new_pos, int 
 }
 
 
-extern "C" int __stdcall positiontofen(Position *pos, int color, char *fen)
+extern "C" int __stdcall positiontofen(Position *pos, int color, char fen[maxfen])
 {
 	BOARD board = dllpos_to_board(*pos);
 	return(print_fen(&board, color, fen));
@@ -368,9 +367,8 @@ extern "C" int __stdcall positiontofen(Position *pos, int color, char *fen)
 extern "C" int __stdcall fentoposition(char *fen, Position *pos, int *color)
 {
 	int status;
-	BOARD board = dllpos_to_board(*pos);
 
-	status = parse_fen(fen, &board, color);
+	status = parse_fen(fen, (BOARD *)pos, color);
 	if (status)
 		return(EGDB_FEN_ERROR);
 
@@ -387,8 +385,8 @@ int lookup_dtw(int handle_wld, int handle_dist, BOARD *board, int color, int *di
 
 	wld_value = drivers[handle_wld].wld.lookup_with_search(board, color, false);
 	switch (wld_value) {
-	case EGDB_WIN:
-	case EGDB_LOSS:
+	case egdb_dll::EGDB_WIN:
+	case egdb_dll::EGDB_LOSS:
 		dtw = dtw_search(drivers[handle_wld].wld, drivers[handle_dist].db.handle);
 		dtw.set_search_timeout(2000);
 		status = dtw.lookup_with_search(board, color, dists);
@@ -418,8 +416,8 @@ int lookup_mtc(int handle_wld, int handle_dist, BOARD *board, int color, int *di
 
 	wld_value = drivers[handle_wld].wld.lookup_with_search(board, color, false);
 	switch (wld_value) {
-	case EGDB_WIN:
-	case EGDB_LOSS:
+	case egdb_dll::EGDB_WIN:
+	case egdb_dll::EGDB_LOSS:
 		build_movelist(board, color, &movelist);
 		status = mtc_probe(drivers[handle_wld].wld, drivers[handle_dist].db.handle, board, color, &movelist, &wld_value, dists);
 		if (status == 0)

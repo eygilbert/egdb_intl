@@ -8,6 +8,7 @@
 #include "engine/fen.h"
 #include "engine/move.h"
 #include "engine/move_api.h"
+#include "engine/print_move.h"
 #include "engine/project.h"
 #include <stdint.h>
 #include <algorithm>
@@ -118,22 +119,27 @@ void verify_pos(int dbhandle, BOARD *board, int color)
 	/* Lookup the parent value. */
 	print_fen(board, color, pfen);
 	pval = egdb_lookup_fen_with_search(dbhandle, pfen);
+	val = egdb_lookup_with_search(dbhandle, (Position *)board, color);
+	if (pval != val) {
+		printf("egdb_lookup_with_search returned %d, expected %d\n", val, pval);
+		exit(1);
+	}
 
 	/* Lookup each successor. */
-	bestval = EGDB_LOSS;
-	for (i = 0; i < movelist.count && bestval != EGDB_WIN; ++i) {
+	bestval = egdb_dll::EGDB_LOSS;
+	for (i = 0; i < movelist.count && bestval != egdb_dll::EGDB_WIN; ++i) {
 		print_fen(movelist.board + i, OTHER_COLOR(color), fen);
 		val = egdb_lookup_fen_with_search(dbhandle, fen);
 		switch (val) {
-		case EGDB_WIN:
+		case egdb_dll::EGDB_WIN:
 			break;
 
-		case EGDB_DRAW:
-			bestval = EGDB_DRAW;
+		case egdb_dll::EGDB_DRAW:
+			bestval = egdb_dll::EGDB_DRAW;
 			break;
 
-		case EGDB_LOSS:
-			bestval = EGDB_WIN;
+		case egdb_dll::EGDB_LOSS:
+			bestval = egdb_dll::EGDB_WIN;
 			break;
 
 		default:
@@ -168,16 +174,41 @@ void verify_pos(int dbhandle, BOARD *board, int color)
 }
 
 
+void test_movelist_and_movestring(BOARD *board, int color)
+{
+	int length;
+	Position dllmovelist[maxmoves];
+	MOVELIST movelist;
+	char movestr[40];
+
+	length = get_movelist((Position *)board, color, dllmovelist);
+	build_movelist(board, color, &movelist);
+	for (int i = 0; i < movelist.count; ++i) {
+		if (memcmp(&movelist.board[i], &dllmovelist[i], sizeof(BOARD)) != 0) {
+			printf("successor positions don't match in test_movelist_and_movestring\n");
+			exit(1);
+		}
+		move_string((Position *)board, &dllmovelist[i], color, movestr);
+		std::string movestring = print_move(board, &movelist.board[i], color);
+		if (strcmp(movestr, movestring.c_str())) {
+			printf("string returnd from dll function move_string() not correct:\n'%s' : '%s'\n", movestr, movestring.c_str());
+			exit(1);
+		}
+	}
+}
+
+
 void test_slice(int dbhandle, int nbm, int nbk, int nwm, int nwk)
 {
 	int i, color;
 	BOARD board;
 
-	printf("testing db%d%d%d%d\n", nbm, nbk, nwm, nwk);
+	printf("Verifying db%d%d%d%d\n", nbm, nbk, nwm, nwk);
 	color = WHITE;
-	for (i = 0; i < 10000; ++i, color = OTHER_COLOR(color)) {
+	for (i = 0; i < 2000; ++i, color = OTHER_COLOR(color)) {
 		get_rand_board(nbm, nbk, nwm, nwk, &board);
 		verify_pos(dbhandle, &board, color);
+		test_movelist_and_movestring(&board, color);
 	}
 }
 
@@ -207,7 +238,7 @@ void dtw_test(Slice &slice, int wld_handle, int dtw_handle)
 	char moves[MAXMOVES][20];
 	int distances[MAXMOVES];
 
-	max_lookups = 30;
+	max_lookups = 20;
 	size = getdatabasesize_slice(slice.nbm(), slice.nbk(), slice.nwm(), slice.nwk());
 	if (max_lookups < 1)
 		incr = 1;
@@ -220,18 +251,21 @@ void dtw_test(Slice &slice, int wld_handle, int dtw_handle)
 		int plies;
 		int value;
 		int64_t sidx;
-		Position dllpos;
 
 		for (sidx = index; sidx < size; ++sidx) {
-			egdb_dll::indextoposition(sidx, &dllpos, slice.nbm(), slice.nbk(), slice.nwm(), slice.nwk());
-			value = egdb_lookup_with_search(wld_handle, &dllpos, color);
-			if (value == EGDB_WIN || value == EGDB_LOSS)
+			egdb_dll::indextoposition(sidx, (Position *)&pos, slice.nbm(), slice.nbk(), slice.nwm(), slice.nwk());
+			int64_t return_index = egdb_dll::positiontoindex((Position *)&pos, slice.nbm(), slice.nbk(), slice.nwm(), slice.nwk());
+			if (return_index != sidx) {
+				printf("Return index %I64d, expected %I64d\n", return_index, sidx);
+				exit(1);
+			}
+			value = egdb_lookup_with_search(wld_handle, (Position *)&pos, color);
+			if (value == egdb_dll::EGDB_WIN || value == egdb_dll::EGDB_LOSS)
 				break;
 		}
 		if (sidx >= size)
 			break;
 
-		pos = dllpos_to_board(dllpos);
 		print_fen(&pos, color, fenstr);
 		status = egdb_lookup_distance(wld_handle, dtw_handle, fenstr.c_str(), distances, moves);
 		if (status <= 0) {
@@ -244,11 +278,31 @@ void dtw_test(Slice &slice, int wld_handle, int dtw_handle)
 
 		plies = distances[0];
 		while (plies > 1) {
+			Position sharp_move_pos;
 			MOVELIST movelist;
 			BOARD next;
 
 			build_movelist(&pos, color, &movelist);
 
+			/* Test is_sharp_win(). */
+			if (status == 1 && (distances[0] & 1)) {
+				if (!is_sharp_win(wld_handle, (Position *)&pos, color, &sharp_move_pos)) {
+					printf("is_sharp_win() doesn't agree with egdb_lookup_distance()\n");
+					exit(1);
+				}
+				next = get_next_pos(pos, color, movelist, moves[0]);
+				if (memcmp(&next, &sharp_move_pos, sizeof(Position))) {
+					printf("sharp_move_pos doesn't agree.\n");
+					exit(1);
+				}
+			}
+			else {
+				if (is_sharp_win(wld_handle, (Position *)&pos, color, &sharp_move_pos)) {
+					printf("is_sharp_win() doesn't agree with egdb_lookup_distance()\n");
+					exit(1);
+				}
+			}
+					
 			/* Lookup dtw of the first best move. */
 			next = get_next_pos(pos, color, movelist, moves[0]);
 			color = OTHER_COLOR(color);
@@ -263,6 +317,7 @@ void dtw_test(Slice &slice, int wld_handle, int dtw_handle)
 				printf("dtw depth error, expected %d, got %d\n", plies - 1, distances[0]);
 				exit(1);
 			}
+
 			--plies;
 			pos = next;
 		}
@@ -426,19 +481,47 @@ void mtc_test()
 
 void test_fen()
 {
-	const char *fentbl[] = {
-		"W:W31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50:B1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20",
-		"W:WK36,K37,K48,49,K50:BK1,K2,K3,9,10,11,12"
-	};
-	BOARD board;
-	int color;
-	std::string fenstr;
+	int i, npieces, nb, nw, nbm, nbk, nwm, nwk;
+	int status, color, return_color;
+	BOARD pos, return_pos;
+	char fenstr[150];
 
-	for (int i = 0; i < ARRAY_SIZE(fentbl); ++i) {
-		parse_fen(fentbl[i], &board, &color);
-		print_fen(&board, color, fenstr);
-		printf("%s\n", fenstr.c_str());
+	printf("FEN test ");
+	for (npieces = 1; npieces <= 40; ++npieces) {
+		printf(".");
+		for (nb = 0; nb <= npieces; ++nb) {
+			nw = npieces - nb;
+			for (nbm = 0; nbm <= nb; ++nbm) {
+				nbk = nb - nbm;
+				for (nwm = 0; nwm <= nw; ++nwm) {
+					nwk = nw - nwm;
+					for (i = 0; i < 50; ++i) {
+						color = (i & 1) ? egdb_dll::EGDB_BLACK : egdb_dll::EGDB_WHITE;
+						get_rand_board(nbm, nbk, nwm, nwk, &pos);
+						status = positiontofen((Position *)&pos, color, fenstr);
+						if (status <= 0) {
+							printf("positiontofen returned %d\n", status);
+							exit(1);
+						}
+						status = fentoposition(fenstr, (Position *)&return_pos, &return_color);
+						if (status != 0) {
+							printf("fentoposition returned %d\n", status);
+							exit(1);
+						}
+						if (color != return_color) {
+							printf("return_color %d, expected %d\n", return_color, color);
+							exit(1);
+						}
+						if (memcmp(&pos, &return_pos, sizeof(BOARD)) != 0) {
+							printf("return_pos != pos\n");
+							exit(1);
+						}
+					}
+				}
+			}
+		}
 	}
+
 }
 
 

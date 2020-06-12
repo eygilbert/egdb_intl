@@ -44,7 +44,7 @@ Returns non-zero if the position defined by `pos` and `color` has exactly one mo
 #### extern "C" int __stdcall move_string(Position *last_pos, Position *new_pos, int color, char *move);
 Given a draughts move that changes the position from `last_pos` to `new_pos`, this function returns the PDN character string representation of the move in `move`.
 #### extern "C" int __stdcall positiontofen(Position *pos, int color, char *fen);
-Converts a draughts position given in bitboard format to FEN character string format.
+Converts a draughts position given in bitboard format to FEN character string format. The return value of the function is the number of characters written to `fen`.
 #### extern "C" int __stdcall fentoposition(char *fen, Position *pos, int *color);
 Converts a draughts position given in FEN character string format to bitboard format.
 ## License
