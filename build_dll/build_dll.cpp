@@ -23,8 +23,8 @@ typedef struct {
 
 DRIVER_INFO drivers[4];
 
-int lookup_dtw(int handle_wld, int handle_dist, BOARD *board, int color, int *distances, char moves[maxmoves][20]);
-int lookup_mtc(int handle_wld, int handle_dist, BOARD *board, int color, int *distances, char moves[maxmoves][20]);
+int lookup_dtw(int handle_wld, int handle_dist, BOARD *board, int color, int *distances, char moves[maxmoves][maxmovelen]);
+int lookup_mtc(int handle_wld, int handle_dist, BOARD *board, int color, int *distances, char moves[maxmoves][maxmovelen]);
 
 
 void msg_fn(char *filename, char const *msg)
@@ -228,7 +228,7 @@ extern "C" int __stdcall egdb_lookup_with_search(int handle, Position *pos, int 
 
 
 extern "C" int __stdcall egdb_lookup_distance(int handle_wld, int handle_dist, const char *fen, 
-											int distances[maxmoves], char moves[maxmoves][20])
+											int distances[maxmoves], char moves[maxmoves][maxmovelen])
 {
 	int color, result, npieces;
 	BOARD board;
@@ -346,7 +346,7 @@ extern "C" int __stdcall move_string(Position *last_pos, Position *new_pos, int 
 }
 
 
-extern "C" int __stdcall positiontofen(Position *pos, int color, char fen[maxfen])
+extern "C" int __stdcall positiontofen(Position *pos, int color, char fen[maxfenlen])
 {
 	return(print_fen((BOARD *)pos, color, fen));
 }
@@ -364,7 +364,7 @@ extern "C" int __stdcall fentoposition(char *fen, Position *pos, int *color)
 }
 
 
-int lookup_dtw(int handle_wld, int handle_dist, BOARD *board, int color, int *distances, char moves[MAXMOVES][20])
+int lookup_dtw(int handle_wld, int handle_dist, BOARD *board, int color, int *distances, char moves[MAXMOVES][maxmovelen])
 {
 	int wld_value, status;
 	dtw_search dtw;
@@ -396,7 +396,7 @@ int lookup_dtw(int handle_wld, int handle_dist, BOARD *board, int color, int *di
 }
 
 
-int lookup_mtc(int handle_wld, int handle_dist, BOARD *board, int color, int *distances, char moves[MAXMOVES][20])
+int lookup_mtc(int handle_wld, int handle_dist, BOARD *board, int color, int *distances, char moves[MAXMOVES][maxmovelen])
 {
 	int wld_value, status;
 	MOVELIST movelist;

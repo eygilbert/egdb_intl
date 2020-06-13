@@ -482,7 +482,7 @@ void test_fen()
 	int i, npieces, nb, nw, nbm, nbk, nwm, nwk;
 	int status, color, return_color;
 	BOARD pos, return_pos;
-	char fenstr[150];
+	char fenstr[maxfenlen];
 
 	printf("FEN test ");
 	for (npieces = 1; npieces <= 40; ++npieces) {
@@ -549,6 +549,7 @@ int main(int argc, char *argv[])
 	result = egdb_close(handle);
 	if (result != 0)
 		printf("%d returned by egdb_close\n", result);
+
     return 0;
 }
 

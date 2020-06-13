@@ -50,8 +50,9 @@ enum {
 };
 
 enum {
+	maxmovelen = 20,
 	maxmoves = 128,
-	maxfen = 150
+	maxfenlen = 180
 };
 
 extern "C" int __stdcall egdb_open(char *options, int cache_mb, const char *directory, const char *filename);
@@ -62,7 +63,7 @@ extern "C" int __stdcall egdb_lookup_fen(int handle, char *fen, int cl);
 extern "C" int __stdcall egdb_lookup_fen_with_search(int handle, char *fen);
 extern "C" int __stdcall egdb_lookup_with_search(int handle, Position *board, int color);
 extern "C" int __stdcall egdb_lookup_distance(int handle_wld, int handle_dist, const char *fen, 
-									int distances[maxmoves], char moves[maxmoves][20]);
+									int distances[maxmoves], char moves[maxmoves][maxmovelen]);
 extern "C" int __stdcall get_movelist(Position *board, int color, Position movelist[maxmoves]);
 extern "C" int16_t __stdcall is_capture(Position *board, int color);
 extern "C" int64_t __stdcall getdatabasesize_slice(int nbm, int nbk, int nwm, int nwk);
@@ -70,7 +71,7 @@ extern "C" void __stdcall indextoposition(int64_t index, Position *pos, int nbm,
 extern "C" int64_t __stdcall positiontoindex(Position *pos, int nbm, int nbk, int nwm, int nwk);
 extern "C" int16_t __stdcall is_sharp_win(int handle, Position *board, int color, Position *sharp_move_pos);
 extern "C" int __stdcall move_string(Position *last_board, Position *new_board, int color, char *move);
-extern "C" int __stdcall positiontofen(Position *board, int color, char fen[maxfen]);
+extern "C" int __stdcall positiontofen(Position *board, int color, char fen[maxfenlen]);
 extern "C" int __stdcall fentoposition(char *fen, Position *pos, int *color);
 
 }	// namespace
