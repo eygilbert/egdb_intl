@@ -7,7 +7,6 @@
 #include "egdb/egdb_intl.h"
 #include "egdb/mtc_probe.h"
 #include "egdb/wld_search.h"
-#include "build_dll/posconv.h"
 #include "builddb/indexing.h"
 #include "../egdb_intl_dll.h"
 #include <stdio.h>
@@ -268,12 +267,10 @@ extern "C" int __stdcall egdb_lookup_distance(int handle_wld, int handle_dist, c
 
 extern "C" int __stdcall get_movelist(Position *pos, int color, Position *ml)
 {
-	BOARD board = dllpos_to_board(*pos);
 	MOVELIST movelist;
 
-	build_movelist(&board, color, &movelist);
-	for (int i = 0; i < movelist.count; ++i)
-		ml[i] = board_to_dllpos(movelist.board[i]);
+	build_movelist((BOARD *)pos, color, &movelist);
+	memcpy(ml, movelist.board, movelist.count * sizeof(Position));
 	return(movelist.count);
 }
 
@@ -281,9 +278,8 @@ extern "C" int __stdcall get_movelist(Position *pos, int color, Position *ml)
 extern "C" int16_t __stdcall is_capture(Position *pos, int color)
 {
 	int value;
-	BOARD board = dllpos_to_board(*pos);
 
-	value = canjump(&board, color);
+	value = canjump((BOARD *)pos, color);
 	if (value)
 		return(-1);
 	else
@@ -315,7 +311,6 @@ extern "C" int64_t __stdcall positiontoindex(Position *pos, int nbm, int nbk, in
 extern "C" int16_t __stdcall is_sharp_win(int handle, Position *pos, int color, Position *sharp_move_pos)
 {
 	int i, len, result, wincount;
-	BOARD board;
 	MOVELIST movelist;
 
 	result = check_handle(handle);
@@ -325,10 +320,9 @@ extern "C" int16_t __stdcall is_sharp_win(int handle, Position *pos, int color, 
 	if (!is_wld(drivers[handle].db.handle))
 		return(EGDB_NOT_WLD_TYPE);
 
-	board = dllpos_to_board(*pos);
-	result = drivers[handle].wld.lookup_with_search(&board, color, false);
+	result = drivers[handle].wld.lookup_with_search((BOARD *)pos, color, false);
 	if (result == egdb_dll::EGDB_WIN) {
-		len = build_movelist(&board, color, &movelist);
+		len = build_movelist((BOARD *)pos, color, &movelist);
 		for (i = 0, wincount = 0; i < len; ++i) {
 			result = drivers[handle].wld.lookup_with_search(movelist.board + i, OTHER_COLOR(color), false);
 			if (result == egdb_dll::EGDB_LOSS) {
@@ -336,7 +330,7 @@ extern "C" int16_t __stdcall is_sharp_win(int handle, Position *pos, int color, 
 				if (wincount > 1)
 					return(0);
 
-				*sharp_move_pos = board_to_dllpos(movelist.board[i]);
+				memcpy(sharp_move_pos, &movelist.board[i], sizeof(Position));
 			}
 		}
 		if (wincount == 1)
@@ -348,19 +342,13 @@ extern "C" int16_t __stdcall is_sharp_win(int handle, Position *pos, int color, 
 
 extern "C" int __stdcall move_string(Position *last_pos, Position *new_pos, int color, char *move)
 {
-	BOARD lastb, newb;
-
-	lastb = dllpos_to_board(*last_pos);
-	newb = dllpos_to_board(*new_pos);
-
-	return(print_move(&lastb, &newb, color, move));
+	return(print_move((BOARD *)last_pos, (BOARD *)new_pos, color, move));
 }
 
 
 extern "C" int __stdcall positiontofen(Position *pos, int color, char fen[maxfen])
 {
-	BOARD board = dllpos_to_board(*pos);
-	return(print_fen(&board, color, fen));
+	return(print_fen((BOARD *)pos, color, fen));
 }
 
 

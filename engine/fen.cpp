@@ -35,6 +35,7 @@ void print_fen_side(BITBOARD sidebb, BITBOARD king, std::string &fenstr)
 {
 	int bitnum, square0, count;
 	BITBOARD sq, newsidebb;
+	const bool enable_ranges = true;
 
 	while (sidebb) {
 		sq = get_lsb(sidebb);
@@ -44,10 +45,12 @@ void print_fen_side(BITBOARD sidebb, BITBOARD king, std::string &fenstr)
 			fenstr += "K";
 		fenstr += std::to_string(square0 + 1);
 		sidebb = clear_lsb(sidebb);
-		count = consecutive_squares(square0, sidebb, newsidebb, king, sq & king);
-		if (count >= 3) {
-			fenstr += "-" + std::to_string(square0 + count);
-			sidebb = newsidebb;
+		if (enable_ranges) {
+			count = consecutive_squares(square0, sidebb, newsidebb, king, sq & king);
+			if (count >= 3) {
+				fenstr += "-" + std::to_string(square0 + count);
+				sidebb = newsidebb;
+			}
 		}
 		if (sidebb)
 			fenstr += ",";

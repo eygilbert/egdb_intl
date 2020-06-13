@@ -208,7 +208,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="posconv.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\builddb\compression_tables.h" />
@@ -238,7 +237,6 @@
     <ClInclude Include="..\Huffman\bitbuf.h" />
     <ClInclude Include="..\Huffman\huffman.h" />
     <ClInclude Include="..\Re-pair\repair.h" />
-    <ClInclude Include="posconv.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\egdb\huffman_decompress.txt" />

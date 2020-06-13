@@ -23,7 +23,20 @@ enum EGDB_COLOR {
 	EGDB_WHITE = 1
 };
 
-enum RETURN_VALUE {
+/* egdb_lookup return values. */
+enum {
+	EGDB_SUBDB_UNAVAILABLE = -2,/* this slice is not being used */
+	EGDB_NOT_IN_CACHE = -1,		/* conditional lookup and position not in cache. */
+	EGDB_UNKNOWN = 0,			/* value not in the database. */
+	EGDB_WIN = 1,
+	EGDB_LOSS = 2,
+	EGDB_DRAW = 3,
+	EGDB_DRAW_OR_LOSS = 4,
+	EGDB_WIN_OR_DRAW = 5,
+};
+
+/* Error return values. */
+enum {
 	EGDB_DRIVER_TABLE_FULL = -100,
 	EGDB_FOPEN_FAIL = -101,
 	EGDB_OPEN_FAIL = -102,
@@ -38,6 +51,7 @@ enum RETURN_VALUE {
 
 enum {
 	maxmoves = 128,
+	maxfen = 150
 };
 
 extern "C" int __stdcall egdb_open(char *options, int cache_mb, const char *directory, const char *filename);
@@ -56,7 +70,7 @@ extern "C" void __stdcall indextoposition(int64_t index, Position *pos, int nbm,
 extern "C" int64_t __stdcall positiontoindex(Position *pos, int nbm, int nbk, int nwm, int nwk);
 extern "C" int16_t __stdcall is_sharp_win(int handle, Position *board, int color, Position *sharp_move_pos);
 extern "C" int __stdcall move_string(Position *last_board, Position *new_board, int color, char *move);
-extern "C" int __stdcall positiontofen(Position *board, int color, char *fen);
+extern "C" int __stdcall positiontofen(Position *board, int color, char fen[maxfen]);
 extern "C" int __stdcall fentoposition(char *fen, Position *pos, int *color);
 
 }	// namespace

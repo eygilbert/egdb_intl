@@ -1,5 +1,4 @@
 #include "../egdb_intl_dll.h"
-#include "build_dll/posconv.h"
 #include "egdb/distance.h"
 #include "egdb/egdb_intl.h"
 #include "egdb/platform.h"
@@ -153,11 +152,10 @@ void verify_pos(int dbhandle, BOARD *board, int color)
 	}
 
 	/* Test dll function egdb_lookup() if possible. */
-	Position dllpos = board_to_dllpos(*board);
-	if (!is_capture(&dllpos, color)) {
+	if (!is_capture((Position *)board, color)) {
 		int npieces = bitcount64(board->black | board->white);
-		if (npieces < 7 || !is_capture(&dllpos, OTHER_COLOR(color))) {
-			int value = egdb_lookup(dbhandle, &dllpos, color, 0);
+		if (npieces < 7 || !is_capture((Position *)board, OTHER_COLOR(color))) {
+			int value = egdb_lookup(dbhandle, (Position *)board, color, 0);
 			if (value > 0) {
 				if (value != pval) {
 					printf("%s: egdb_lookup returned value %d, expected %d\n", pfen, value, pval);

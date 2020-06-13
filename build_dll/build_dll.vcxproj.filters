@@ -82,9 +82,6 @@
     <ClCompile Include="..\egdb\mtc_probe.cpp">
       <Filter>egdb</Filter>
     </ClCompile>
-    <ClCompile Include="posconv.cpp">
-      <Filter>build_dll</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="builddb">
@@ -187,9 +184,6 @@
     </ClInclude>
     <ClInclude Include="..\egdb\mtc_probe.h">
       <Filter>egdb</Filter>
-    </ClInclude>
-    <ClInclude Include="posconv.h">
-      <Filter>build_dll</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -164,7 +164,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\build_dll\posconv.cpp" />
     <ClCompile Include="..\egdb\slice.cpp" />
     <ClCompile Include="..\engine\bitcount.cpp" />
     <ClCompile Include="..\engine\board.cpp" />
@@ -174,7 +173,6 @@
     <ClCompile Include="test.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\build_dll\posconv.h" />
     <ClInclude Include="..\egdb\slice.h" />
     <ClInclude Include="..\egdb_intl_dll.h" />
     <ClInclude Include="..\engine\bitcount.h" />
