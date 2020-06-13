@@ -7,40 +7,68 @@
 
 namespace egdb_interface {
 
-void print_fen(const BOARD *board, int color, std::string &fenstr)
+int consecutive_squares(int start, BITBOARD sidebb, BITBOARD &newsidebb, BITBOARD king, bool is_king)
 {
-    int bitnum, square0;
-    BITBOARD bb, sq;
-
-    fenstr = color == BLACK ? "B" : "W";
-
-    /* Add the white pieces. */
-    fenstr += ":W";
-    for (bb = board->white; bb; ) {
-        sq = get_lsb(bb);
-        bitnum = LSB64(sq);
-        square0 = bitnum_to_square0(bitnum);
-        if (sq & board->king)
-			fenstr += "K";
-		fenstr += std::to_string(square0 + 1);
-        bb = clear_lsb(bb);
-        if (bb)
-			fenstr += ",";
-    }
-
-    /* Add the black pieces. */
-	fenstr += ":B";
-	for (bb = board->black; bb; ) {
-		sq = get_lsb(bb);
+	int bitnum, square0, count;
+	BITBOARD sq;
+	bool is_nextking;
+	
+	count = 1;
+	newsidebb = sidebb;
+	while (newsidebb) {
+		sq = get_lsb(newsidebb);
 		bitnum = LSB64(sq);
 		square0 = bitnum_to_square0(bitnum);
-		if (sq & board->king)
+		if (square0 != start + count)
+			break;
+		is_nextking = sq & king;
+		if (is_king ^ is_nextking)
+			break;
+		newsidebb = clear_lsb(newsidebb);
+		++count;
+	}
+	return(count);
+}
+
+
+void print_fen_side(BITBOARD sidebb, BITBOARD king, std::string &fenstr)
+{
+	int bitnum, square0, count;
+	BITBOARD sq, newsidebb;
+	const bool enable_ranges = true;
+
+	while (sidebb) {
+		sq = get_lsb(sidebb);
+		bitnum = LSB64(sq);
+		square0 = bitnum_to_square0(bitnum);
+		if (sq & king)
 			fenstr += "K";
 		fenstr += std::to_string(square0 + 1);
-		bb = clear_lsb(bb);
-		if (bb)
+		sidebb = clear_lsb(sidebb);
+		if (enable_ranges) {
+			count = consecutive_squares(square0, sidebb, newsidebb, king, sq & king);
+			if (count >= 3) {
+				fenstr += "-" + std::to_string(square0 + count);
+				sidebb = newsidebb;
+			}
+		}
+		if (sidebb)
 			fenstr += ",";
 	}
+}
+
+
+void print_fen(const BOARD *board, int color, std::string &fenstr)
+{
+	fenstr = color == BLACK ? "B" : "W";
+
+	/* Add the white pieces. */
+	fenstr += ":W";
+	print_fen_side(board->white, board->king, fenstr);
+
+	/* Add the black pieces. */
+	fenstr += ":B";
+	print_fen_side(board->black, board->king, fenstr);
 }
 
 
@@ -55,12 +83,12 @@ int print_fen(const BOARD *board, int color, char *buf)
 
 int print_fen_header(const BOARD *board, int color, char *buf, char const *line_terminator)
 {
-    int len;
+	int len;
 
-    len = std::sprintf(buf, "[FEN \"");
-    len += print_fen(board, color, buf + len);
-    len += std::sprintf(buf + len, "\"]%s", line_terminator);
-    return(len);
+	len = std::sprintf(buf, "[FEN \"");
+	len += print_fen(board, color, buf + len);
+	len += std::sprintf(buf + len, "\"]%s", line_terminator);
+	return(len);
 }
 
 
@@ -69,82 +97,82 @@ int print_fen_header(const BOARD *board, int color, char *buf, char const *line_
  */
 int parse_fen(const char *buf, BOARD *board, int *ret_color)
 {
-    int square, square2, s;
-    int color = BLACK;	// prevent using unitialized memory
-    int king;
-    const char *lastp;
+	int square, square2, s;
+	int color = BLACK;	// prevent using unitialized memory
+	int king;
+	const char *lastp;
 
-    while (std::isspace(*buf))
-        ++buf;
-    if (*buf == '"')
-        ++buf;
+	while (std::isspace(*buf))
+		++buf;
+	if (*buf == '"')
+		++buf;
 
-    /* Get the color. */
-    if (std::toupper(*buf) == 'B')
-        *ret_color = BLACK;
-    else if (std::toupper(*buf) == 'W')
-        *ret_color = WHITE;
-    else
-        return(1);
+	/* Get the color. */
+	if (std::toupper(*buf) == 'B')
+		*ret_color = BLACK;
+	else if (std::toupper(*buf) == 'W')
+		*ret_color = WHITE;
+	else
+		return(1);
 
-    std::memset(board, 0, sizeof(BOARD));
+	std::memset(board, 0, sizeof(BOARD));
 	++buf;
 
 	if (*buf != ':')
 		return(1);
 
 	++buf;
-    lastp = buf;
-    while (*buf) {
-        king = 0;
-        if (*buf == '"') {
-            ++buf;
-            continue;
-        }
-        if (std::toupper(*buf) == 'W') {
-            color = WHITE;
-            ++buf;
-            continue;
-        }
-        if (std::toupper(*buf) == 'B') {
-            color = BLACK;
-            ++buf;
-            continue;
-        }
-        if (std::toupper(*buf) == 'K') {
-            king = 1;
-            ++buf;
-        }
-        for (square = 0; std::isdigit(*buf); ++buf)
-            square = 10 * square + (*buf - '0');
+	lastp = buf;
+	while (*buf) {
+		king = 0;
+		if (*buf == '"') {
+			++buf;
+			continue;
+		}
+		if (std::toupper(*buf) == 'W') {
+			color = WHITE;
+			++buf;
+			continue;
+		}
+		if (std::toupper(*buf) == 'B') {
+			color = BLACK;
+			++buf;
+			continue;
+		}
+		if (std::toupper(*buf) == 'K') {
+			king = 1;
+			++buf;
+		}
+		for (square = 0; std::isdigit(*buf); ++buf)
+			square = 10 * square + (*buf - '0');
 
-        square2 = square;
-        if (*buf == ',' || *buf == ':')
-            ++buf;
+		square2 = square;
+		if (*buf == ',' || *buf == ':')
+			++buf;
 
-        else if (*buf == '-' && std::isdigit(buf[1])) {
-            ++buf;
-            for (square2 = 0; std::isdigit(*buf); ++buf)
-                square2 = 10 * square2 + (*buf - '0');
-            if (*buf == ',' || *buf == ':')
-                ++buf;
-        }
+		else if (*buf == '-' && std::isdigit(buf[1])) {
+			++buf;
+			for (square2 = 0; std::isdigit(*buf); ++buf)
+				square2 = 10 * square2 + (*buf - '0');
+			if (*buf == ',' || *buf == ':')
+				++buf;
+		}
 
-        if (square && square <= square2) {
-            for (s = square; s <= square2; ++s) {
-                if (color == WHITE)
-                    board->white |= square0_to_bitboard(s - 1);
-                else
-                    board->black |= square0_to_bitboard(s - 1);
-                if (king)
-                    board->king |= square0_to_bitboard(s - 1);
-            }
-        }
-        if (lastp == buf)
-            break;
-        lastp = buf;
-    }
-    return(0);
+		if (square && square <= square2) {
+			for (s = square; s <= square2; ++s) {
+				if (color == WHITE)
+					board->white |= square0_to_bitboard(s - 1);
+				else
+					board->black |= square0_to_bitboard(s - 1);
+				if (king)
+					board->king |= square0_to_bitboard(s - 1);
+			}
+		}
+		if (lastp == buf)
+			break;
+		lastp = buf;
+	}
+	return(0);
 }
 
 }   // namespace egdb_interface

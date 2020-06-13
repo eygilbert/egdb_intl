@@ -125,7 +125,7 @@ The MTC database is identified as type `EGDB_MTC_RUNLEN`. It has filenames with 
 **Guideline**: before querying an MTC value you should first use a WLD database to determine that the position is a win or a loss. 
 
 ---
-The WLD database is identified as type `EGDB_DTW`. It has filenames with suffixes ".cpr_dtw" and ".idx_dtw". This database has data for positions with up to 7 pieces. It does not have data for positions that are draws, or positions that are captures. The return value from `egdb_lookup()` is the (distance to win or loss) / 2. To get the actual distances, multiply the return value by 2, and if the position is a win, add 1.
+The DTW database is identified as type `EGDB_DTW`. It has filenames with suffixes ".cpr_dtw" and ".idx_dtw". This database has data for positions with up to 7 pieces. It does not have data for positions that are draws, or positions that are captures. The return value from `egdb_lookup()` is the (distance to win or loss) / 2. To get the actual distances, multiply the return value by 2, and if the position is a win, add 1.
 
 ---
 

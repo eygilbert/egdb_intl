@@ -163,19 +163,21 @@ struct BOARD {
 		};
 	};
 	BITBOARD king;
-
-	bool is_legal(void) {
-		if ((black & ~king) & ROW9)
-			return(false);
-		if ((white & ~king) & ROW0)
-			return(false);
-		if ((black | white) & ~ALL_SQUARES)
-			return(false);
-		if (black & white)
-			return(false);
-		return(true);
-	}
 };
+
+
+inline bool is_legal(BOARD *board) {
+	if ((board->black & ~board->king) & ROW9)
+		return(false);
+	if ((board->white & ~board->king) & ROW0)
+		return(false);
+	if ((board->black | board->white) & ~ALL_SQUARES)
+		return(false);
+	if (board->black & board->white)
+		return(false);
+	return(true);
+}
+
 
 inline void get_start_pos(BOARD *board, int *color)
 {
