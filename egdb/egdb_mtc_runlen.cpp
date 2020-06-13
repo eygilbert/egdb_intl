@@ -93,10 +93,6 @@ typedef struct {
 	EGDB_STATS lookup_stats;
 } DBHANDLE;
 
-typedef struct {
-	char const *filename;
-	unsigned int crc;
-} DBCRC;
 
 /* A table of crc values for each database file. */
 static DBCRC dbcrc[] = {
@@ -686,6 +682,7 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int *allocated_bytes)
 	}
 
 	f->is_present = 1;
+	dbpointer = nullptr;
 	while (1) {
 
 		/* At this point it has to be a BASE line or else end of file. */
@@ -714,7 +711,7 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int *allocated_bytes)
 		 * do it now.
 		 */
 		if (!dbp->subdb) {
-			dbp->num_subslices = get_num_subslices(bm, bk, wm, wk);
+			dbp->num_subslices = get_num_subslices(bm, bk, wm, wk, MAX_SUBSLICE_INDICES);
 			dbp->subdb = (CPRSUBDB *)std::calloc(dbp->num_subslices, sizeof(CPRSUBDB));
 			*allocated_bytes += dbp->num_subslices * sizeof(CPRSUBDB);
 			if (!dbp->subdb) {
@@ -810,6 +807,7 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int *allocated_bytes)
 		}
 	}
 	std::fclose(fp);
+	assert(dbpointer != nullptr);
 
 	/* Check the total number of index blocks in this database. */
 	if (f->num_idx_blocks != count + dbpointer->first_idx_block) {
@@ -1006,17 +1004,14 @@ static int verify_crc(EGDB_DRIVER const *handle, void (*msg_fn)(char const*), in
 }
 
 
-static int get_pieces(EGDB_DRIVER const *handle, int *max_pieces, int *max_pieces_1side, int *max_9pc_kings, int *max_8pc_kings_1side)
+static int get_pieces(EGDB_DRIVER const *handle, int *max_pieces, int *max_pieces_1side)
 {
 	int i;
 	DBFILE *f;
-	DBP *p;
 	DBHANDLE *hdat = (DBHANDLE *)handle->internal_data;
 
 	*max_pieces = 0;
 	*max_pieces_1side = 0;
-	*max_9pc_kings = 0;
-	*max_8pc_kings_1side = 0;
 	if (!handle) 
 		return(0);
 
@@ -1031,21 +1026,19 @@ static int get_pieces(EGDB_DRIVER const *handle, int *max_pieces, int *max_piece
 		if (f->max_pieces_1side > *max_pieces_1side)
 			*max_pieces_1side = f->max_pieces_1side;
 	}
-	if (*max_pieces >= 9) {
-		p = hdat->cprsubdatabase + DBOFFSET(4, 1, 4, 0, EGDB_BLACK);
-		if (p && p->subdb != NULL)
-			*max_9pc_kings = 1;
-		p = hdat->cprsubdatabase + DBOFFSET(5, 0, 3, 1, EGDB_BLACK);
-		if (p && p->subdb != NULL)
-			*max_9pc_kings = 1;
-	}
 	return(0);
+}
+
+
+static EGDB_TYPE get_type(EGDB_DRIVER const *handle)
+{
+	DBHANDLE *hdat = (DBHANDLE *)handle->internal_data;
+	return(hdat->db_type);
 }
 
 }	// namespace detail
 
-EGDB_DRIVER *egdb_open_mtc_runlen(int pieces, int kings_1side_8pcs,
-				int cache_mb, char const *directory, void (*msg_fn)(char const*), EGDB_TYPE db_type)
+EGDB_DRIVER *egdb_open_mtc_runlen(int pieces, int cache_mb, char const *directory, void (*msg_fn)(char const*), EGDB_TYPE db_type)
 {
 	int status;
 	EGDB_DRIVER *handle;
@@ -1075,6 +1068,7 @@ EGDB_DRIVER *egdb_open_mtc_runlen(int pieces, int kings_1side_8pcs,
 	handle->verify = detail::verify_crc;
 	handle->close = detail::egdb_close;
 	handle->get_pieces = detail::get_pieces;
+	handle->get_type = detail::get_type;
 	return(handle);
 }
 

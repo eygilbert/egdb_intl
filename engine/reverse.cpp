@@ -27,33 +27,15 @@ void init_reverse()
 }
 
 
-/*
- * Reverse a board mask.
- */
-unsigned int reverse_image(unsigned int image)
-{
-	union {
-		unsigned char bytes[4];
-		unsigned int word;
-	} conv_out;
-
-	conv_out.bytes[0] = (unsigned char)ReverseByte[((unsigned char *)(&image))[3]];
-	conv_out.bytes[1] = (unsigned char)ReverseByte[((unsigned char *)(&image))[2]];
-	conv_out.bytes[2] = (unsigned char)ReverseByte[((unsigned char *)(&image))[1]];
-	conv_out.bytes[3] = (unsigned char)ReverseByte[((unsigned char *)(&image))[0]];
-	return(conv_out.word);
-}
-
-
-uint64_t reverse_board50(uint64_t image)
+BITBOARD reverse_bitboard(BITBOARD bb)
 {
 	int bit;
 	uint64_t rev;
 
 	rev = 0;
-	while (image) {
-		bit = LSB64(image);
-		image = clear_lsb(image);
+	while (bb) {
+		bit = LSB64(bb);
+		bb = clear_lsb(bb);
 		rev |= ((uint64_t)1 << mirrored(bit));
 	}
 	return(rev);

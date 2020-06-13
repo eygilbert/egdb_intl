@@ -21,27 +21,28 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{DC57FBF5-D520-44CE-A9F6-DCBEF3010C91}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -117,10 +118,10 @@
     <ClCompile Include="..\builddb\indexing.cpp" />
     <ClCompile Include="..\egdb\crc.cpp" />
     <ClCompile Include="..\egdb\egdb_common.cpp" />
+    <ClCompile Include="..\egdb\egdb_dtw.cpp" />
     <ClCompile Include="..\egdb\egdb_identify.cpp" />
     <ClCompile Include="..\egdb\egdb_mtc_runlen.cpp" />
     <ClCompile Include="..\egdb\egdb_open.cpp" />
-    <ClCompile Include="..\egdb\egdb_wld_huffman.cpp" />
     <ClCompile Include="..\egdb\egdb_wld_runlen.cpp" />
     <ClCompile Include="..\egdb\egdb_wld_tunstall_v1.cpp" />
     <ClCompile Include="..\egdb\egdb_wld_tunstall_v2.cpp" />
@@ -128,6 +129,9 @@
     <ClCompile Include="..\engine\bitcount.cpp" />
     <ClCompile Include="..\engine\board.cpp" />
     <ClCompile Include="..\engine\reverse.cpp" />
+    <ClCompile Include="..\Huffman\bitbuf.cpp" />
+    <ClCompile Include="..\Huffman\huffman.cpp" />
+    <ClCompile Include="..\Re-pair\utils.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -146,9 +150,12 @@
     <ClInclude Include="..\engine\lock.h" />
     <ClInclude Include="..\engine\project.h" />
     <ClInclude Include="..\engine\reverse.h" />
+    <ClInclude Include="..\Huffman\bitbuf.h" />
+    <ClInclude Include="..\Huffman\huffman.h" />
+    <ClInclude Include="..\Packed_array\Packed_array.h" />
+    <ClInclude Include="..\Re-pair\repair.h" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="..\egdb\huffman_decompress.txt" />
     <Text Include="..\egdb\tunstall_decompress_v1.txt" />
     <Text Include="..\egdb\tunstall_decompress_v2.txt" />
   </ItemGroup>

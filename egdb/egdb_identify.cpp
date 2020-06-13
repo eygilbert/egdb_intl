@@ -27,9 +27,11 @@ EGDB_FIND_INFO egdb_find_table[] = {
 	{EGDB_WLD_TUN_V2, "db7-4030.idx1", 7, 0x713fa989},
 	{EGDB_WLD_TUN_V1, "db7-4030.idx", 7, 0xa1067e2b},
 	{EGDB_WLD_RUNLEN, "db7-4030.idx", 7, 0x68913d08},
+	{EGDB_DTW, "db7-4030.idx_dtw", 7, 0x8b0c3395},
 	{EGDB_MTC_RUNLEN, "db7-0412.idx_mtc", 7, 0xb4c92c3e},
 	{EGDB_WLD_TUN_V2, "db6-3030.idx1", 6, 0xc07467f2},
 	{EGDB_WLD_TUN_V1, "db6-3030.idx", 6, 0xf3693c6c},
+	{EGDB_DTW, "db6-3030.idx_dtw", 6, 0xbd75b462},
 	{EGDB_WLD_RUNLEN, "db6-3030.idx", 6, 0xd661d188},
 	{EGDB_MTC_RUNLEN, "db6-0312.idx_mtc", 6, 0xd764c8ec},
 	{EGDB_WLD_RUNLEN, "db6-3030.idx", 6, 0x947dff31},		/* Re-generated. */

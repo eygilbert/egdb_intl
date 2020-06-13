@@ -2,9 +2,9 @@
 #include "egdb/egdb_intl.h"
 #include "engine/bicoef.h"
 #include "engine/bitcount.h"
-#include "engine/board.h"       // BITBOARD
+#include "engine/board.h"
 #include "engine/bool.h"
-#include <stdint.h>              // uint32_t
+#include <stdint.h>
 
 namespace egdb_interface {
 
@@ -13,18 +13,32 @@ namespace egdb_interface {
 #define RANK0MAX ROWSIZE
 
 #define MAX_SUBSLICE_INDICES (int64_t)(0x80000000)
+#define DTW_SUBSLICE_INDICES (int64_t)(0x40000000)
 #define GHOSTS (((BITBOARD)1 << 10) | ((BITBOARD)1 << 21) | ((BITBOARD)1 << 32) | ((BITBOARD)1 << 43))
 
-BITBOARD free_square_bitmask(int logical_square, BITBOARD occupied);
-BITBOARD free_square_bitmask_fwd(int logical_square, BITBOARD occupied);
-BITBOARD free_square_bitmask_rev(int logical_square, BITBOARD occupied);
-BITBOARD place_pieces_fwd_no_interferences(unsigned int index, int num_squares, int first_square, int num_pieces);
+BITBOARD free_square_bitboard_fwd(int logical_square, BITBOARD occupied);
+BITBOARD free_square_bitboard_rev(int logical_square, BITBOARD occupied);
+BITBOARD index2bitboard_fwd(unsigned int index, int num_squares, int first_square, int num_pieces);
 BITBOARD index2bitboard_fwd(unsigned int index, int num_squares, int num_pieces, BITBOARD occupied);
 BITBOARD index2bitboard_rev(unsigned int index, int num_squares, int num_pieces, BITBOARD occupied);
+
 int64_t position_to_index_slice(EGDB_POSITION const *p, int bm, int bk, int wm, int wk);
 void indextoposition_slice(int64_t index, EGDB_POSITION *p, int bm, int bk, int wm, int wk);
 void build_man_index_base();
 int64_t getdatabasesize_slice(int bm, int bk, int wm, int wk);
+int64_t getslicesize_gaps(int bm, int bk, int wm, int wk);
+
+inline int64_t position_to_index_slice(EGDB_POSITION *p)
+{
+	int nbm, nbk, nwm, nwk;
+
+	nbm = bitcount64(p->black & ~p->king);
+	nbk = bitcount64(p->black & p->king);
+	nwm = bitcount64(p->white & ~p->king);
+	nwk = bitcount64(p->white & p->king);
+	return(position_to_index_slice((EGDB_POSITION *)p, nbm, nbk, nwm, nwk));
+}
+
 
 inline uint32_t index_pieces_1_type(BITBOARD bb, int offset)
 {

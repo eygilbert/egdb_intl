@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include "bool.h"
 
 namespace egdb_interface {
 
@@ -151,7 +152,7 @@ typedef int64_t SIGNED_BITBOARD;
  * bit 0 means square 1, bit 1 is square 2, ...
  * There are gaps at bits 10, 21, 32, and 43.
  */
-typedef struct {
+struct BOARD {
 	union {
 		struct {
 			BITBOARD pieces[2];		/* Indexed by BLACK or WHITE. */
@@ -162,15 +163,34 @@ typedef struct {
 		};
 	};
 	BITBOARD king;
-} BOARD;
+};
 
+
+inline bool is_legal(BOARD *board) {
+	if ((board->black & ~board->king) & ROW9)
+		return(false);
+	if ((board->white & ~board->king) & ROW0)
+		return(false);
+	if ((board->black | board->white) & ~ALL_SQUARES)
+		return(false);
+	if (board->black & board->white)
+		return(false);
+	return(true);
+}
+
+
+inline void get_start_pos(BOARD *board, int *color)
+{
+	board->black = ROW0 | ROW1 | ROW2 | ROW3;
+	board->white = ROW6 | ROW7 | ROW8 | ROW9;
+	board->king = 0;
+	*color = WHITE;
+}
 
 extern char square0_to_bitnum_table[NUMSQUARES];
 extern BITBOARD square0_to_bitboard_table[NUMSQUARES];
 extern char bitnum_to_square0_table[54];
 extern int rank_to_rank0_shift_table[10];
-extern int bitboard_to_square0(BITBOARD bb);
-extern int bitboard_to_square(BITBOARD bb);
 
 
 inline int mirrored(int bitnum)
@@ -200,6 +220,18 @@ inline int bitnum_to_square0(int bitnum)
 inline int rank_to_rank0_shift(int rank)
 {
 	return(rank_to_rank0_shift_table[rank]);
+}
+
+
+inline int bitboard_to_square0(BITBOARD bb)
+{
+	return(bitnum_to_square0(LSB64(bb)));
+}
+
+
+inline int bitboard_to_square(BITBOARD bb)
+{
+	return(1 + bitnum_to_square0(LSB64(bb)));
 }
 
 }	// namespace egdb_interface

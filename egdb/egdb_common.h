@@ -50,11 +50,17 @@ struct EGDB_DRIVER {
 	EGDB_STATS *(*get_stats)(EGDB_DRIVER const *handle);
 	int (*verify)(EGDB_DRIVER const *handle, void (*msg_fn)(char const *msg), int *abort, EGDB_VERIFY_MSGS *msgs);
 	int (*close)(EGDB_DRIVER *handle);
-	int (*get_pieces)(EGDB_DRIVER const *handle, int *max_pieces, int *max_pieces_1side, int *max_9pc_kings, int *max_8pc_kings_1side);
+	int (*get_pieces)(EGDB_DRIVER const *handle, int *max_pieces, int *max_pieces_1side);
+	EGDB_TYPE (*get_type)(EGDB_DRIVER const *handle);
 	void *internal_data;
 };
 
-int get_num_subslices(int nbm, int nbk, int nwm, int nwk);
+typedef struct {
+	char const *filename;
+	unsigned int crc;
+} DBCRC;
+
+int get_num_subslices(int bm, int bk, int wm, int wk, uint32_t subslice_size);
 int read_file(FILE_HANDLE fp, unsigned char *buf, size_t size, int pagesize);
 
 
@@ -212,6 +218,7 @@ template <class DBCRC_T> DBCRC_T *find_file_crc(char const *name, DBCRC_T *table
 
 	return(0);
 }
+
 
 }	// namespace egdb_interface
 

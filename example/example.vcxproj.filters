@@ -13,6 +13,15 @@
     <Filter Include="example">
       <UniqueIdentifier>{5e7959b5-0f9c-4160-8866-351abcb5d4ef}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Huffman">
+      <UniqueIdentifier>{9f05c4e5-358f-42c8-a092-c11bc7564e50}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Re-pair">
+      <UniqueIdentifier>{45e342da-7c1c-4a0e-8187-13e23d31e79a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Packed_array">
+      <UniqueIdentifier>{0cea3e81-cf7c-4b93-9d3d-de93911d94a7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\egdb\egdb_intl.h">
@@ -60,6 +69,18 @@
     <ClInclude Include="..\engine\config.h">
       <Filter>engine</Filter>
     </ClInclude>
+    <ClInclude Include="..\Huffman\bitbuf.h">
+      <Filter>Huffman</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Huffman\huffman.h">
+      <Filter>Huffman</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Re-pair\repair.h">
+      <Filter>Re-pair</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Packed_array\Packed_array.h">
+      <Filter>Packed_array</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -86,9 +107,6 @@
     <ClCompile Include="..\egdb\egdb_open.cpp">
       <Filter>egdb</Filter>
     </ClCompile>
-    <ClCompile Include="..\egdb\egdb_wld_huffman.cpp">
-      <Filter>egdb</Filter>
-    </ClCompile>
     <ClCompile Include="..\egdb\egdb_wld_runlen.cpp">
       <Filter>egdb</Filter>
     </ClCompile>
@@ -110,11 +128,20 @@
     <ClCompile Include="..\engine\reverse.cpp">
       <Filter>engine</Filter>
     </ClCompile>
+    <ClCompile Include="..\egdb\egdb_dtw.cpp">
+      <Filter>egdb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Huffman\bitbuf.cpp">
+      <Filter>Huffman</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Huffman\huffman.cpp">
+      <Filter>Huffman</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Re-pair\utils.cpp">
+      <Filter>Re-pair</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="..\egdb\huffman_decompress.txt">
-      <Filter>egdb</Filter>
-    </Text>
     <Text Include="..\egdb\tunstall_decompress_v1.txt">
       <Filter>egdb</Filter>
     </Text>

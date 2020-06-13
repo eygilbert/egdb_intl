@@ -4,8 +4,16 @@
 
 namespace egdb_interface {
 
-#define hiword(x) (((x) & 0xFFFF0000) >> 16)
-#define loword(x) ((x) & 0xFFFF)
+inline uint32_t get_lsb(uint32_t x)
+{
+	return(x & -(int32_t)x);
+}
+
+
+inline uint64_t get_lsb(uint64_t x)
+{
+	return(x & -(int64_t)x);
+}
 
 
 inline uint32_t clear_lsb(uint32_t x)

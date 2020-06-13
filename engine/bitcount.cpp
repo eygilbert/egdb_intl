@@ -5,6 +5,7 @@
 
 namespace egdb_interface {
 
+bool did_init_bitcount;
 bool cpu_has_popcount; 
 char bitcount_table[0x10000];
 
@@ -36,6 +37,8 @@ void init_bitcount()
 #endif
 	for (i = 0; i < ARRAY_SIZE(bitcount_table); ++i)
 		bitcount_table[i] = iterativebitcount(i);
+
+	did_init_bitcount = true;
 }
 
 }	// namespace egdb_interface
