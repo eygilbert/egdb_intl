@@ -147,10 +147,10 @@ extern "C" int __stdcall egdb_close(int handle)
 
 extern "C" int __stdcall egdb_identify(const char *dir, int *egdb_type, int *max_pieces)
 {
-	EGDB_TYPE db_type;
+	egdb_interface::EGDB_TYPE db_type;
 	int result;
 
-	result = egdb_identify(dir, &db_type, max_pieces);
+	result = egdb_interface::egdb_identify(dir, &db_type, max_pieces);
 	*egdb_type = db_type;
 	if (result)
 		return(EGDB_IDENTIFY_FAIL);

@@ -49,6 +49,15 @@ enum {
 	EGDB_LOOKUP_NOT_POSSIBLE = -109,
 };
 
+enum EGDB_TYPE {
+	EGDB_WLD_RUNLEN = 0,
+	EGDB_MTC_RUNLEN,
+	EGDB_WLD_HUFFMAN,
+	EGDB_WLD_TUN_V1,
+	EGDB_WLD_TUN_V2,
+	EGDB_DTW,
+};
+
 enum {
 	maxmovelen = 20,
 	maxmoves = 128,

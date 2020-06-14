@@ -337,7 +337,7 @@ void dtw_test(int wld_handle)
 		std::printf("DTW db not found at %s\n", dtw_path);
 		std::exit(1);
 	}
-	if (type != EGDB_DTW) {
+	if (type != egdb_dll::EGDB_DTW) {
 		std::printf("Wrong db type, not DTW.\n");
 		std::exit(1);
 	}
@@ -426,7 +426,7 @@ void mtc_test()
 		std::printf("MTC db not found at %s\n", mtc_path);
 		std::exit(1);
 	}
-	if (type != EGDB_MTC_RUNLEN) {
+	if (type != egdb_dll::EGDB_MTC_RUNLEN) {
 		std::printf("Wrong db type, not MTC.\n");
 		std::exit(1);
 	}
