@@ -802,7 +802,7 @@ static int dblookup(EGDB_DRIVER *handle, EGDB_POSITION const *p, int color, int 
                         if (node) {
 
                                 /* Already cached.  Update the lru list. */
-                                ccbp = update_lru<CCB>(hdat, dbpointer->file, node->cacheblock_index);
+                                ccbp = update_lru<CCB>(hdat, node->cacheblock_index);
                         }
                         else {
 
