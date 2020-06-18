@@ -151,7 +151,7 @@ template <class CCB_T, class DBHANDLE_T, class CPRSUBDB_T> CCB_T *load_blocknum(
  * This cache block was just accessed.
  * Update the lru to make this the most recently used.
  */
-template <class CCB_T, class DBHANDLE_T, class DBFILE_T> CCB_T *update_lru(DBHANDLE_T *hdat, DBFILE_T *db, int ccbi)
+template <class CCB_T, class DBHANDLE_T> CCB_T *update_lru(DBHANDLE_T *hdat, int ccbi)
 {
 	int next, prev;
 	CCB_T *ccbp;

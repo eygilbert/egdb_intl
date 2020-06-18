@@ -45,7 +45,7 @@ private:
 	void clear(void)
 	{
 		nodes = 0;
-		int maxdepth_reached = 0;
+		maxdepth_reached = 0;
 		elapsed = 0;
 		start_time = 0;
 		timeout = 5000;
