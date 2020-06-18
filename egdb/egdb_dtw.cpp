@@ -173,9 +173,9 @@ static DBCRC dbcrc[] = {
 
 
 /* Function prototypes. */
-int parseindexfile(DBHANDLE *, DBFILE *, int64_t *allocated_bytes);
+static int parseindexfile(DBHANDLE *, DBFILE *, int64_t *allocated_bytes);
 void delete_subslices(DBP *dbp);
-void build_file_table(DBHANDLE *hdat, int maxpieces, int maxpiece, int same_pieces_one_file);
+static void build_file_table(DBHANDLE *hdat, int maxpieces, int maxpiece, int same_pieces_one_file);
 
 
 static void reset_db_stats(EGDB_DRIVER *handle)
@@ -425,7 +425,7 @@ static int dblookup(EGDB_DRIVER *handle, EGDB_POSITION const *p, int color, int 
 	if (ccbi != UNDEFINED_BLOCK_ID) {
 
 		/* Already cached.  Update the lru list. */
-		ccbp = update_lru<CCB>(hdat, dbpointer->file, ccbi);
+		ccbp = update_lru<CCB>(hdat, ccbi);
 	}
 	else {
 
@@ -1034,7 +1034,6 @@ static void build_file_table(DBHANDLE *hdat, int maxpieces, int maxpiece, int sa
 						file.fp = INVALID_HANDLE_VALUE;
 						file.cache_bufferi = nullptr;
 						hdat->dbfiles.push_back(file);
-						size_t foo = hdat->dbfiles.size();
 					}
 				}
 			}

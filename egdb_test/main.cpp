@@ -366,7 +366,7 @@ void mtc_test()
 		if (parse_fen(linebuf, &pos, &color))
 			continue;
 
-		/* For 7 and 8 pieces, only test every 10th position, to speed up the test. */
+		/* For 7 and 8 pieces, only test every 32nd position, to speed up the test. */
 		++count;
 		if (((count % 32) != 0) && (bitcount64(pos.black | pos.white) >= 7))
 			continue;
@@ -507,7 +507,9 @@ void dtw_test(Slice &slice, wld_search &wld, dtw_search &dtw, double &sum_times,
 
 		value = dtw.lookup_with_search(&pos, color, dists);
 		if (value < 0) {
-			printf("dtw lookup timed out, time %.3f sec (not a bug)\n", dtw.get_time() / 1000.0);
+			std::string fen;
+			print_fen(&pos, color, fen);
+			printf("dtw lookup timed out, time %.3f sec (not a bug); %s\n", dtw.get_time() / 1000.0, fen.c_str());
 			continue;
 		}
 
@@ -606,7 +608,7 @@ void dtw_test(void)
 		dtw_test(slice, wld, dtw, sum_times, sum_nodes, nsamples, max_nodes, max_time);
 	}
 
-	printf("max time %d msec, max nodes %d\n", max_time, max_nodes);
+	printf("max time %d msec, max nodes %d, nlookups %I64d\n", max_time, max_nodes, nsamples);
 	egdb_close(dtw_handle);
 	egdb_close(wld_handle);
 }

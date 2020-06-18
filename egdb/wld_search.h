@@ -63,7 +63,7 @@ public:
 	bool is_lookup_possible(BOARD *board, int color, MATERIAL *mat);
 	int lookup_with_search(BOARD *p, int color, bool force_root_search);
 	int get_maxdepth() { return(maxdepth_reached); }
-	void set_maxnodes(int nodes) { maxnodes = nodes; }
+	void set_maxnodes(int maxnodes_) { maxnodes = maxnodes_; }
 	void reset_maxdepth() { maxdepth_reached = 0; }
 	void set_search_timeout(int msec) { timeout = msec; }
 

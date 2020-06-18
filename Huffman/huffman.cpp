@@ -5,7 +5,7 @@
 #include "bitbuf.h"
 
 
-int compare_codetable_entries(const void *p1, const void *p2);
+static int compare_codetable_entries(const void *p1, const void *p2);
 
 
 void Huffman::get_frequencies(std::vector<Value> &input)
