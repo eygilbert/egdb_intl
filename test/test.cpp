@@ -493,7 +493,7 @@ void test_fen()
 				nbk = nb - nbm;
 				for (nwm = 0; nwm <= nw; ++nwm) {
 					nwk = nw - nwm;
-					for (i = 0; i < 50; ++i) {
+					for (i = 0; i < 25; ++i) {
 						color = (i & 1) ? egdb_dll::EGDB_BLACK : egdb_dll::EGDB_WHITE;
 						get_rand_board(nbm, nbk, nwm, nwk, &pos);
 						status = positiontofen((Position *)&pos, color, fenstr);
