@@ -25,7 +25,7 @@ public:
 	static const int dtw_aborted = -2;
 
 private:
-	int search(BOARD *board, int color, int depth, int maxdepth, int expected_wld_val);
+	int search(BOARD *board, int color, int depth, int maxdepth, int expected_wld_val, int alpha, int beta);
 	bool has_move(std::vector<move_distance> &dists, int movei)
 	{
 		for (size_t i = 0; i < dists.size(); ++i)

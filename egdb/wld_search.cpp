@@ -331,13 +331,12 @@ int wld_search::lookup_with_rep_check(BOARD *p, int color, int depth, int maxdep
  */
 int wld_search::lookup_with_search(BOARD *p, int color, bool force_root_search)
 {
-	int status, i;
-	int value = EGDB_UNKNOWN;	// prevent using unitialized memory
+	int status;
+	int value;
 
 	nodes = 0;
 	t0 = clock();
 	reset_maxdepth();
-
 	status = setjmp(env);
 	if (status) {
 		char buf[150];
@@ -348,16 +347,7 @@ int wld_search::lookup_with_search(BOARD *p, int color, bool force_root_search)
 		return(EGDB_UNKNOWN);
 	}
 
-	for (i = 1; i < maxrepdepth; ++i) {
-		value = lookup_with_rep_check(p, color, 0, i, EGDB_LOSS, EGDB_WIN, force_root_search);
-		switch (value) {
-		case EGDB_WIN:
-		case EGDB_DRAW:
-		case EGDB_LOSS:
-			return(value);
-		}
-	}
-
+	value = lookup_with_rep_check(p, color, 0, maxrepdepth, EGDB_LOSS, EGDB_WIN, force_root_search);
 	return(value);
 }
 

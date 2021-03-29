@@ -6,7 +6,7 @@
 
 namespace egdb_interface {
 
-int dtw_search::search(BOARD *board, int color, int depth, int maxdepth, int expected_wld_val)
+int dtw_search::search(BOARD *board, int color, int depth, int maxdepth, int expected_wld_val, int alpha, int beta)
 {
 	int dtw_val, successor_wld_val;
 	bool capture;
@@ -64,32 +64,42 @@ int dtw_search::search(BOARD *board, int color, int depth, int maxdepth, int exp
 		if (expected_wld_val == EGDB_LOSS) {
 			assert(successor_wld_val == EGDB_WIN);
 		}
-		dtw_val = search(movelist.board + i, OTHER_COLOR(color), depth + 1, maxdepth, wld_opposite(expected_wld_val));
-		if (dtw_val == dtw_unknown)
-			return(dtw_unknown);
+		dtw_val = search(movelist.board + i, OTHER_COLOR(color), depth + 1, maxdepth, wld_opposite(expected_wld_val), alpha - 1, beta - 1);
+		if (dtw_val < 0)
+			return(dtw_val);	/* unknown or aborted. */
 
+		++dtw_val;
 		if (expected_wld_val == EGDB_WIN) {
+			if (dtw_val <= alpha) {
+				bestvalue = dtw_val;
+				break;
+			}
 			if (dtw_val < bestvalue) {
 				bestvalue = dtw_val;
+				beta = dtw_val;
 				bestmove = i;
 			}
 		}
 		else {
+			if (dtw_val >= beta) {
+				bestvalue = dtw_val;
+				break;
+			}
 			if (dtw_val > bestvalue) {
 				bestvalue = dtw_val;
+				alpha = dtw_val;
 				bestmove = i;
 			}
 		}
 	}
-	return(1 + bestvalue);
+	return(bestvalue);
 }
 
 
 int dtw_search::lookup_with_search(BOARD *board, int color, std::vector<move_distance> &dists)
 {
 	int wld_val, dtw_val;
-	int i, maxdepth, movecount;
-	bool go_deeper;
+	int i, movecount;
 	MOVELIST movelist;
 	const int Maxdepth = 32;
 
@@ -119,46 +129,42 @@ int dtw_search::lookup_with_search(BOARD *board, int color, std::vector<move_dis
 		return(0);
 
 	/* look up all successors. */
-	go_deeper = false;
-	for (maxdepth = 0; maxdepth < Maxdepth; ++maxdepth) {
-		for (i = 0; i < movecount; ++i) {
-			int successor_wld_val;
+	for (i = 0; i < movecount; ++i) {
+		int successor_wld_val;
 
-			if (has_move(dists, i))
-				continue;
+		if (has_move(dists, i))
+			continue;
 
-			successor_wld_val = wld.lookup_with_search(movelist.board + i, OTHER_COLOR(color), false);
-			if (successor_wld_val == EGDB_UNKNOWN) {
-				elapsed = clock() - start_time;
-				return(dtw_unknown);
-			}
-			if (wld_val == EGDB_WIN)
-				if (successor_wld_val != EGDB_LOSS)
-					continue;
-			if (wld_val == EGDB_LOSS) {
-				assert(successor_wld_val == EGDB_WIN);
-			}
-			if (timeout && (clock() - start_time) >= timeout) {
-				elapsed = clock() - start_time;
-				return(dtw_unknown);
-			}
-			dtw_val = search(movelist.board + i, OTHER_COLOR(color), 0, maxdepth, wld_opposite(wld_val));
-			if (dtw_val == dtw_aborted) {
-				elapsed = clock() - start_time;
-				return(dtw_unknown);
-			}
-			if (dtw_val == dtw_unknown) {
-				go_deeper = true;
-				continue;
-			}
-			if (dtw_val == dtw_draw)
-				continue;
-
-			dists.push_back({dtw_val + 1, i});
+		successor_wld_val = wld.lookup_with_search(movelist.board + i, OTHER_COLOR(color), false);
+		if (successor_wld_val == EGDB_UNKNOWN) {
+			elapsed = clock() - start_time;
+			return(dtw_unknown);
 		}
-		if (!go_deeper)
-			break;
+		if (wld_val == EGDB_WIN)
+			if (successor_wld_val != EGDB_LOSS)
+				continue;
+		if (wld_val == EGDB_LOSS) {
+			assert(successor_wld_val == EGDB_WIN);
+		}
+		if (timeout && (clock() - start_time) >= timeout) {
+			elapsed = clock() - start_time;
+			return(dtw_unknown);
+		}
+		dtw_val = search(movelist.board + i, OTHER_COLOR(color), 0, Maxdepth, wld_opposite(wld_val), 0, 511);
+		if (dtw_val == dtw_aborted) {
+			elapsed = clock() - start_time;
+			return(dtw_unknown);
+		}
+		if (dtw_val == dtw_unknown) {
+			elapsed = clock() - start_time;
+			return(dtw_unknown);
+		}
+		if (dtw_val == dtw_draw)
+			continue;
+
+		dists.push_back({dtw_val + 1, i});
 	}
+
 	if (wld_val == EGDB_WIN)
 		std::sort(dists.begin(), dists.end(), [](const move_distance &l, const move_distance &r) {return(l.distance < r.distance);});
 	else

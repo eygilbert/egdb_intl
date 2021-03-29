@@ -17,7 +17,7 @@ using namespace egdb_interface;
 using namespace egdb_dll;
 
 const char *wld_path = "c:/db_intl/wld_v2";
-const char *dtw_path = "c:/db_intl/dtw";
+const char *dtw_path = "e:/db_intl/dtw";
 const char *mtc_path = "c:/db_intl/mtc";
 
 
