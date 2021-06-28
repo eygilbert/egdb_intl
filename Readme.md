@@ -2,6 +2,8 @@
 
 The DLL gives access to the endgame databases from a number of languages. See the file `egdb_intl_dll.h` for definitions of types and constants. If you're accessing the DLL from a C++ program, you should #include that header file in your source files.
 
+This branch is a modification to the "dll" branch. It modifies the draughts move generator to work exactly like Gerard Benning's move generator, so that he can use the dll in his VBA program that finds "sharp" draughts positions.
+
 See files in the VBA_test directory for access from VBA.
 
 ## Functions
@@ -39,8 +41,14 @@ Returns the number of positions in a database subset defined by number of black 
 Converts a database subset index into a position. The range of index is 0 through size-1. The subset is defined by number of black men, black kings, white men, and white kings.
 #### extern "C" int64_t __stdcall positiontoindex(Position *pos, int nbm, int nbk, int nwm, int nwk);
 Converts a position into an index.
-#### extern "C" int16_t __stdcall is_sharp_win(int handle, Position *pos, int color, Position *sharp_move_pos);
-Returns non-zero if the position defined by `pos` and `color` has exactly one move to win. In this case the successor position is returned in `sharp_move_pos`.
+#### extern "C" int32_t __stdcall sharp_status(int handle, Position *pos, int color, Position *sharp_move_pos);
+Returns the sharp status of the position defined by `pos` and `color`.
+
+Returns EGDB_SHARP_STAT_TRUE if the position has exactly one move that wins. In this case the successor position is returned in `sharp_move_pos`.
+
+Returns EGDB_SHARP_STAT_FALSE if the position is not sharp.
+
+Returns EGDB_SHARP_STAT_UNKNOWN if the sharp status cannot be determined. This could happen if the function egdb_lookup_with_search(), which is used internally by sharp_status(), got a return value of EGDB_UNKNOWN.
 #### extern "C" int __stdcall move_string(Position *last_pos, Position *new_pos, int color, char *move);
 Given a draughts move that changes the position from `last_pos` to `new_pos`, this function returns the PDN character string representation of the move in `move`.
 #### extern "C" int __stdcall positiontofen(Position *pos, int color, char *fen);
@@ -49,7 +57,7 @@ Converts a draughts position given in bitboard format to FEN character string fo
 Converts a draughts position given in FEN character string format to bitboard format.
 ## License
 
-    Original work Copyright (C) 2007-2020 Ed Gilbert
+    Original work Copyright (C) 2007-2021 Ed Gilbert
 
 Distributed under the Boost Software License, Version 1.0.
 (See accompanying file [LICENSE_1_0.txt](LICENSE_1_0.txt) or copy at

@@ -35,7 +35,7 @@ void print_fen_side(BITBOARD sidebb, BITBOARD king, std::string &fenstr)
 {
 	int bitnum, square0, count;
 	BITBOARD sq, newsidebb;
-	const bool enable_ranges = true;
+	const bool enable_ranges = false;
 
 	while (sidebb) {
 		sq = get_lsb(sidebb);

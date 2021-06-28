@@ -74,10 +74,10 @@ Sub verify_position(ByVal handle As Long, pos As Board, ByVal color As Long)
        
 End Sub
 
-Sub test_is_sharp_win(ByVal handle As Long, ByRef pos As Board, ByVal color As Long)
+Sub test_sharp_status(ByVal handle As Long, ByRef pos As Board, ByVal color As Long)
     Dim movelist(128) As Board, count As Long
     Dim destination As Board
-    Dim value As Long, wincount As Long, i As Long
+    Dim value As Long, wincount As Long, i As Long, status As Long
     
     value = egdb_lookup_with_search(handle, pos, color)
     If value = EGDB_WIN Then
@@ -87,18 +87,21 @@ Sub test_is_sharp_win(ByVal handle As Long, ByRef pos As Board, ByVal color As L
                 wincount = wincount + 1
             End If
         Next i
-        If is_sharp_win(handle, pos, color, destination) Then
+        status = sharp_status(handle, pos, color, destination)
+        If status = EGDB_SHARP_STAT_TRUE Then
             If wincount <> 1 Then
-                MsgBox ("Error testing is_sharp_win()")
+                MsgBox ("Error testing sharp_status()")
             End If
-        Else
+        ElseIf status = EGDB_SHARP_STAT_FALSE Then
             If wincount = 1 Then
-                MsgBox ("Error testing is_sharp_win()")
+                MsgBox ("Error testing sharp_status()")
             End If
+        ElseIf status = EGDB_SHARP_STAT_UNKNOWN Then
+            MsgBox ("sharp_status() returned EGDB_SHARP_STAT_UNKNOWN")
         End If
     Else
-        If is_sharp_win(handle, pos, color, destination) Then
-            MsgBox ("Error testing is_sharp_win()")
+        If sharp_status(handle, pos, color, destination) <> EGDB_SHARP_STAT_FALSE Then
+            MsgBox ("Error testing sharp_status()")
         End If
     End If
 End Sub
@@ -138,8 +141,8 @@ Sub test_one_slice(ByVal handle As Long, ByVal nbm As Long, ByVal nbk As Long, B
         Call verify_position(handle, pos, EGDB_BLACK)
         Call verify_position(handle, pos, EGDB_WHITE)
         
-        'Test the is_sharp_win() dll function.
-        Call test_is_sharp_win(handle, pos, EGDB_WHITE)
+        'Test the sharp_status() dll function.
+        Call test_sharp_status(handle, pos, EGDB_WHITE)
         
         Call test_fen_conversions(pos, EGDB_BLACK)
         Call test_fen_conversions(pos, EGDB_WHITE)

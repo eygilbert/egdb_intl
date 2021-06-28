@@ -31,7 +31,7 @@ void test_names()
 	void *fnptr;
 
 #ifdef ENVIRONMENT64
-	handle = LoadLibrary("egdb_intl64");
+	handle = LoadLibrary("egdb_intl64_gbrules");
 #else
 	handle = LoadLibrary("egdb_intl32");
 #endif
@@ -284,8 +284,8 @@ void dtw_test(Slice &slice, int wld_handle, int dtw_handle)
 
 			/* Test is_sharp_win(). */
 			if (status == 1 && (distances[0] & 1)) {
-				if (!is_sharp_win(wld_handle, (Position *)&pos, color, &sharp_move_pos)) {
-					printf("is_sharp_win() doesn't agree with egdb_lookup_distance()\n");
+				if (sharp_status(wld_handle, (Position *)&pos, color, &sharp_move_pos) != EGDB_SHARP_STAT_TRUE) {
+					printf("sharp_status() doesn't agree with egdb_lookup_distance()\n");
 					exit(1);
 				}
 				next = get_next_pos(pos, color, movelist, moves[0]);
@@ -295,8 +295,8 @@ void dtw_test(Slice &slice, int wld_handle, int dtw_handle)
 				}
 			}
 			else {
-				if (is_sharp_win(wld_handle, (Position *)&pos, color, &sharp_move_pos)) {
-					printf("is_sharp_win() doesn't agree with egdb_lookup_distance()\n");
+				if (sharp_status(wld_handle, (Position *)&pos, color, &sharp_move_pos) != EGDB_SHARP_STAT_FALSE) {
+					printf("sharp_status() doesn't agree with egdb_lookup_distance()\n");
 					exit(1);
 				}
 			}

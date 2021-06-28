@@ -153,6 +153,10 @@ void lf_king_capture(BITBOARD jumped, BITBOARD jumper, int num_jumps, Local *loc
 			add_king_capture_path<color>(num_jumps, jumper, jumped, local);
 
 		lf_king_capture<save_capture_info, color>(jumped | new_jumper, new_jumper << LEFT_FWD_SHIFT, num_jumps + 1, local);
+#ifdef GB_RULES
+		if ((jumper << LEFT_FWD_SHIFT) & local->free)
+			lf_king_capture<save_capture_info, color>(jumped | new_jumper, new_jumper << LEFT_FWD_SHIFT, num_jumps + 1, local);
+#endif
 	}
 }
 
@@ -211,6 +215,10 @@ void rf_king_capture(BITBOARD jumped, BITBOARD jumper, int num_jumps, Local *loc
 			add_king_capture_path<color>(num_jumps, jumper, jumped, local);
 
 		rf_king_capture<save_capture_info, color>(jumped | new_jumper, new_jumper << RIGHT_FWD_SHIFT, num_jumps + 1, local);
+#ifdef GB_RULES
+		if ((jumper << RIGHT_FWD_SHIFT) & local->free)
+			rf_king_capture<save_capture_info, color>(jumped | new_jumper, new_jumper << RIGHT_FWD_SHIFT, num_jumps + 1, local);
+#endif
 	}
 }
 
@@ -269,6 +277,10 @@ void lb_king_capture(BITBOARD jumped, BITBOARD jumper, int num_jumps, Local *loc
 			add_king_capture_path<color>(num_jumps, jumper, jumped, local);
 
 		lb_king_capture<save_capture_info, color>(jumped | new_jumper, new_jumper >> LEFT_BACK_SHIFT, num_jumps + 1, local);
+#ifdef GB_RULES
+		if ((jumper >> LEFT_BACK_SHIFT) & local->free)
+			lb_king_capture<save_capture_info, color>(jumped | new_jumper, new_jumper >> LEFT_BACK_SHIFT, num_jumps + 1, local);
+#endif
 	}
 }
 
@@ -327,6 +339,10 @@ void rb_king_capture(BITBOARD jumped, BITBOARD jumper, int num_jumps, Local *loc
 			add_king_capture_path<color>(num_jumps, jumper, jumped, local);
 
 		rb_king_capture<save_capture_info, color>(jumped | new_jumper, new_jumper >> RIGHT_BACK_SHIFT, num_jumps + 1, local);
+#ifdef GB_RULES
+		if ((jumper >> RIGHT_BACK_SHIFT) & local->free)
+			rb_king_capture<save_capture_info, color>(jumped | new_jumper, new_jumper >> RIGHT_BACK_SHIFT, num_jumps + 1, local);
+#endif
 	}
 }
 
@@ -335,7 +351,6 @@ template <bool save_capture_info, int color>
 void add_king_capture(BITBOARD jumper, BITBOARD jumped, int num_jumps, Local *local)
 {
 	if (num_jumps >= local->largest_num_jumps) {
-		int i;
 		MOVELIST *movelist = local->movelist;
 
 		if (num_jumps > local->largest_num_jumps) {
@@ -366,11 +381,13 @@ void add_king_capture(BITBOARD jumper, BITBOARD jumped, int num_jumps, Local *lo
 		}
 
 		/* Remove duplicate moves (same result board). */
+#ifndef GB_RULES
 		if (num_jumps >= 4) {
-			for (i = 0; i < movelist->count; ++i)
+			for (int i = 0; i < movelist->count; ++i)
 				if (memcmp(movelist->board + i, movelist->board + movelist->count, sizeof(BOARD)) == 0)
 					return;
 		}
+#endif
 		movelist->count++;
 	}
 }
@@ -1116,6 +1133,7 @@ static void man_jump(BITBOARD jumped, MOVELIST *movelist, BITBOARD jumper, int n
 		}
 
 		/* Check for duplicates. */
+#ifndef GB_RULES
 		if (num_jumps >= 4) {
 			int i;
 
@@ -1123,6 +1141,7 @@ static void man_jump(BITBOARD jumped, MOVELIST *movelist, BITBOARD jumper, int n
 				if (memcmp(movelist->board + i, movelist->board + movelist->count, sizeof(BOARD)) == 0)
 					return;
 		}
+#endif
 		movelist->count++;
 	}
 }

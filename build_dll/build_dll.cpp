@@ -308,7 +308,7 @@ extern "C" int64_t __stdcall positiontoindex(Position *pos, int nbm, int nbk, in
 }
 
 
-extern "C" int16_t __stdcall is_sharp_win(int handle, Position *pos, int color, Position *sharp_move_pos)
+extern "C" int32_t __stdcall sharp_status(int handle, Position *pos, int color, Position *sharp_move_pos)
 {
 	int i, len, result, wincount;
 	MOVELIST movelist;
@@ -328,15 +328,22 @@ extern "C" int16_t __stdcall is_sharp_win(int handle, Position *pos, int color, 
 			if (result == egdb_dll::EGDB_LOSS) {
 				++wincount;
 				if (wincount > 1)
-					return(0);
+					return(EGDB_SHARP_STAT_FALSE);
 
 				memcpy(sharp_move_pos, &movelist.board[i], sizeof(Position));
 			}
+			else if (result == egdb_dll::EGDB_UNKNOWN)
+				return(EGDB_SHARP_STAT_UNKNOWN);
 		}
 		if (wincount == 1)
-			return(-1);
+			return(EGDB_SHARP_STAT_TRUE);
+		else
+			return(EGDB_SHARP_STAT_FALSE);
 	}
-	return(0);
+	else if (result == egdb_dll::EGDB_UNKNOWN)
+		return(EGDB_SHARP_STAT_UNKNOWN);
+	else
+		return(EGDB_SHARP_STAT_FALSE);
 }
 
 

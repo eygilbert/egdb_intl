@@ -12,7 +12,7 @@ EXPORTS
 	getdatabasesize_slice
 	indextoposition
 	positiontoindex
-	is_sharp_win
+	sharp_status
 	move_string
 	positiontofen
 	fentoposition
