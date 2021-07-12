@@ -1,5 +1,14 @@
 Attribute VB_Name = "test_dll"
 Option Explicit
+Public Const max_captures = 20
+Type Test_position
+    oldfen As String
+    newfen As String
+    ncaptured As Byte
+    landed(max_captures) As Byte
+    captured(max_captures) As Byte
+End Type
+
 Sub quick_test()
     Dim egdb_type As Long
     Dim max_pieces As Long
@@ -45,6 +54,7 @@ Sub quick_test()
        MsgBox "No errors"
     End If
 End Sub
+
 'Check that a position's WLD value is consistent with the values of its successors.
 Sub verify_position(ByVal handle As Long, pos As Board, ByVal color As Long)
     Dim pvalue As Long, value As Long, bestvalue As Long
@@ -71,7 +81,6 @@ Sub verify_position(ByVal handle As Long, pos As Board, ByVal color As Long)
     If pvalue <> bestvalue Then
         Debug.Print "egdb value verify error"
     End If
-       
 End Sub
 
 Sub test_sharp_status(ByVal handle As Long, ByRef pos As Board, ByVal color As Long)
@@ -119,9 +128,7 @@ Sub test_fen_conversions(ByRef pos As Board, ByVal color As Long)
     If pos.black <> retpos.black Or pos.white <> retpos.white Or pos.king <> retpos.king Then
         MsgBox ("fen test position error")
     End If
-
 End Sub
-
 
 Sub test_one_slice(ByVal handle As Long, ByVal nbm As Long, ByVal nbk As Long, ByVal nwm As Long, ByVal nwk As Long)
     Dim pvalue As Long, value As Long
@@ -148,8 +155,56 @@ Sub test_one_slice(ByVal handle As Long, ByVal nbm As Long, ByVal nbk As Long, B
         Call test_fen_conversions(pos, EGDB_WHITE)
         DoEvents  'Allow VBA UI to be responsive
     Next index
-
 End Sub
+
+Sub test_sharp_capture_path()
+Dim test_positions(2) As Test_position
+Dim oldpos As Board, newpos As Board
+Dim i As Long, j As Long, ncaptured As Long, color As Long, status As Long
+Dim landed(max_captures) As Byte, captured(max_captures) As Byte
+
+test_positions(0).oldfen = "W:WK49:B9,38"
+test_positions(0).newfen = "B:WK4:B"
+test_positions(0).ncaptured = 2
+test_positions(0).landed(0) = 49
+test_positions(0).landed(1) = 27
+test_positions(0).landed(2) = 4
+test_positions(0).captured(0) = 38
+test_positions(0).captured(1) = 9
+test_positions(1).oldfen = "W:WK49:B21,38"
+test_positions(1).newfen = "B:WK16:B"
+test_positions(1).ncaptured = 0
+test_positions(2).oldfen = "W:WK49:B33,34,43,44"
+test_positions(2).newfen = "B:WK49:B"
+test_positions(2).ncaptured = 0
+Debug.Print "Testing sharp_capture_path()"
+For i = 0 To UBound(test_positions)
+    status = fentoposition(test_positions(i).newfen, newpos, color)
+    status = fentoposition(test_positions(i).oldfen, oldpos, color)
+    ncaptured = sharp_capture_path(oldpos, newpos, color, landed(0), captured(0))
+    If (ncaptured <> test_positions(i).ncaptured) Then
+        Debug.Print "test_sharp_capture_path error"
+        Exit For
+    End If
+    If ncaptured <> 0 Then
+        For j = 0 To ncaptured
+            If (test_positions(i).landed(j) <> landed(j)) Then
+                Debug.Print "landed error, got "; landed(j); ", expected "; test_positions(i).landed(j)
+                Exit For
+            End If
+            If j = ncaptured Then
+                Exit For
+            End If
+            
+            If (test_positions(i).captured(j) <> captured(j)) Then
+                Debug.Print "captured error, got "; captured(j); ", expected "; test_positions(i).captured(j)
+                Exit For
+            End If
+        Next j
+    End If
+Next i
+End Sub
+
 'Do a functional test of most of the dll functions.
 Sub test_everything()
     Const directory As String = "C:\db_intl\wld_v2"
@@ -165,6 +220,8 @@ Sub test_everything()
         Exit Sub
     End If
     
+    Call test_sharp_capture_path
+    
     'Iterate through all the slices, test each one.
     Do
         If slice.npieces > maxpieces Then Exit Do
@@ -173,3 +230,4 @@ Sub test_everything()
     Loop While slice.increment()
     result = egdb_close(handle)
 End Sub
+

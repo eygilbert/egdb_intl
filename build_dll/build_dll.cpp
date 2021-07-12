@@ -353,6 +353,41 @@ extern "C" int __stdcall move_string(Position *last_pos, Position *new_pos, int 
 }
 
 
+extern "C" int __stdcall sharp_capture_path(Position *last_board, Position *new_board, int color, char *landed, char *captured)
+{
+	int i, nmoves, nmatches, matchi;
+	int fromsq, tosq;
+	BITBOARD jumped;
+	MOVELIST movelist;
+	CAPTURE_INFO path[MAXMOVES];
+
+	if (!canjump((BOARD *)last_board, color))
+		return(0);
+
+	nmatches = 0;
+	nmoves = build_movelist_path((BOARD *)last_board, color, &movelist, path);
+	for (i = 0; i < nmoves; ++i) {
+		if (memcmp((BOARD *)new_board, movelist.board + i, sizeof(BOARD)) == 0) {
+			++nmatches;
+			matchi = i;
+		}
+	}
+
+	if (nmatches != 1)
+		return(0);
+
+	get_fromto(&path[matchi].path[0], &path[matchi].path[1], color, &fromsq, &tosq);
+	landed[0] = fromsq + 1;
+	for (i = 0; i < path[matchi].capture_count; ++i) {
+		get_fromto(&path[matchi].path[i], &path[matchi].path[i + 1], color, &fromsq, &tosq);
+		landed[i + 1] = tosq + 1;
+		get_jumped_square(i, matchi, color, path, &jumped);
+		captured[i] = bitboard_to_square(jumped);
+	}
+	return(path[matchi].capture_count);
+}
+
+
 extern "C" int __stdcall positiontofen(Position *pos, int color, char fen[maxfenlen])
 {
 	return(print_fen((BOARD *)pos, color, fen));

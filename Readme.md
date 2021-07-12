@@ -51,6 +51,8 @@ Returns EGDB_SHARP_STAT_FALSE if the position is not sharp.
 Returns EGDB_SHARP_STAT_UNKNOWN if the sharp status cannot be determined. This could happen if the function egdb_lookup_with_search(), which is used internally by sharp_status(), got a return value of EGDB_UNKNOWN.
 #### extern "C" int __stdcall move_string(Position *last_pos, Position *new_pos, int color, char *move);
 Given a draughts move that changes the position from `last_pos` to `new_pos`, this function returns the PDN character string representation of the move in `move`.
+#### extern "C" int __stdcall sharp_capture_path(Position *last_board, Position *new_board, int color, char *landed, char *captured);
+Returns the landed and captured squares of a capture move described by last_board, new_board, and color. The return value from the function is the number of pieces captured. landed[0] is the 'from' square, landed[1] is the landed square after the first jump, ... captured[0] is the first jumped square, ... If the return value is 0, it means that either there is not a capture move, or there is more than one capture move between the positions given.
 #### extern "C" int __stdcall positiontofen(Position *pos, int color, char *fen);
 Converts a draughts position given in bitboard format to FEN character string format. The return value of the function is the number of characters written to `fen`.
 #### extern "C" int __stdcall fentoposition(char *fen, Position *pos, int *color);

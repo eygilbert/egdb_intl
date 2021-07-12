@@ -267,7 +267,11 @@ void dtw_test(Slice &slice, int wld_handle, int dtw_handle)
 		print_fen(&pos, color, fenstr);
 		status = egdb_lookup_distance(wld_handle, dtw_handle, fenstr.c_str(), distances, moves);
 		if (status <= 0) {
-			printf("dtw lookup timed out, status %d (not a bug)\n", status);
+			MOVELIST movelist;
+			/* It might be a position with no moves. */
+			build_movelist(&pos, color, &movelist);
+			if (movelist.count != 0)
+				printf("dtw lookup timed out, status %d (not a bug)\n", status);
 			continue;
 		}
 
@@ -303,6 +307,8 @@ void dtw_test(Slice &slice, int wld_handle, int dtw_handle)
 					
 			/* Lookup dtw of the first best move. */
 			next = get_next_pos(pos, color, movelist, moves[0]);
+			if (next.black == 0)
+				break;
 			color = OTHER_COLOR(color);
 			print_fen(&next, color, fenstr);
 			status = egdb_lookup_distance(wld_handle, dtw_handle, fenstr.c_str(), distances, moves);
@@ -420,7 +426,7 @@ void mtc_test()
 	char linebuf[120];
 	BOARD pos;
 
-	std::printf("\nMTC test.\n");
+	std::printf("MTC test.\n");
 	status = egdb_identify(mtc_path, &type, &max_pieces);
 	if (status) {
 		std::printf("MTC db not found at %s\n", mtc_path);
@@ -476,6 +482,57 @@ void mtc_test()
 	egdb_close(wld_handle);
 }
 
+struct Test_position {
+	char *oldfen;
+	char *newfen;
+	uint8_t ncaptured;
+	uint8_t landed[10];
+	uint8_t captured[10];
+};
+
+void test_sharp_capture_path(void)
+{
+	int color, ncaptured;
+	Position oldpos, newpos;
+	char landed[10];
+	char captured[10];
+	Test_position positions[] = {
+		{"W:WK49:B9,38", "B:WK4:B",
+		2,
+		{49, 27, 4},
+		{38, 9}},
+		{"W:WK49:B21,38", "B:WK16:B",
+		0},
+		{"W:WK49:B33,34,43,44", "B:WK49:B",
+		0},
+		{"W:WK43:B7,20,21,32,34", "B:WK2:B20,34",
+		3,
+		{43, 27, 16, 2},
+		{32, 21, 7}}
+	};
+
+	std::printf("test sharp_capture_path()\n");
+	for (int i = 0; i < ARRAY_SIZE(positions); ++i) {
+		Test_position *p = positions + i;
+		fentoposition(p->newfen, &newpos, &color);
+		fentoposition(p->oldfen, &oldpos, &color);
+		ncaptured = sharp_capture_path(&oldpos, &newpos, color, landed, captured);
+		if (ncaptured != p->ncaptured) {
+			std::printf("%d: test_sharp_capture_path error\n", i);
+			continue;
+		}
+		if (ncaptured == 0)
+			continue;
+		for (int j = 0; j <= ncaptured; ++j) {
+			if (p->landed[j] != landed[j])
+				printf("landed error, got %d, expected %d\n", landed[j], p->landed[j]);
+			if (j == ncaptured)
+				continue;
+			if (p->captured[j] != captured[j])
+				printf("captured error, got %d, expected %d\n", captured[j], p->captured[j]);
+		}
+	}
+}
 
 void test_fen()
 {
@@ -487,7 +544,7 @@ void test_fen()
 	printf("FEN test ");
 	for (npieces = 1; npieces <= 40; ++npieces) {
 		printf(".");
-		for (nb = 0; nb <= npieces; ++nb) {
+		for (nb = 0; nb <= npieces && nb <= 20; ++nb) {
 			nw = npieces - nb;
 			for (nbm = 0; nbm <= nb; ++nbm) {
 				nbk = nb - nbm;
@@ -519,7 +576,7 @@ void test_fen()
 			}
 		}
 	}
-
+	printf("\n");
 }
 
 
@@ -530,6 +587,7 @@ int main(int argc, char *argv[])
 	init_bitcount();
 	test_names();
 	test_fen();
+	test_sharp_capture_path();
 	mtc_test();
 
 	/* Test egdb_identify(). */
