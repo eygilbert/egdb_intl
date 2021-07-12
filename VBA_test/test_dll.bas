@@ -158,7 +158,7 @@ Sub test_one_slice(ByVal handle As Long, ByVal nbm As Long, ByVal nbk As Long, B
 End Sub
 
 Sub test_sharp_capture_path()
-Dim test_positions(2) As Test_position
+Dim test_positions(3) As Test_position
 Dim oldpos As Board, newpos As Board
 Dim i As Long, j As Long, ncaptured As Long, color As Long, status As Long
 Dim landed(max_captures) As Byte, captured(max_captures) As Byte
@@ -177,6 +177,16 @@ test_positions(1).ncaptured = 0
 test_positions(2).oldfen = "W:WK49:B33,34,43,44"
 test_positions(2).newfen = "B:WK49:B"
 test_positions(2).ncaptured = 0
+test_positions(3).oldfen = "W:WK43:B7,20,21,32,34"
+test_positions(3).newfen = "B:WK2:B20,34"
+test_positions(3).ncaptured = 3
+test_positions(3).landed(0) = 43
+test_positions(3).landed(1) = 27
+test_positions(3).landed(2) = 16
+test_positions(3).landed(3) = 2
+test_positions(3).captured(0) = 32
+test_positions(3).captured(1) = 21
+test_positions(3).captured(2) = 7
 Debug.Print "Testing sharp_capture_path()"
 For i = 0 To UBound(test_positions)
     status = fentoposition(test_positions(i).newfen, newpos, color)
