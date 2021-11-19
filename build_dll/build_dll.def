@@ -14,6 +14,6 @@ EXPORTS
 	positiontoindex
 	sharp_status
 	move_string
-	sharp_capture_path
+	capture_path
 	positiontofen
 	fentoposition

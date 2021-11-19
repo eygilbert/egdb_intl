@@ -87,7 +87,7 @@ extern "C" void __stdcall indextoposition(int64_t index, Position *pos, int nbm,
 extern "C" int64_t __stdcall positiontoindex(Position *pos, int nbm, int nbk, int nwm, int nwk);
 extern "C" int32_t __stdcall sharp_status(int handle, Position *board, int color, Position *sharp_move_pos);
 extern "C" int __stdcall move_string(Position *last_board, Position *new_board, int color, char *move);
-extern "C" int __stdcall sharp_capture_path(Position *last_board, Position *new_board, int color, char *landed, char *captured);
+extern "C" int __stdcall capture_path(Position *last_board, Position *new_board, int color, char *landed, char *captured);
 extern "C" int __stdcall positiontofen(Position *board, int color, char fen[maxfenlen]);
 extern "C" int __stdcall fentoposition(char *fen, Position *pos, int *color);
 

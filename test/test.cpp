@@ -490,7 +490,7 @@ struct Test_position {
 	uint8_t captured[10];
 };
 
-void test_sharp_capture_path(void)
+void test_capture_path(void)
 {
 	int color, ncaptured;
 	Position oldpos, newpos;
@@ -502,23 +502,29 @@ void test_sharp_capture_path(void)
 		{49, 27, 4},
 		{38, 9}},
 		{"W:WK49:B21,38", "B:WK16:B",
-		0},
+		2,
+		{49, 32, 16},
+		{38, 21},
+		},
 		{"W:WK49:B33,34,43,44", "B:WK49:B",
-		0},
+		4,
+		{49, 40, 29, 38, 49},
+		{44, 34, 33, 43},
+		},
 		{"W:WK43:B7,20,21,32,34", "B:WK2:B20,34",
 		3,
 		{43, 27, 16, 2},
 		{32, 21, 7}}
 	};
 
-	std::printf("test sharp_capture_path()\n");
+	std::printf("test capture_path()\n");
 	for (int i = 0; i < ARRAY_SIZE(positions); ++i) {
 		Test_position *p = positions + i;
 		fentoposition(p->newfen, &newpos, &color);
 		fentoposition(p->oldfen, &oldpos, &color);
-		ncaptured = sharp_capture_path(&oldpos, &newpos, color, landed, captured);
+		ncaptured = capture_path(&oldpos, &newpos, color, landed, captured);
 		if (ncaptured != p->ncaptured) {
-			std::printf("%d: test_sharp_capture_path error\n", i);
+			std::printf("%d: test_capture_path error\n", i);
 			continue;
 		}
 		if (ncaptured == 0)
@@ -587,7 +593,7 @@ int main(int argc, char *argv[])
 	init_bitcount();
 	test_names();
 	test_fen();
-	test_sharp_capture_path();
+	test_capture_path();
 	mtc_test();
 
 	/* Test egdb_identify(). */

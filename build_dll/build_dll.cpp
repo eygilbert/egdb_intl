@@ -353,7 +353,7 @@ extern "C" int __stdcall move_string(Position *last_pos, Position *new_pos, int 
 }
 
 
-extern "C" int __stdcall sharp_capture_path(Position *last_board, Position *new_board, int color, char *landed, char *captured)
+extern "C" int __stdcall capture_path(Position *last_board, Position *new_board, int color, char *landed, char *captured)
 {
 	int i, nmoves, nmatches, matchi;
 	int fromsq, tosq;

@@ -54,7 +54,7 @@ Declare PtrSafe Sub indextoposition Lib "egdb_intl64_gbrules" (ByVal index As Lo
 Declare PtrSafe Function positiontoindex Lib "egdb_intl64_gbrules" (ByRef pos As Board, ByVal nbm As Long, ByVal nbk As Long, ByVal nwm As Long, ByVal nwk As Long) As LongLong
 Declare PtrSafe Function sharp_status Lib "egdb_intl64_gbrules" (ByVal handle As Long, ByRef pos As Board, ByVal color As Long, ByRef sharp_move_pos As Board) As Long
 Declare PtrSafe Function move_string Lib "egdb_intl64_gbrules" (ByRef oldpos As Board, ByRef newpos As Board, ByVal color As Long, ByRef move As Byte) As Long
-Declare PtrSafe Function sharp_capture_path Lib "egdb_intl64_gbrules" (ByRef oldpos As Board, ByRef newpos As Board, ByVal color As Long, ByRef landed As Byte, ByRef captured As Byte) As Long
+Declare PtrSafe Function capture_path Lib "egdb_intl64_gbrules" (ByRef oldpos As Board, ByRef newpos As Board, ByVal color As Long, ByRef landed As Byte, ByRef captured As Byte) As Long
 Declare PtrSafe Function positiontofen Lib "egdb_intl64_gbrules" (ByRef pos As Board, ByVal color As Long, ByRef fen As Byte) As Long
 Declare PtrSafe Function fentoposition Lib "egdb_intl64_gbrules" (ByVal fen As String, ByRef pos As Board, ByRef color As Long) As Long
 
