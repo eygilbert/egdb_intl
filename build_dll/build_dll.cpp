@@ -370,6 +370,7 @@ extern "C" int __stdcall capture_path(Position *last_board, Position *new_board,
 		if (memcmp((BOARD *)new_board, movelist.board + i, sizeof(BOARD)) == 0) {
 			++nmatches;
 			matchi = i;
+			break;
 		}
 	}
 
